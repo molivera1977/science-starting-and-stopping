@@ -10,6 +10,8 @@
   --bad:#B3261E;  --bad-soft:#FBE9E7;
   --warn:#8A5A00; --warn-soft:#FFF4DC;
   --accent:#D2601A;
+  /* read-aloud highlighter — a real marker colour, not a pale tint */
+  --hl:#FFD44D; --hl-ink:#16211F; --hl-soft:#FFEFB5; --hl-line:#D9A400;
   --shadow:0 1px 2px rgba(22,33,31,.06), 0 6px 18px rgba(22,33,31,.07);
 }
 @media (prefers-color-scheme:dark){
@@ -21,6 +23,7 @@
     --bad:#F2998F;  --bad-soft:#331815;
     --warn:#E0B55E; --warn-soft:#2E2412;
     --accent:#F0924E;
+    --hl:#FFD44D; --hl-ink:#16211F; --hl-soft:#4A3D12; --hl-line:#C99A1E;
     --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.35);
   }
 }
@@ -32,6 +35,7 @@
   --bad:#F2998F;  --bad-soft:#331815;
   --warn:#E0B55E; --warn-soft:#2E2412;
   --accent:#F0924E;
+  --hl:#FFD44D; --hl-ink:#16211F; --hl-soft:#4A3D12; --hl-line:#C99A1E;
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.35);
 }
 
@@ -170,7 +174,8 @@ label.fld .lb{
 /* The spoken word lights up wherever read-aloud is running — the intro that
    speaks itself, a question, a written prompt. This was scoped to .qtext, so
    the intro screen wrapped its words and then highlighted none of them. */
-.wrd.spk{background:var(--warn-soft); border-radius:3px; box-shadow:0 0 0 2px var(--warn-soft)}
+.wrd.spk{background:var(--hl); color:var(--hl-ink); border-radius:3px;
+  box-shadow:0 0 0 3px var(--hl);}
 .opts{display:grid; gap:9px; margin-top:14px}
 .opt{
   text-align:left; background:var(--surface); color:var(--ink);
@@ -301,3 +306,20 @@ table.data td.pending{color:var(--ink-faint)}
 
 /* the page title doubles as the document h1 */
 .brandtext h1.t{font-size:17px; font-weight:600; line-height:1.25;}
+
+/* ── READ-ALOUD HIGHLIGHT ───────────────────────────────
+   Prose highlights word by word (.wrd.spk, above). A screen that is a layout
+   rather than a paragraph highlights the PART being read instead: the
+   vocabulary card, the answer choice, the bar on the chart. */
+.vcard.spk, .opt.spk, .grow.spk, .varbox div.spk{
+  background:var(--hl-soft);
+  border-color:var(--hl-line);
+  box-shadow:0 0 0 3px var(--hl-line);
+  border-radius:12px;
+}
+#pr-question.spk, #pr-predict.spk, #gr-lead.spk, #gr-predict-check.spk,
+#run-now.spk, #table-note.spk{
+  background:var(--hl-soft); border-radius:8px;
+  box-shadow:0 0 0 5px var(--hl-soft);
+}
+@media (prefers-reduced-motion:reduce){ .vcard.spk, .opt.spk, .grow.spk{transition:none} }

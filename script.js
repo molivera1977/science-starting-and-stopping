@@ -144,7 +144,7 @@ const READ_RATE  = 0.92;
 const INTRO_RATE = 0.82;
 
 const speech = {
-  words: [], host: null, timer: null,
+  words: [], parts: [], host: null, timer: null,
 
   prep(host) {
     this.host = host;
@@ -192,9 +192,64 @@ const speech = {
   mark(i) {
     this.words.forEach((w, k) => w.classList.toggle('spk', k === i));
   },
+
+  /* Some screens are a layout, not a paragraph — vocabulary cards, a bar chart,
+     a row of answer choices. There are no words to wrap there, so the thing that
+     lights up is the PART being spoken: the card, the bar, the choice. Each part
+     carries the text to say for it, and the boundary event picks the part whose
+     words are being read. */
+  sayParts(parts, rate, onEnd) {
+    this.stop();
+    this.parts = parts.map(p => p.el).filter(Boolean);
+    this.parts.forEach(el => el.classList.remove('spk'));
+    if (!('speechSynthesis' in window) || !parts.length) { if (onEnd) onEnd(); return; }
+
+    const texts = parts.map(p => String(p.text || '').trim()).filter(Boolean);
+    const text = texts.join(' ');
+    if (!text) { if (onEnd) onEnd(); return; }
+
+    /* where each part starts, counted in words */
+    const bounds = []; let n = 0;
+    parts.forEach(p => {
+      const c = String(p.text || '').trim().split(/\s+/).filter(Boolean).length;
+      bounds.push({ el:p.el, from:n, to:n + c });
+      n += c;
+    });
+    const total = n;
+
+    const light = wordIdx => {
+      const hit = bounds.find(b => wordIdx >= b.from && wordIdx < b.to);
+      this.parts.forEach(el => el.classList.toggle('spk', !!hit && el === hit.el));
+    };
+
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US'; u.rate = rate || READ_RATE;
+
+    let spoken = false;
+    u.onboundary = e => {
+      if (e.name && e.name !== 'word') return;
+      spoken = true;
+      light(text.slice(0, e.charIndex).split(/\s+/).filter(Boolean).length);
+    };
+    u.onstart = () => {
+      /* voices that never report a boundary still get a moving highlight */
+      const per = Math.max(240, (text.length * 58) / Math.max(1, total) * (READ_RATE / u.rate));
+      let i = 0;
+      this.timer = setInterval(() => {
+        if (spoken) { clearInterval(this.timer); this.timer = null; return; }
+        light(i++);
+        if (i > total) { clearInterval(this.timer); this.timer = null; }
+      }, per);
+    };
+    u.onend = u.onerror = () => { this.clear(); if (onEnd) onEnd(); };
+
+    try { window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }
+    catch (e) { if (onEnd) onEnd(); }
+  },
   clear() {
     if (this.timer) { clearInterval(this.timer); this.timer = null; }
     this.words.forEach(w => w.classList.remove('spk'));
+    (this.parts || []).forEach(el => el.classList.remove('spk'));
   },
   stop() {
     this.clear();
@@ -523,9 +578,13 @@ function renderVocab() {
     '<div class="es">en espa&ntilde;ol: ' + v.es + '</div>' +
     '<div class="d">' + v.def + '</div></div>').join('');
   document.getElementById('vocab-next').onclick = () => app.go('vq');
-  document.getElementById('vocab-speak').onclick = () =>
-    speech.say(document.getElementById('vocab-cards'),
-      null, ' ' + LESSON.vocab.map(v => stripTags(v.word) + ' means ' + stripTags(v.def) + '.').join(' '));
+  document.getElementById('vocab-speak').onclick = () => {
+    const cards = [...document.querySelectorAll('#vocab-cards .vcard')];
+    speech.sayParts(LESSON.vocab.map((v, i) => ({
+      el: cards[i],
+      text: stripTags(v.word) + ' means ' + stripTags(v.def) + '.'
+    })));
+  };
 }
 
 /* ══════════════════════════════════════════════════════
@@ -929,12 +988,19 @@ function renderPredict(inv) {
   nx.disabled = !already;
   nx.onclick = () => { logEvent('predict', { inv:inv.id, v:stripTags(app.predictions[inv.id]) }); app.next(); };
 
-  document.getElementById('pr-speak').onclick = () =>
-    speech.say(document.getElementById('pr-question'), null,
-      ' ' + stripTags(inv.sameLabel) + ' ' + stripTags(inv.sameValue) + '. ' +
-      stripTags(inv.changeLabel) + ' ' + stripTags(inv.changeValue) + '. ' +
-      stripTags(inv.predictQ) + ' Your choices are. ' +
-      inv.predictOpts.map((o, i) => 'ABCD'[i] + '. ' + stripTags(o) + '.').join(' '));
+  document.getElementById('pr-speak').onclick = () => {
+    const parts = [
+      { el: document.getElementById('pr-question'), text: stripTags(inv.question) },
+      { el: document.querySelector('#predict-card .varbox .same'),
+        text: stripTags(inv.sameLabel) + ' ' + stripTags(inv.sameValue) + '.' },
+      { el: document.querySelector('#predict-card .varbox .chg'),
+        text: stripTags(inv.changeLabel) + ' ' + stripTags(inv.changeValue) + '.' },
+      { el: document.getElementById('pr-predict'), text: stripTags(inv.predictQ) }
+    ];
+    [...box.children].forEach((b, i) =>
+      parts.push({ el: b, text: 'ABCD'[i] + '. ' + stripTags(inv.predictOpts[i]) + '.' }));
+    speech.sayParts(parts);
+  };
 }
 
 /* Describes a run in the words of whatever it varies. */
@@ -959,9 +1025,10 @@ function renderRun(invKey) {
   document.getElementById('run-head').innerHTML = inv.heading;
   document.getElementById('table-head').innerHTML = inv.label + ' &mdash; my data table';
 
-  document.getElementById('run-speak').onclick = () =>
-    speech.say(document.getElementById('run-now'), null,
-      ' ' + document.getElementById('table-note').textContent);
+  document.getElementById('run-speak').onclick = () => speech.sayParts([
+    { el: document.getElementById('run-now'),    text: document.getElementById('run-now').textContent },
+    { el: document.getElementById('table-note'), text: document.getElementById('table-note').textContent }
+  ]);
 
   app.lastRun = null;
   paintRun(invKey);
@@ -1222,10 +1289,15 @@ function renderGraph(invKey) {
            : 'Your prediction did not match — and that is worth knowing. The heavier vehicle keeps less of the push.');
   }
 
-  document.getElementById('gr-speak').onclick = () =>
-    speech.say(document.getElementById('gr-lead'), null,
-      ' ' + groups.map(g => stripTags(g.label) + ', ' + g.cm + ' centimeters.').join(' ') +
-      ' ' + document.getElementById('gr-predict-check').textContent);
+  document.getElementById('gr-speak').onclick = () => {
+    const rows = [...document.querySelectorAll('#graph-rows .grow')];
+    speech.sayParts([
+      { el: document.getElementById('gr-lead'), text: stripTags(LEAD[invKey]) },
+      ...groups.map((g, i) => ({ el: rows[i], text: stripTags(g.label) + ', ' + g.cm + ' centimeters.' })),
+      { el: document.getElementById('gr-predict-check'),
+        text: document.getElementById('gr-predict-check').textContent }
+    ]);
+  };
 
   document.getElementById('gr-next').onclick = () => app.next();
   const NEXT = { A:'Start Investigation B →', B:'Start Investigation C →',
