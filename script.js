@@ -193,6 +193,52 @@ const speech = {
     this.words.forEach((w, k) => w.classList.toggle('spk', k === i));
   },
 
+  /* EVERYTHING ON THIS CLASS'S SCREENS MUST BE HEARABLE (Marcos, 10/8).
+     So a screen's speaker reads the WHOLE screen in reading order rather than a
+     list someone curated — headings, prose, cards, choices, data rows, the
+     feedback after an answer, the hints beside a writing box. Anything added
+     later is covered without being remembered. Mark a node [data-noread] to
+     leave it out (the speaker button itself, decoration). */
+  /* What a block should SAY. Anything marked [data-noread] is stripped first
+     (the speaker icons themselves), and an answer choice's letter badge is
+     separated from its words — without this, choice A reads as
+     "AA push or a pull on an object". */
+  textOf(el) {
+    const c = el.cloneNode(true);
+    c.querySelectorAll('[data-noread]').forEach(n => n.remove());
+    const badge = c.querySelector('.ltr');
+    let t;
+    if (badge) {
+      const letter = (badge.textContent || '').trim();
+      badge.remove();
+      t = letter + '. ' + (c.textContent || '');
+    } else {
+      t = c.textContent || '';
+    }
+    t = t.replace(/\s+/g, ' ').trim();
+    if (t && !/[.!?]$/.test(t)) t += '.';
+    return t;
+  },
+
+  readable(root) {
+    if (!root) return [];
+    const SEL = 'h1,h2,h3,h4,p,li,td,th,.vcard,.opt,.grow,.readout,.fb,.g,.sb,.step,.box';
+    const out = [];
+    root.querySelectorAll(SEL).forEach(el => {
+      if (el.closest('[data-noread]')) return;
+      if (el.offsetParent === null && getComputedStyle(el).position !== 'fixed') return;  /* hidden */
+      if (out.some(prev => prev.contains(el))) return;      /* already inside one we took */
+      if (!this.textOf(el)) return;
+      out.push(el);
+    });
+    return out.map(el => ({ el, text: this.textOf(el) }));
+  },
+
+  /* One block, on its own — what a speaker icon does. */
+  sayOne(el, rate) { this.sayParts([{ el, text: this.textOf(el) }], rate); },
+
+  sayScreen(root, rate) { this.sayParts(this.readable(root), rate); },
+
   /* Some screens are a layout, not a paragraph — vocabulary cards, a bar chart,
      a row of answer choices. There are no words to wrap there, so the thing that
      lights up is the PART being spoken: the card, the bar, the choice. Each part
@@ -257,14 +303,6 @@ const speech = {
   }
 };
 
-/* Speak a question and then its answer choices, so the options are never
-   a reading barrier on a question the student already understands. */
-function speakWithChoices(host, q) {
-  const say = ' Your choices are. ' +
-    optsOf(q).map((o, i) => 'ABCD'[i] + '. ' + stripTags(o) + '.').join(' ');
-  speech.say(host, null, say);
-}
-
 /* Wrap every word of an HTML string in <span class="wrd"> without
    breaking the markup inside it. */
 function wrapWords(htmlStr) {
@@ -290,6 +328,30 @@ function wrapWords(htmlStr) {
    start · leave · return · resume · close · finish, each stamped with
    the on-task clock. elapsed is time ON TASK: the timer pauses while
    the page is hidden, so a sleeping device cannot inflate it. */
+/* A speaker beside every block a student might want to hear on its own
+   (Marcos, 10/8: everything has to be able to be read aloud). The icon is a
+   span, not a button, because the answer choices ARE buttons and a button
+   cannot sit inside one; the click is stopped so tapping the speaker never
+   answers the question by accident. */
+function attachSpeakers(root) {
+  if (!root) return;
+  speech.readable(root).forEach(({ el }) => {
+    if (el.querySelector(':scope > .mini-spk')) return;
+    const b = document.createElement('span');
+    b.className = 'mini-spk';
+    b.setAttribute('role', 'button');
+    b.setAttribute('tabindex', '0');
+    b.setAttribute('data-noread', '');
+    b.setAttribute('aria-label', 'Read this part to me');
+    b.title = 'Read this part to me';
+    b.textContent = '\u{1F50A}';
+    const fire = e => { e.preventDefault(); e.stopPropagation(); speech.sayOne(el); };
+    b.addEventListener('click', fire);
+    b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') fire(e); });
+    el.appendChild(b);
+  });
+}
+
 function logEvent(kind, extra) {
   if (!app.events) app.events = [];
   app.events.push(Object.assign({
@@ -443,7 +505,7 @@ const app = {
     drawRail();
     this.save();
 
-    if (phase === 'vocab')    { this.startTimer(); renderVocab(); this.show('vocab-screen'); }
+    if (phase === 'vocab')    { this.startTimer(); renderVocab(); this.show('vocab-screen'); attachSpeakers(document.getElementById('vocab-screen')); }
     else if (phase === 'vq')       { this.qIndex = firstUnanswered(VOCAB_Q, this.vocabAns); renderQ(); }
     else if (phase === 'analysis') { this.qIndex = firstUnanswered(ANALYSIS_Q, this.analysisAns); renderQ(); }
     else if (phase === 'claims')   { this.qIndex = firstUnanswered(CLAIMS_Q, this.claimsAns); renderQ(); }
@@ -543,6 +605,12 @@ function buildStart() {
     app.go(app.phase === 'start' || app.phase === 'readaloud' ? 'vocab' : app.phase);
   });
 
+  /* The start screen carries the driving question and all four objectives, and
+     it is the first thing a struggling reader meets. Each I-can lights up as it
+     is read. */
+  document.getElementById('st-speak').addEventListener('click', () =>
+    speech.sayScreen(document.getElementById('start-screen')));
+
   document.getElementById('teacher-btn').addEventListener('click', () => {
     askPin('Teacher view — unlock to skip ahead to any step.', () => {
       const step = prompt('Jump to which step?\n\n' + PHASES.map((p, i) => i + ' = ' + p).join('\n'), '2');
@@ -578,13 +646,8 @@ function renderVocab() {
     '<div class="es">en espa&ntilde;ol: ' + v.es + '</div>' +
     '<div class="d">' + v.def + '</div></div>').join('');
   document.getElementById('vocab-next').onclick = () => app.go('vq');
-  document.getElementById('vocab-speak').onclick = () => {
-    const cards = [...document.querySelectorAll('#vocab-cards .vcard')];
-    speech.sayParts(LESSON.vocab.map((v, i) => ({
-      el: cards[i],
-      text: stripTags(v.word) + ' means ' + stripTags(v.def) + '.'
-    })));
-  };
+  document.getElementById('vocab-speak').onclick = () =>
+    speech.sayScreen(document.getElementById('vocab-screen'));
 }
 
 /* ══════════════════════════════════════════════════════
@@ -678,7 +741,8 @@ function renderQ() {
   qt.innerHTML = wrapWords(stemOf(q));
   /* Read-aloud says the question AND the four choices — a student who cannot
      read the options cannot answer a question they understood. */
-  document.getElementById('q-speak').onclick = () => speakWithChoices(qt, q);
+  document.getElementById('q-speak').onclick = () =>
+    speech.sayScreen(document.getElementById('q-screen'));
 
   /* L06–L13 ask the student to read their own table. Keeping it on the same
      screen means the question tests the science, not their memory of a table
@@ -712,6 +776,7 @@ function renderQ() {
     b.onclick = () => answerQ(q, i, bank, ans);
     box.appendChild(b);
   });
+  attachSpeakers(document.getElementById('q-screen'));
 }
 
 /* A wrong first pick gets ONE more try before the answer is shown. This is a
@@ -775,6 +840,8 @@ function answerQ(q, picked, bank, ans) {
 
   logEvent('answer', { id:q.id, ok:earned, t:firstTry ? 1 : 2 });
   app.save();
+
+  attachSpeakers(document.getElementById('q-screen'));
 
   const nx = document.getElementById('q-next');
   nx.classList.remove('hidden');
@@ -986,21 +1053,12 @@ function renderPredict(inv) {
     box.appendChild(b);
   });
   nx.disabled = !already;
+  attachSpeakers(document.getElementById('predict-card'));
   nx.onclick = () => { logEvent('predict', { inv:inv.id, v:stripTags(app.predictions[inv.id]) }); app.next(); };
 
-  document.getElementById('pr-speak').onclick = () => {
-    const parts = [
-      { el: document.getElementById('pr-question'), text: stripTags(inv.question) },
-      { el: document.querySelector('#predict-card .varbox .same'),
-        text: stripTags(inv.sameLabel) + ' ' + stripTags(inv.sameValue) + '.' },
-      { el: document.querySelector('#predict-card .varbox .chg'),
-        text: stripTags(inv.changeLabel) + ' ' + stripTags(inv.changeValue) + '.' },
-      { el: document.getElementById('pr-predict'), text: stripTags(inv.predictQ) }
-    ];
-    [...box.children].forEach((b, i) =>
-      parts.push({ el: b, text: 'ABCD'[i] + '. ' + stripTags(inv.predictOpts[i]) + '.' }));
-    speech.sayParts(parts);
-  };
+  document.getElementById('pr-speak').onclick = () =>
+    speech.sayScreen(document.getElementById('predict-card'));
+
 }
 
 /* Describes a run in the words of whatever it varies. */
@@ -1025,13 +1083,12 @@ function renderRun(invKey) {
   document.getElementById('run-head').innerHTML = inv.heading;
   document.getElementById('table-head').innerHTML = inv.label + ' &mdash; my data table';
 
-  document.getElementById('run-speak').onclick = () => speech.sayParts([
-    { el: document.getElementById('run-now'),    text: document.getElementById('run-now').textContent },
-    { el: document.getElementById('table-note'), text: document.getElementById('table-note').textContent }
-  ]);
+  document.getElementById('run-speak').onclick = () =>
+    speech.sayScreen(document.getElementById('run-card'));
 
   app.lastRun = null;
   paintRun(invKey);
+  attachSpeakers(document.getElementById('run-card'));
 }
 
 function paintRun(invKey) {
@@ -1289,15 +1346,11 @@ function renderGraph(invKey) {
            : 'Your prediction did not match — and that is worth knowing. The heavier vehicle keeps less of the push.');
   }
 
-  document.getElementById('gr-speak').onclick = () => {
-    const rows = [...document.querySelectorAll('#graph-rows .grow')];
-    speech.sayParts([
-      { el: document.getElementById('gr-lead'), text: stripTags(LEAD[invKey]) },
-      ...groups.map((g, i) => ({ el: rows[i], text: stripTags(g.label) + ', ' + g.cm + ' centimeters.' })),
-      { el: document.getElementById('gr-predict-check'),
-        text: document.getElementById('gr-predict-check').textContent }
-    ]);
-  };
+  document.getElementById('gr-speak').onclick = () =>
+    speech.sayScreen(document.getElementById('graph-card'));
+
+
+  attachSpeakers(document.getElementById('graph-card'));
 
   document.getElementById('gr-next').onclick = () => app.next();
   const NEXT = { A:'Start Investigation B →', B:'Start Investigation C →',
@@ -1341,7 +1394,8 @@ function renderWrite() {
     : 'Explain it like a scientist';
   const wt = document.getElementById('w-text');
   wt.innerHTML = wrapWords(w.q);
-  document.getElementById('w-speak').onclick = () => speech.say(wt);
+  document.getElementById('w-speak').onclick = () =>
+    speech.sayScreen(document.getElementById('write-screen'));
   document.getElementById('w-hints').innerHTML = w.hints.map(h => '<li>' + h + '</li>').join('');
   document.getElementById('w-data').innerHTML = allTablesHTML();
 
@@ -1389,6 +1443,8 @@ function renderWrite() {
   };
   box.oninput = () => { upd(); if (box.value.length % 40 === 0) app.save(); };
   upd();
+
+  attachSpeakers(document.getElementById('write-screen'));
 
   nx.textContent = (wIdx + 1 >= WRITTEN_Q.length) ? 'Turn in my explanation →' : 'Next explanation →';
   nx.onclick = () => {
@@ -1448,6 +1504,12 @@ function finish() {
     localStorage.setItem(SCORES_KEY, JSON.stringify(all.slice(-80)));
   } catch (e) {}
   app.save();
+
+  attachSpeakers(document.getElementById('end-screen'));
+
+  document.getElementById('end-speak').onclick = () =>
+    speech.sayScreen(document.getElementById('end-screen'));
+
 
   document.getElementById('end-print').onclick = () => window.print();
   document.getElementById('end-restart').onclick = () =>
@@ -1519,5 +1581,6 @@ window.addEventListener('beforeunload', () => {
 
 /* ── BOOT ───────────────────────────────────────────── */
 buildStart();
+attachSpeakers(document.getElementById('start-screen'));
 drawRail();
 app.tickTimer();

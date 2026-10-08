@@ -323,3 +323,23 @@ table.data td.pending{color:var(--ink-faint)}
   box-shadow:0 0 0 5px var(--hl-soft);
 }
 @media (prefers-reduced-motion:reduce){ .vcard.spk, .opt.spk, .grow.spk{transition:none} }
+.objlist li.spk, #st-lead.spk, #st-ican-head.spk, #end-lead.spk,
+.sb.spk, .misslist li.spk, #end-miss h3.spk, #end-miss p.spk{
+  background:var(--hl-soft); border-radius:8px;
+  box-shadow:0 0 0 5px var(--hl-soft);
+}
+.dq.spk{box-shadow:0 0 0 4px var(--hl-line)}
+
+/* ── PER-BLOCK SPEAKER ──────────────────────────────────
+   A student can hear one question, one card, one hint, without sitting through
+   the whole page. A span rather than a button, because answer choices are
+   buttons and buttons cannot nest. */
+.mini-spk{
+  display:inline-block; margin-left:.45rem; cursor:pointer;
+  font-size:.85em; line-height:1; opacity:.5;
+  vertical-align:baseline; user-select:none;
+}
+.mini-spk:hover, .mini-spk:focus-visible{opacity:1; transform:scale(1.18)}
+.mini-spk:focus-visible{outline:3px solid var(--hl-line); outline-offset:2px; border-radius:4px}
+.opt .mini-spk, .vcard .mini-spk{margin-left:auto; padding-left:.5rem}
+@media (prefers-reduced-motion:reduce){ .mini-spk:hover{transform:none} }

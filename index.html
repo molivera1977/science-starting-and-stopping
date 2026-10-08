@@ -14,7 +14,7 @@
 <body>
 <div class="wrap">
 
-  <div class="topbar noprint">
+  <div class="topbar noprint" data-noread>
     <div class="brandmark">&#128300;</div>
     <div class="brandtext">
       <span class="k">Grade 4 Science &middot; Quarter 1 &middot; Lesson 1.1</span>
@@ -31,22 +31,26 @@
     &#9888;&#65039; You left this page and came back. Your teacher can see that. Stay on the lab until you finish.
   </div>
 
-  <div class="rail noprint" id="rail"></div>
+  <div class="rail noprint" id="rail" data-noread></div>
 
   <!-- ══════════════ 1 · START ══════════════ -->
   <section id="start-screen" class="card">
     <div class="eyebrow">Unit 1 &middot; Motion: Car Crashes &middot; NGSS 4-PS3-1 &amp; 4-PS3-3</div>
     <h2>Starting and Stopping</h2>
-    <p class="lead">Today you are a motion scientist. You will push a cart across four different
-    surfaces, measure how far it rolls, and figure out what makes a moving object stop.</p>
+    <p class="lead" id="st-lead">Today you are a motion scientist. You will push a cart, roll it down
+    a ramp, and measure how far it goes every time. Then you will use your own numbers to figure out
+    what makes a moving object stop.</p>
 
     <div class="dq">
       <span class="lb">Driving question</span>
       <p>What causes some objects to stop and other objects to keep moving?</p>
     </div>
 
-    <h3>By the end you can &hellip;</h3>
+    <h3 id="st-ican-head">By the end you can &hellip;</h3>
     <ul class="objlist" id="ican-list"></ul>
+    <div class="btnrow" style="margin-top:.2rem">
+      <button class="btn ghost small" id="st-speak" data-noread type="button">&#128266; Read this to me</button>
+    </div>
 
     <hr class="hr">
 
@@ -65,7 +69,7 @@
       <button class="btn ghost small hidden" id="resume-btn" type="button">Pick up where I left off</button>
       <button class="btn ghost small" id="teacher-btn" type="button">Teacher</button>
     </div>
-    <p class="counter">This lesson takes about 35 minutes. The lab alone is about 20 minutes.</p>
+    <p class="counter">This lesson takes two days. You will not finish it all today, and that is the plan.</p>
   </section>
 
   <!-- ══════════════ 2 · READ ALOUD ══════════════ -->
@@ -75,7 +79,7 @@
     <div id="ra-text" style="font-size:18.5px; line-height:1.7; margin-top:12px"></div>
     <div class="btnrow">
       <button class="btn" id="ra-next" type="button">I&rsquo;m ready &rarr;</button>
-      <button class="btn ghost small" id="ra-again" type="button">&#128266; Read it again</button>
+      <button class="btn ghost small" id="ra-again" data-noread type="button">&#128266; Read it again</button>
     </div>
     <p class="counter" id="ra-timer-note">The timer starts on the next screen.</p>
   </section>
@@ -88,7 +92,7 @@
     <div class="vgrid" id="vocab-cards"></div>
     <div class="btnrow">
       <button class="btn" id="vocab-next" type="button">Check that I know them &rarr;</button>
-      <button class="btn ghost small" id="vocab-speak" type="button">&#128266; Read the words to me</button>
+      <button class="btn ghost small" id="vocab-speak" data-noread type="button">&#128266; Read the words to me</button>
     </div>
   </section>
 
@@ -99,7 +103,7 @@
       <span class="qcount" id="q-phase"></span>
     </div>
     <p class="qtext" id="q-text" tabindex="-1"></p>
-    <button class="btn ghost small" id="q-speak" type="button">&#128266; Read to me</button>
+    <button class="btn ghost small" id="q-speak" data-noread type="button">&#128266; Read to me</button>
     <div id="q-data" class="hidden"></div>
     <div class="opts" id="q-opts"></div>
     <div id="q-fb" aria-live="polite" role="status"></div>
@@ -124,7 +128,7 @@
       <div class="opts" id="pr-opts"></div>
       <div class="btnrow">
         <button class="btn" id="pr-next" type="button" disabled>Lock in my prediction &rarr;</button>
-        <button class="btn ghost small" id="pr-speak" type="button">&#128266; Read to me</button>
+        <button class="btn ghost small" id="pr-speak" data-noread type="button">&#128266; Read to me</button>
       </div>
     </div>
 
@@ -147,7 +151,7 @@
       <div class="btnrow">
         <button class="btn" id="run-btn" type="button">&#128072; Push the cart</button>
         <button class="btn ghost small hidden" id="run-record" type="button">Write it in my table &rarr;</button>
-        <button class="btn ghost small" id="run-speak" type="button">&#128266; Read to me</button>
+        <button class="btn ghost small" id="run-speak" data-noread type="button">&#128266; Read to me</button>
       </div>
 
       <hr class="hr">
@@ -167,7 +171,7 @@
       <div id="gr-predict-check" class="note"></div>
       <div class="btnrow">
         <button class="btn" id="gr-next" type="button">Keep going &rarr;</button>
-        <button class="btn ghost small" id="gr-speak" type="button">&#128266; Read to me</button>
+        <button class="btn ghost small" id="gr-speak" data-noread type="button">&#128266; Read to me</button>
       </div>
     </div>
 
@@ -178,7 +182,7 @@
     <div class="eyebrow">Step 4 &middot; Explain it like a scientist</div>
     <h2 id="w-head">Claim, Evidence, Reasoning</h2>
     <p class="qtext" id="w-text"></p>
-    <button class="btn ghost small" id="w-speak" type="button">&#128266; Read to me</button>
+    <button class="btn ghost small" id="w-speak" data-noread type="button">&#128266; Read to me</button>
     <h3 style="font-size:16px; margin-top:16px">Put all three in your answer</h3>
     <ul class="hintlist" id="w-hints"></ul>
     <div class="btnrow" style="margin-top:12px">
@@ -205,6 +209,7 @@
     <div id="end-answer-back"></div>
     <div id="end-miss"></div>
     <div class="btnrow">
+      <button class="btn ghost small" id="end-speak" data-noread type="button">&#128266; Read my results to me</button>
       <button class="btn ghost small" id="end-print" type="button">&#128424; Print my lab sheet</button>
       <button class="btn ghost small" id="end-restart" type="button">Start over (teacher PIN)</button>
     </div>
