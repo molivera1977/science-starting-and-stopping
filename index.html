@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Starting and Stopping</title>
+<meta name="description" content="Grade 4 Science Lesson 1.1 — an interactive force and friction lab.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232E7D6B'/%3E%3Ccircle cx='11' cy='21' r='3' fill='%23fff'/%3E%3Ccircle cx='22' cy='21' r='3' fill='%23fff'/%3E%3Crect x='7' y='11' width='18' height='7' rx='2' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar noprint">
+    <div class="brandmark">&#128300;</div>
+    <div class="brandtext">
+      <span class="k">Grade 4 Science &middot; Quarter 1 &middot; Lesson 1.1</span>
+      <h1 class="t">Starting and Stopping</h1>
+    </div>
+    <div class="topmeta">
+      <span class="chip" id="who-chip">&nbsp;</span>
+      <span id="timer-box">0:00</span>
+      <button class="iconbtn" id="theme-btn" type="button" title="Light or dark">&#9680;</button>
+    </div>
+  </div>
+
+  <div id="tab-warning-banner" class="hidden noprint">
+    &#9888;&#65039; You left this page and came back. Your teacher can see that. Stay on the lab until you finish.
+  </div>
+
+  <div class="rail noprint" id="rail"></div>
+
+  <!-- ══════════════ 1 · START ══════════════ -->
+  <section id="start-screen" class="card">
+    <div class="eyebrow">Unit 1 &middot; Motion: Car Crashes &middot; NGSS 4-PS3-1 &amp; 4-PS3-3</div>
+    <h2>Starting and Stopping</h2>
+    <p class="lead">Today you are a motion scientist. You will push a cart across four different
+    surfaces, measure how far it rolls, and figure out what makes a moving object stop.</p>
+
+    <div class="dq">
+      <span class="lb">Driving question</span>
+      <p>What causes some objects to stop and other objects to keep moving?</p>
+    </div>
+
+    <h3>By the end you can &hellip;</h3>
+    <ul class="objlist" id="ican-list"></ul>
+
+    <hr class="hr">
+
+    <label class="fld">
+      <span class="lb">Pick your name</span>
+      <select id="name-select"><option value="">&mdash; choose your name &mdash;</option></select>
+    </label>
+
+    <div id="resume-box" class="note hidden" style="margin-bottom:14px">
+      <span class="lb">You already started this lesson.</span>
+      <span id="resume-text"></span>
+    </div>
+
+    <div class="btnrow">
+      <button class="btn" id="begin-btn" type="button" disabled>Start the lesson</button>
+      <button class="btn ghost small hidden" id="resume-btn" type="button">Pick up where I left off</button>
+      <button class="btn ghost small" id="teacher-btn" type="button">Teacher</button>
+    </div>
+    <p class="counter">This lesson takes about 35 minutes. The lab alone is about 20 minutes.</p>
+  </section>
+
+  <!-- ══════════════ 2 · READ ALOUD ══════════════ -->
+  <section id="readaloud-screen" class="card hidden">
+    <div class="eyebrow">Listen first</div>
+    <h2>Before you begin</h2>
+    <div id="ra-text" style="font-size:18.5px; line-height:1.7; margin-top:12px"></div>
+    <div class="btnrow">
+      <button class="btn" id="ra-next" type="button">I&rsquo;m ready &rarr;</button>
+      <button class="btn ghost small" id="ra-again" type="button">&#128266; Read it again</button>
+    </div>
+    <p class="counter" id="ra-timer-note">The timer starts on the next screen.</p>
+  </section>
+
+  <!-- ══════════════ 3 · VOCABULARY ══════════════ -->
+  <section id="vocab-screen" class="card hidden">
+    <div class="eyebrow">Step 1 &middot; Words you need</div>
+    <h2>Five words for today</h2>
+    <p class="lead">Read these five words. You will use them all through the lab.</p>
+    <div class="vgrid" id="vocab-cards"></div>
+    <div class="btnrow">
+      <button class="btn" id="vocab-next" type="button">Check that I know them &rarr;</button>
+      <button class="btn ghost small" id="vocab-speak" type="button">&#128266; Read the words to me</button>
+    </div>
+  </section>
+
+  <!-- ══════════════ 4 · GENERIC QUESTION SCREEN ══════════════ -->
+  <section id="q-screen" class="card hidden">
+    <div class="qhead">
+      <span class="qcount" id="q-count"></span>
+      <span class="qcount" id="q-phase"></span>
+    </div>
+    <p class="qtext" id="q-text" tabindex="-1"></p>
+    <button class="btn ghost small" id="q-speak" type="button">&#128266; Read to me</button>
+    <div id="q-data" class="hidden"></div>
+    <div class="opts" id="q-opts"></div>
+    <div id="q-fb" aria-live="polite" role="status"></div>
+    <div class="btnrow"><button class="btn hidden" id="q-next" type="button">Next &rarr;</button></div>
+    <div class="bar"><i id="q-bar" style="width:0%"></i></div>
+  </section>
+
+  <!-- ══════════════ 5 · THE LAB ══════════════ -->
+  <section id="lab-screen" class="hidden">
+
+    <div class="card" id="predict-card">
+      <div class="eyebrow" id="pr-eyebrow"></div>
+      <h2 id="pr-head"></h2>
+      <p class="lead" id="pr-question"></p>
+      <div class="varbox">
+        <div class="same"><span class="lb" id="pr-same-lb"></span><span class="v" id="pr-same-v"></span></div>
+        <div class="chg"><span class="lb" id="pr-chg-lb"></span><span class="v" id="pr-chg-v"></span></div>
+      </div>
+      <hr class="hr">
+      <p class="qtext" id="pr-predict"></p>
+      <p class="counter">A prediction is not graded right or wrong. Scientists write it down <i>before</i> they test, then check it after.</p>
+      <div class="opts" id="pr-opts"></div>
+      <div class="btnrow">
+        <button class="btn" id="pr-next" type="button" disabled>Lock in my prediction &rarr;</button>
+        <button class="btn ghost small" id="pr-speak" type="button">&#128266; Read to me</button>
+      </div>
+    </div>
+
+    <div class="card hidden" id="run-card">
+      <div class="invhead">
+        <div style="flex:1 1 240px">
+          <div class="eyebrow" id="run-eyebrow"></div>
+          <h2 id="run-head" style="font-size:22px"></h2>
+        </div>
+        <span class="chip" id="run-progress"></span>
+      </div>
+
+      <div class="stage"><canvas id="track" width="900" height="200" role="img"
+        aria-label="Track with the cart at the start."></canvas></div>
+
+      <div class="runbar">
+        <span class="runnow" id="run-now"></span>
+        <span class="readout" id="run-readout" aria-live="polite">Distance: &mdash;</span>
+      </div>
+      <div class="btnrow">
+        <button class="btn" id="run-btn" type="button">&#128072; Push the cart</button>
+        <button class="btn ghost small hidden" id="run-record" type="button">Write it in my table &rarr;</button>
+        <button class="btn ghost small" id="run-speak" type="button">&#128266; Read to me</button>
+      </div>
+
+      <hr class="hr">
+      <h3 id="table-head">My data table</h3>
+      <p class="counter" id="table-note">Every push is recorded. Two trials for each setup, because real scientists repeat a test before they trust it.</p>
+      <div class="tablewrap"><table class="data" id="data-table"></table></div>
+
+      <div class="btnrow"><button class="btn hidden" id="run-done" type="button">My table is full &rarr;</button></div>
+    </div>
+
+    <div class="card hidden" id="graph-card">
+      <div class="eyebrow" id="gr-eyebrow"></div>
+      <h2 id="gr-head"></h2>
+      <p class="lead" id="gr-lead"></p>
+      <div class="graph" id="graph-rows"></div>
+      <hr class="hr">
+      <div id="gr-predict-check" class="note"></div>
+      <div class="btnrow">
+        <button class="btn" id="gr-next" type="button">Keep going &rarr;</button>
+        <button class="btn ghost small" id="gr-speak" type="button">&#128266; Read to me</button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════ 6 · WRITTEN ══════════════ -->
+  <section id="write-screen" class="card hidden">
+    <div class="eyebrow">Step 4 &middot; Explain it like a scientist</div>
+    <h2 id="w-head">Claim, Evidence, Reasoning</h2>
+    <p class="qtext" id="w-text"></p>
+    <button class="btn ghost small" id="w-speak" type="button">&#128266; Read to me</button>
+    <h3 style="font-size:16px; margin-top:16px">Put all three in your answer</h3>
+    <ul class="hintlist" id="w-hints"></ul>
+    <div class="btnrow" style="margin-top:12px">
+      <button class="btn ghost small" id="w-frame" type="button">&#9999;&#65039; Give me a sentence starter</button>
+    </div>
+    <label class="fld" style="margin-top:12px">
+      <span class="lb">Your explanation</span>
+      <textarea id="w-box" placeholder="Start with your claim&hellip;"></textarea>
+    </label>
+    <p class="counter" id="w-counter"></p>
+    <div class="tablewrap" style="margin-top:12px">
+      <details><summary style="cursor:pointer; color:var(--sci); font-weight:600">&#128202; Show my data table again</summary>
+      <div id="w-data"></div></details>
+    </div>
+    <div class="btnrow"><button class="btn" id="w-next" type="button" disabled>Turn in my explanation &rarr;</button></div>
+  </section>
+
+  <!-- ══════════════ 7 · END ══════════════ -->
+  <section id="end-screen" class="card hidden">
+    <div class="eyebrow">Lesson complete</div>
+    <h2 id="end-head">Nice work, scientist</h2>
+    <p class="lead" id="end-lead"></p>
+    <div class="scoreboard" id="end-scores"></div>
+    <div id="end-answer-back"></div>
+    <div id="end-miss"></div>
+    <div class="btnrow">
+      <button class="btn ghost small" id="end-print" type="button">&#128424; Print my lab sheet</button>
+      <button class="btn ghost small" id="end-restart" type="button">Start over (teacher PIN)</button>
+    </div>
+  </section>
+
+  <div class="modal hidden" id="pin-modal">
+    <div class="box">
+      <h3 style="font-size:19px">Teacher PIN</h3>
+      <p class="lead" style="font-size:15px" id="pin-why">Enter the PIN to continue.</p>
+      <label class="fld"><span class="lb">PIN</span>
+        <input type="text" id="pin-input" inputmode="numeric" autocomplete="off"></label>
+      <div class="btnrow">
+        <button class="btn small" id="pin-ok" type="button">Unlock</button>
+        <button class="btn ghost small" id="pin-cancel" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="foot noprint">
+    Grade 4 Science &middot; Unit 1 &ldquo;Motion: Car Crashes&rdquo; &middot; Lesson 1.1 Starting and Stopping<br>
+    Objectives, driving question and vocabulary from the Bridgeport Public Schools
+    K&ndash;6 Science Curriculum Unit Plan (SY 2025&ndash;2026). NGSS 4-PS3-1 &amp; 4-PS3-3.
+  </p>
+</div>
+
+<script src="data/lesson.js"></script>
+<script src="data/questions.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
