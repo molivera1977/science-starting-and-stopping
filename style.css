@@ -167,7 +167,10 @@ label.fld .lb{
 .qhead{display:flex; justify-content:space-between; gap:12px; align-items:baseline; margin-bottom:10px}
 .qcount{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
 .qtext{font-size:21px; line-height:1.45; margin:0 0 4px; font-weight:500}
-.qtext .wrd.spk{background:var(--warn-soft); border-radius:3px; box-shadow:0 0 0 2px var(--warn-soft)}
+/* The spoken word lights up wherever read-aloud is running — the intro that
+   speaks itself, a question, a written prompt. This was scoped to .qtext, so
+   the intro screen wrapped its words and then highlighted none of them. */
+.wrd.spk{background:var(--warn-soft); border-radius:3px; box-shadow:0 0 0 2px var(--warn-soft)}
 .opts{display:grid; gap:9px; margin-top:14px}
 .opt{
   text-align:left; background:var(--surface); color:var(--ink);

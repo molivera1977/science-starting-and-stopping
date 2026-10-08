@@ -269,11 +269,12 @@ const RAIL = [
 const INTRO_TEXT =
   'A force is a push or a pull. When you push a cart, it starts to move. ' +
   'But it does not keep going forever. Something slows it down and stops it. ' +
-  'Today you will run two investigations. In the first one you will give the cart ' +
-  'the same push on four different surfaces. In the second one you will stay on ' +
-  'one surface and change how hard you push. Each push gets measured in centimeters ' +
-  'and written in your data table. Then you will use your own numbers to explain ' +
-  'what makes a moving object stop. Take your time. Good scientists test more than once.';
+  'Today you will run two investigations. Next time you will run two more. ' +
+  'Each one changes just one thing. First the surface, then how hard the push is. ' +
+  'After that, how tall a ramp is, and how heavy the vehicle is. ' +
+  'Every push gets measured in centimeters and written in your data table. ' +
+  'Then you will use your own numbers to explain what makes a moving object stop. ' +
+  'Take your time. This takes two days. Good scientists test more than once.';
 
 /* ══════════════════════════════════════════════════════
    APP
