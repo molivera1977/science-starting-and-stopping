@@ -38,14 +38,12 @@ window.RECAP = {
       { t: 'A rougher surface has more friction, so it stops things sooner.',
         d: 'Remember sliding your hand on the desk, then on your sleeve. One was harder.' }
     ],
-    now: 'Today you change <b>one thing only</b>: what the cart rolls on. ' +
-         'Everything else stays exactly the same.'
+    now: 'Today you do <b>two tests</b>. First you change what the cart rolls on. ' +
+         'Then you change how hard you push. Each test changes <b>one thing only</b>.'
   },
   day2: {
-    lead: 'Mr. O just showed you the three new tests. Here they are again.',
+    lead: 'Mr. O just showed you the two new tests. Here they are again.',
     items: [
-      { t: 'The <b>push</b> test &mdash; you change how hard you push.',
-        d: 'Same wood floor every time. Only your push changes.' },
       { t: 'The <b>ramp</b> test &mdash; you change how tall the ramp is.',
         d: 'You do NOT push the car. You let it go at the top and gravity does the rest.' },
       { t: 'The <b>truck</b> test &mdash; you change which one you push.',
@@ -69,6 +67,13 @@ window.THING_WORDS = {
             ex: 'A slide at the park. A wheelchair ramp. A skateboard ramp. ' +
                 'A piece of cardboard with one end up on some books.' }
 };
+
+/* The one question a child doing try 2 of 2 is actually asking. It sits on
+   the lesson, not on one investigation, because all four repeat. */
+window.WHY_REPEAT =
+  'You do every setup <b>twice</b>. Why? Because one try can go wrong &mdash; maybe your hand ' +
+  'slipped, or you pushed a little harder without meaning to. Doing it twice lets you catch it, ' +
+  'and the middle of the two is closer to the truth. Scientists never trust one try.';
 
 window.METHOD_WORDS = {
   predict:  'A <b>prediction</b> is your best guess <i>before</i> you test. It is never marked wrong.',
@@ -190,10 +195,6 @@ window.LAB = {
       'Press <b>Write it in my table</b>.',
       'Do that 8 times. Then your table is full.'
     ],
-    /* The one question a child doing push 2 of 2 is actually asking. */
-    whyRepeat: 'You push <b>twice</b> on every surface. Why? Because one push can go wrong &mdash; ' +
-               'maybe your hand slipped. Two pushes let you catch it, and the middle of the two is ' +
-               'closer to the truth. Scientists never trust one try.',
     runs: [
       { surface: 'ice',    push: 'medium', trial: 1 },
       { surface: 'ice',    push: 'medium', trial: 2 },
@@ -242,23 +243,26 @@ window.LAB = {
     sameValue: 'Wood',
     changeLabel: 'What we change:',
     changeValue: 'how hard we push',
-    doCount: '3 pushes',
-    doWhy:   'One small push, one medium push, one big push. Just one each.',
+    doCount: '6 pushes',
+    doWhy:   'Three sizes of push. You do each one twice, so you can check it.',
     doSteps: [
       'The site sets up each push for you. Read the setup line.',
       'Press <b>Push the cart</b>.',
       'Watch where the cart stops.',
       'Press <b>Write it in my table</b>.',
-      'Do that 3 times. Then your table is full.'
+      'Do that 6 times. Then your table is full.'
     ],
     predictQ: 'Before you test &mdash; what will happen to the distance when the push gets BIGGER?',
     predictOpts: ['The cart will roll farther', 'The cart will roll a shorter way', 'The distance will stay the same', 'The cart will not move at all'],
-    /* One trial each. Investigation A already teaches averaging across two
-       trials; repeating it here cost six minutes we do not have. */
+    /* Two trials, like every investigation. A single push cannot be checked,
+       and averaging is the habit the lesson is teaching. */
     runs: [
       { surface: 'wood', push: 'small',  trial: 1 },
+      { surface: 'wood', push: 'small',  trial: 2 },
       { surface: 'wood', push: 'medium', trial: 1 },
-      { surface: 'wood', push: 'big',    trial: 1 }
+      { surface: 'wood', push: 'medium', trial: 2 },
+      { surface: 'wood', push: 'big',    trial: 1 },
+      { surface: 'wood', push: 'big',    trial: 2 }
     ]
   },
 
@@ -277,8 +281,8 @@ window.LAB = {
     changeValue: 'how tall the ramp is',
     runVerb: '&#9660; Let the car go',
     runNoun: 'Run',
-    doCount: '3 runs',
-    doWhy:   'One run from each ramp. 1 book, 2 books, 3 books.',
+    doCount: '6 runs',
+    doWhy:   'Three ramps. You run each one twice, so you can check it.',
     /* The "you do not push" line is first and said twice, because in A and B
        they pushed every time and the habit carries over. */
     doSteps: [
@@ -287,14 +291,17 @@ window.LAB = {
       'Press <b>Let the car go</b>.',
       'Watch where the car stops.',
       'Press <b>Write it in my table</b>.',
-      'Do that 3 times. Remember: no pushing.'
+      'Do that 6 times. Remember: no pushing.'
     ],
     predictQ: 'Before you test &mdash; what happens when the ramp gets TALLER?',
     predictOpts: ['The car rolls farther', 'The car rolls a shorter way', 'The distance stays the same', 'The car rolls backwards'],
     runs: [
       { surface: 'wood', ramp: 'low',  trial: 1 },
+      { surface: 'wood', ramp: 'low',  trial: 2 },
       { surface: 'wood', ramp: 'mid',  trial: 1 },
-      { surface: 'wood', ramp: 'high', trial: 1 }
+      { surface: 'wood', ramp: 'mid',  trial: 2 },
+      { surface: 'wood', ramp: 'high', trial: 1 },
+      { surface: 'wood', ramp: 'high', trial: 2 }
     ]
   },
 
@@ -310,20 +317,24 @@ window.LAB = {
     sameValue: 'Medium push, on wood',
     changeLabel: 'What we change:',
     changeValue: 'how heavy the vehicle is',
-    doCount: '2 pushes',
-    doWhy:   'One push for the car. One push for the truck. The pushes are the same size.',
+    doCount: '4 pushes',
+    doWhy:   'The car twice, then the truck twice. Every push is the same size.',
     doSteps: [
       'The site sets up each push for you. Read the setup line.',
       'Press <b>Push the cart</b>.',
       'Watch where it stops.',
       'Press <b>Write it in my table</b>.',
-      'Do that 2 times. Then your table is full.'
+      'Do that 4 times. Then your table is full.'
     ],
     predictQ: 'Before you test &mdash; which one goes FARTHER with the very same push?',
     predictOpts: ['The car', 'The truck', 'They go exactly the same distance', 'Neither one moves'],
+    /* Discovery's own Activity 11 asks for repeated trials and an average on
+       exactly this comparison, so one push here contradicted the district. */
     runs: [
       { surface: 'wood', push: 'medium', vehicle: 'car',   trial: 1 },
-      { surface: 'wood', push: 'medium', vehicle: 'truck', trial: 1 }
+      { surface: 'wood', push: 'medium', vehicle: 'car',   trial: 2 },
+      { surface: 'wood', push: 'medium', vehicle: 'truck', trial: 1 },
+      { surface: 'wood', push: 'medium', vehicle: 'truck', trial: 2 }
     ]
   }
 };

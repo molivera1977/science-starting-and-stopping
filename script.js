@@ -524,8 +524,9 @@ function logEvent(kind, extra) {
    PHASES
 ══════════════════════════════════════════════════════ */
 const PHASES = ['start','readaloud','vocab','vq','predictA','runA','graphA',
+                'predictB','runB','graphB',
                 'daygate',
-                'predictB','runB','graphB','predictC','runC','graphC',
+                'predictC','runC','graphC',
                 'predictD','runD','graphD','analysis','claims','write','exit','end'];
 
 /* Session 1 is the words and Investigation A — the only investigation that
@@ -537,8 +538,8 @@ const DAY2_STARTS = 'daygate';   /* the stop between the two sessions */
 
 const RAIL = [
   { key:'words', n:'Day 1', l:'Words',   phases:['vocab','vq'] },
-  { key:'invA',  n:'Day 1', l:'Surfaces',phases:['predictA','runA','graphA','daygate'] },
-  { key:'invB',  n:'Day 2', l:'Push',    phases:['predictB','runB','graphB'] },
+  { key:'invA',  n:'Day 1', l:'Surfaces',phases:['predictA','runA','graphA'] },
+  { key:'invB',  n:'Day 1', l:'Push',    phases:['predictB','runB','graphB','daygate'] },
   { key:'invC',  n:'Day 2', l:'Ramp',    phases:['predictC','runC','graphC'] },
   { key:'invD',  n:'Day 2', l:'Weight',  phases:['predictD','runD','graphD'] },
   { key:'anal',  n:'Day 2', l:'Analyze', phases:['analysis'] },
@@ -552,9 +553,9 @@ const RAIL = [
 const INTRO_TEXT =
   'A force is a push or a pull. When you push a cart, it starts to move. ' +
   'But it does not keep going forever. Something slows it down and stops it. ' +
-  'Today you will run one investigation. You will change the surface the cart ' +
-  'rolls on, and nothing else. Next time you will run three more: how hard the ' +
-  'push is, how tall a ramp is, and how heavy the vehicle is. ' +
+  'Today you will run two investigations. First you change the surface the cart ' +
+  'rolls on. Then you change how hard you push. Next time you will run two more: ' +
+  'how tall a ramp is, and how heavy the vehicle is. ' +
   'Every push gets measured in centimeters and written in your data table. ' +
   'Then you will use your own numbers to explain what makes a moving object stop. ' +
   'Take your time. This takes two days. Good scientists test more than once.';
@@ -1333,9 +1334,9 @@ function paintRun(invKey) {
 
   const whyBox = document.getElementById('run-whyrepeat');
   if (whyBox) {
-    const show = inv.whyRepeat && trialsFor(invKey) > 1;
+    const show = trialsFor(invKey) > 1;
     whyBox.innerHTML = show
-      ? '<span class="lbl">Why twice?</span><p>' + inv.whyRepeat + '</p>' : '';
+      ? '<span class="lbl">Why twice?</span><p>' + (inv.whyRepeat || window.WHY_REPEAT || '') + '</p>' : '';
     whyBox.classList.toggle('hidden', !show);
     if (show) attachSpeakers(whyBox);
   }
@@ -1640,7 +1641,7 @@ function missedPredictions() {
 ══════════════════════════════════════════════════════ */
 function renderDayGate() {
   app.show('daygate-screen');
-  const pushes = (app.data.A || []).length;
+  const pushes = (app.data.A || []).length + (app.data.B || []).length;
   const surfaces = new Set((app.data.A || []).map(r => r.surface)).size;
   /* "1 different surfaces" is not a sentence. Count words out properly —
      this screen is congratulating a child on their work and bad grammar in
@@ -1648,9 +1649,9 @@ function renderDayGate() {
   const plural = (n, one, many) => n + ' ' + (n === 1 ? one : many);
   document.getElementById('dg-did').innerHTML =
     'You learned <b>' + LESSON.vocab.length + ' words</b>. You did <b>' +
-    plural(pushes, 'push', 'pushes') + '</b> on <b>' +
-    (surfaces === 1 ? '1 surface' : surfaces + ' different surfaces') +
-    '</b>. All of it is saved.';
+    plural(pushes, 'push', 'pushes') + '</b> and filled <b>two data tables</b> &mdash; ' +
+    'one for ' + (surfaces === 1 ? 'the surface' : surfaces + ' different surfaces') +
+    ', one for the size of the push. All of it is saved.';
   /* The teacher's answer is logged either way, so Mr. O can see on the
      dashboard who went on and who was told to wait. */
   document.getElementById('dg-next').onclick = () => {
