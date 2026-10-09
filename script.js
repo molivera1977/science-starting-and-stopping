@@ -258,6 +258,23 @@ const speech = {
       if (!this.textOf(el)) return;
       out.push(el);
     });
+    /* Anything else that carries visible text becomes its own block. The list
+       above is a list someone has to remember to update; every block type
+       added on 10/9 that it missed was silent. This makes "everything read
+       aloud" the default instead of a list to maintain. Controls (buttons,
+       inputs) are skipped — they are things to press, not text to read. */
+    root.querySelectorAll('span,div,label,b,strong,em,small').forEach(el => {
+      if (el.closest('[data-noread]')) return;
+      if (el.closest('button,select,option,textarea,input')) return;
+      if (el.offsetParent === null && getComputedStyle(el).position !== 'fixed') return;
+      const own = [...el.childNodes].filter(t => t.nodeType === 3 && t.textContent.trim())
+        .map(t => t.textContent.trim()).join(' ');
+      if (!/[A-Za-z]{2}/.test(own)) return;
+      if (out.some(prev => prev.contains(el) || el.contains(prev))) return;
+      if (!this.textOf(el)) return;
+      out.push(el);
+    });
+    out.sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1);
     return out.map(el => ({ el, text: this.textOf(el) }));
   },
 
@@ -590,6 +607,13 @@ const app = {
       .forEach(s => { const el = document.getElementById(s); if (el) el.classList.add('hidden'); });
     const el = document.getElementById(id); if (el) el.classList.remove('hidden');
     window.scrollTo({ top:0, behavior:'smooth' });
+    /* Speakers attach when a screen is SHOWN, not when the page loads.
+       attachSpeakers skips hidden blocks, so the name-picker — hidden at boot
+       since the cover went in — silently lost every speaker. Attaching here,
+       and again a tick later for content rendered right after show(), covers
+       every screen no matter which function shows it. Safe to repeat: blocks
+       that already have a speaker are skipped. */
+    if (el) { attachSpeakers(el); setTimeout(() => attachSpeakers(el), 0); }
   },
 
   phaseLabel() {

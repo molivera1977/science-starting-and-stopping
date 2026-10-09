@@ -771,3 +771,49 @@ body.tp-on{ padding-top:58px; }
 .cv-resume{ margin:14px 18px 0; text-align:center; }
 .cv-resume.hidden{ display:none; }
 .cv-resume p{ margin:0 0 6px; font-size:15px; color:var(--ink-soft); }
+
+
+/* ── READ-ALOUD HIGHLIGHT: ANY BLOCK, BY DEFAULT ────────
+   The rules above paint .spk only on a hand-written list of block types,
+   and every new kind of block added on 10/9 — why-care cards, plan tiles,
+   recap cards, step lists, word-helper answers — was missing from it. The
+   reader marked them and nothing showed. Marcos: "I dont see highlighting
+   when it is reading aloud."
+
+   This rule lights up WHATEVER block is being read, so a new block type can
+   never be silently dark again. It sits last and uses !important so a tile's
+   own background cannot hide it. Word-level highlighting (.wrd.spk) keeps its
+   own stronger marker. */
+.spk:not(.wrd){
+  background:var(--hl-soft) !important;
+  box-shadow:0 0 0 3px var(--hl-line) !important;
+  border-radius:10px;
+  transition:background .12s ease, box-shadow .12s ease;
+}
+@media (prefers-reduced-motion:reduce){ .spk:not(.wrd){ transition:none; } }
+
+
+/* ── THE OPENING PAGES FILL THE SCREEN ──────────────────
+   Marcos 10/9 on the big-question page: "It looks dumb squished up top."
+   Short pages now take the full height of the screen: the content sits in
+   the middle and Next sits at the bottom, so a page with one idea looks
+   deliberate rather than half-empty. Tall pages are unaffected — there is
+   no spare height to share out. (:not(.hidden) so the id rule can never
+   override the class that hides a screen.) */
+#why-screen:not(.hidden), #care-screen:not(.hidden),
+#summary-screen:not(.hidden), #plan-screen:not(.hidden){
+  display:flex; flex-direction:column;
+  min-height:calc(100vh - 150px);
+}
+#why-screen > :first-child, #care-screen > :first-child,
+#summary-screen > :first-child, #plan-screen > :first-child{ margin-top:auto; }
+#why-screen > .btnrow, #care-screen > .btnrow,
+#summary-screen > .btnrow, #plan-screen > .btnrow{ margin-top:auto; padding-top:22px; }
+
+/* The big-question page has one idea, so it gets room to be big. */
+#why-screen .cv-q{ padding:24px 28px; }
+#why-screen .cv-q p{ font-size:clamp(24px,3.3vw,36px); line-height:1.22; }
+#why-screen .cv-q .lbl{ font-size:12px; margin-bottom:10px; }
+#why-screen .cv-you{ margin-top:22px; }
+#why-screen .cv-you p{ font-size:clamp(18px,2vw,22px); line-height:1.5; }
+#why-screen .btn{ font-size:18px; padding:14px 30px; }
