@@ -700,3 +700,27 @@ table.data td.pending{color:var(--ink-faint)}
   background:var(--warn-soft); border:1px solid rgba(224,180,104,.55);
   font-size:16px; line-height:1.5; color:var(--ink); text-align:center;
 }
+
+
+/* ── WHY SHOULD YOU CARE ───────────────────────────────
+   Three real-life reasons on the cover, each tied to the test where they
+   will prove it. Same tile shape as the plan page so the two feel related. */
+.cv-care{ margin:18px 18px 0; text-align:left; }
+.cv-care > .lbl{
+  display:block; font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:10.5px;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:700;
+}
+.cv-care-lead{ margin:4px 0 10px; font-size:16.5px; line-height:1.45; color:var(--ink); font-weight:600; }
+.care-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+@media (max-width:620px){ .care-grid{ grid-template-columns:1fr; } }
+.ptile.ctile{
+  flex-direction:column; align-items:flex-start; gap:8px;
+  background:var(--surface); border:1px solid var(--line); border-top:4px solid var(--accent);
+  border-radius:12px; padding:12px 13px;
+}
+.ptile.ctile .art.ptart{ width:46px; height:46px; }
+.ctest{
+  display:inline-block; margin-top:8px; padding:3px 9px; border-radius:999px;
+  background:var(--sci-soft); border:1px solid var(--sci-line);
+  font-size:12px; font-weight:700; color:var(--sci-dark);
+}

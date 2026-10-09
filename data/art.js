@@ -148,6 +148,35 @@ window.THING_ART = {
       'stroke-dasharray="2 3"/>')
 };
 
+/* ── why-should-you-care pictures ──────────────────────── */
+window.CARE_ART = {
+  /* a car with speed lines coming up to a crosswalk */
+  crossing: svg(
+    '<path d="M3 36h42" stroke="var(--ink-faint)" stroke-width="2.5" stroke-linecap="round"/>' +
+    '<rect x="31" y="20" width="3" height="14" rx="1" fill="var(--accent)"/>' +
+    '<rect x="36" y="20" width="3" height="14" rx="1" fill="var(--accent)"/>' +
+    '<rect x="41" y="20" width="3" height="14" rx="1" fill="var(--accent)"/>' +
+    '<rect x="9" y="22" width="17" height="9" rx="2.5" fill="var(--sci)"/>' +
+    '<circle cx="13" cy="33" r="3" fill="var(--sci-dark)"/>' +
+    '<circle cx="22" cy="33" r="3" fill="var(--sci-dark)"/>' +
+    '<path d="M2 22h5M1 27h5" stroke="var(--sci)" stroke-width="2" stroke-linecap="round" opacity=".55"/>'),
+  /* an ice patch with sand sprinkled on it */
+  icy: svg(
+    '<rect x="4" y="22" width="40" height="14" rx="5" fill="#CFE8F5"/>' +
+    '<path d="M9 31l6-5 5 4 4-3 6 5" fill="none" stroke="#6FA8C8" stroke-width="1.6" ' +
+      'stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<g fill="#B5924F"><circle cx="12" cy="26" r="1.6"/><circle cx="20" cy="29" r="1.6"/>' +
+    '<circle cx="27" cy="25" r="1.6"/><circle cx="34" cy="30" r="1.6"/><circle cx="39" cy="26" r="1.6"/>' +
+    '<circle cx="24" cy="12" r="1.6"/><circle cx="30" cy="8" r="1.6"/><circle cx="18" cy="7" r="1.6"/></g>'),
+  /* a sneaker with a bumpy sole */
+  sneaker: svg(
+    '<path d="M5 31c0-6 3-10 8-11l7-7c2-2 5-1 6 1l3 5c4 2 9 4 13 6 2 1 2 4 2 6H5z" ' +
+      'fill="var(--sci)" opacity=".85"/>' +
+    '<path d="M5 31h39" stroke="var(--sci-dark)" stroke-width="3" stroke-linecap="round"/>' +
+    '<path d="M6 36l3-3 3 3 3-3 3 3 3-3 3 3 3-3 3 3 3-3 3 3 3-3 3 3" fill="none" ' +
+      'stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>')
+};
+
 /* ── surface swatches ───────────────────────────────────
    A chip beside the surface name. Sand should LOOK gritty and ice
    should look slick, so the word is not the only way in. */

@@ -128,6 +128,27 @@ window.INTRO_PLAN = {
   calm: 'Take your time. This takes two days. Good scientists test more than once.'
 };
 
+/* ══════════════════════════════════════════════════════
+   WHY SHOULD YOU CARE — on the cover, before they press Let's begin
+
+   Marcos 10/9: "let's include why they should care about the answer." The
+   cover asked the question but never said why a nine-year-old would want
+   the answer. Three things from their own lives where stopping matters,
+   each tied to the test where they will prove it themselves. The district
+   unit is literally called Motion: Car Crashes, so the first one is safety.
+═══════════════════════════════════════════════════════ */
+window.CARE = [
+  { art: 'crossing', test: 'You will test this in Test 4',
+    t: 'Cars cannot stop right away',
+    d: 'A heavy car or bus needs a long way to stop. That is why you wait for the crossing guard and look both ways.' },
+  { art: 'icy', test: 'You will test this in Test 1',
+    t: 'Sand on an icy sidewalk',
+    d: 'In winter, people throw sand on ice. The sand adds friction, so your feet can stop and you do not slip.' },
+  { art: 'sneaker', test: 'You will test this in Test 1',
+    t: 'The bumps on your sneakers',
+    d: 'They grab the gym floor on purpose. That is how you stop fast without falling.' }
+];
+
 window.METHOD_WORDS = {
   predict:  'A <b>prediction</b> is your best guess <i>before</i> you test. It is never marked wrong.',
   trial:    'A <b>trial</b> is one push.<br><br>In Investigation A you push <b>twice</b> on every ' +

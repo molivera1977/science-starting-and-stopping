@@ -217,7 +217,7 @@ const speech = {
          card spoke as "surfacethe top of the thing you roll on". Put a full
          stop between block-level children so the voice pauses where the
          layout already does. */
-      c.querySelectorAll('div,p,li,h1,h2,h3,h4,td,th,.pt,.pd,.cerlbl').forEach(b => {
+      c.querySelectorAll('div,p,li,h1,h2,h3,h4,td,th,.pt,.pd,.cerlbl,.ctest').forEach(b => {
         const txt = (b.textContent || '').trim();
         if (txt && !/[.!?:,]$/.test(txt)) b.appendChild(document.createTextNode('.'));
         b.appendChild(document.createTextNode(' '));
@@ -729,10 +729,18 @@ function buildCover() {
      screen at boot. Leaving them out of step would save and resume a student
      to the wrong place and mislabel every event logged before they begin. */
   app.phase = 'cover';
-  const art = document.getElementById('cover-art');
-  if (art) art.innerHTML = window.COVER_ART || '';
+  /* NOT named "art": that would shadow the global art() picture helper used
+     below for the care tiles, throw, and leave Let's begin unwired. */
+  const coverArtHost = document.getElementById('cover-art');
+  if (coverArtHost) coverArtHost.innerHTML = window.COVER_ART || '';
   const q = document.getElementById('cv-driving');
   if (q) q.innerHTML = LESSON.driving;
+  /* Built before attachSpeakers below, so every tile gets its own speaker. */
+  const care = document.getElementById('cv-care');
+  if (care) care.innerHTML = (window.CARE || []).map(c =>
+    '<div class="ptile ctile">' + art((window.CARE_ART || {})[c.art], 'ptart') +
+    '<div><b class="pt">' + c.t + '</b><span class="pd">' + c.d + '</span>' +
+    '<span class="ctest">' + c.test + '</span></div></div>').join('');
   document.getElementById('cover-go').onclick = () => { logEvent('cover_begin'); showSummary(); };
   attachSpeakers(document.getElementById('cover-screen'));
 }
