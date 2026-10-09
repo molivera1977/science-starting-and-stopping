@@ -754,3 +754,12 @@ body.tp-on{ padding-top:58px; }
 
 .cv-teacher{ margin:16px 0 0; text-align:center; font-size:12.5px; }
 .cv-teacher a{ color:var(--ink-faint); }
+
+
+/* Page two reuses the cover's blocks, but sits in a normal padded card, so
+   the side margins the cover needed (it has no padding) come off here. */
+#why-screen .cv-q, #why-screen .cv-you, #why-screen .cv-care{ margin-left:0; margin-right:0; }
+#why-screen .cv-q{ margin-top:0; }
+/* The cover is now just the picture, the title and one button — give it room. */
+.card.cover{ padding-bottom:30px; }
+.card.cover .cv-sub{ margin-bottom:6px; }

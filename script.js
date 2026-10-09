@@ -401,7 +401,7 @@ function attachSpeakers(root) {
    method words (trial, average, claim…) come from METHOD_WORDS, because
    those were used on screen dozens of times and never defined once.
 ══════════════════════════════════════════════════════ */
-const WH_HIDE_ON = ['cover', 'summary', 'plan', 'start', 'vocab', 'end'];
+const WH_HIDE_ON = ['cover', 'why', 'summary', 'plan', 'start', 'vocab', 'end'];
 
 function buildWordHelp() {
   const row = document.getElementById('wh-words');
@@ -514,7 +514,7 @@ function syncWordHelp(phase) {
   if (wb) {
     const q = document.getElementById('wb-q');
     if (q && !q.innerHTML) { q.innerHTML = LESSON.driving; attachSpeakers(wb); }
-    wb.classList.toggle('hidden', ['cover', 'summary', 'plan', 'start', 'end'].indexOf(phase) !== -1);
+    wb.classList.toggle('hidden', ['cover', 'why', 'summary', 'plan', 'start', 'end'].indexOf(phase) !== -1);
   }
 }
 
@@ -529,7 +529,7 @@ function logEvent(kind, extra) {
 /* ══════════════════════════════════════════════════════
    PHASES
 ══════════════════════════════════════════════════════ */
-const PHASES = ['cover','summary','plan','start','vocab','vq','predictA','runA','graphA',
+const PHASES = ['cover','why','summary','plan','start','vocab','vq','predictA','runA','graphA',
                 'predictB','runB','graphB',
                 'daygate',
                 'predictC','runC','graphC',
@@ -585,7 +585,7 @@ const app = {
 
   /* ── screens ── */
   show(id) {
-    ['cover-screen','summary-screen','plan-screen','start-screen','vocab-screen','q-screen','lab-screen',
+    ['cover-screen','why-screen','summary-screen','plan-screen','start-screen','vocab-screen','q-screen','lab-screen',
      'daygate-screen','write-screen','end-screen']
       .forEach(s => { const el = document.getElementById(s); if (el) el.classList.add('hidden'); });
     const el = document.getElementById(id); if (el) el.classList.remove('hidden');
@@ -722,7 +722,7 @@ function drawRail() {
     const cls = on ? 'step on' : (at > last ? 'step done' : 'step');
     return '<div class="' + cls + '"><span class="n">' + st.n + '</span><span class="l">' + st.l + '</span></div>';
   }).join('');
-  rail.classList.toggle('hidden', ['cover','summary','plan','start'].indexOf(app.phase) !== -1);
+  rail.classList.toggle('hidden', ['cover','why','summary','plan','start'].indexOf(app.phase) !== -1);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -746,7 +746,7 @@ function buildCover() {
     '<div class="ptile ctile">' + art((window.CARE_ART || {})[c.art], 'ptart') +
     '<div><b class="pt">' + c.t + '</b><span class="pd">' + c.d + '</span>' +
     '<span class="ctest">' + c.test + '</span></div></div>').join('');
-  document.getElementById('cover-go').onclick = () => { logEvent('cover_begin'); showSummary(); };
+  document.getElementById('cover-go').onclick = () => { logEvent('cover_begin'); showWhy(); };
   attachSpeakers(document.getElementById('cover-screen'));
 }
 
@@ -802,7 +802,7 @@ function buildStart() {
     logEvent('resume');
     document.getElementById('who-chip').textContent = app.studentName;
     app.startTimer(); app.tickTimer();
-    app.go(['cover','summary','plan','start'].indexOf(app.phase) !== -1 ? 'vocab' : app.phase);
+    app.go(['cover','why','summary','plan','start'].indexOf(app.phase) !== -1 ? 'vocab' : app.phase);
   });
 
   /* No whole-page reader anywhere now. Marcos 10/9: "I don't like the read to
@@ -858,6 +858,16 @@ function planHTML() {
       '<div><b class="pt">' + e.t + '</b><span class="pd">' + e.d + '</span></div></div>'
     ).join('') + '</div>' +
     '<p class="plan-calm">' + P.calm + '</p>';
+}
+
+/* Page two: the big question, "you will be the scientist", and why they
+   should care. Its tiles are built at boot by buildCover; speakers are
+   attached here because they no longer live inside the cover. */
+function showWhy() {
+  app.phase = 'why'; drawRail();
+  app.show('why-screen');
+  attachSpeakers(document.getElementById('why-screen'));
+  document.getElementById('why-next').onclick = () => { speech.stop(); showSummary(); };
 }
 
 function showSummary() {
