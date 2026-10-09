@@ -724,3 +724,33 @@ table.data td.pending{color:var(--ink-faint)}
   background:var(--sci-soft); border:1px solid var(--sci-line);
   font-size:12px; font-weight:700; color:var(--sci-dark);
 }
+
+
+/* ── TEACHER PREVIEW BAR ────────────────────────────────
+   Only exists after the PIN. Pinned to the top so Back / Next never
+   scroll away while scanning a long screen. */
+#tpbar{
+  position:fixed; top:0; left:0; right:0; z-index:999;
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+  padding:8px 12px; background:#1F2A28; color:#fff;
+  box-shadow:0 3px 14px rgba(0,0,0,.25); font-size:14px;
+}
+#tpbar .tp-tag{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px; font-weight:700;
+  letter-spacing:.13em; text-transform:uppercase; background:#E0A94A; color:#1F2A28;
+  padding:3px 8px; border-radius:6px;
+}
+#tpbar .tp-note{ color:#B9C9C4; font-size:13px; margin-right:auto; }
+#tpbar button, #tpbar select{
+  font:inherit; font-size:14px; border-radius:8px; border:1px solid #4A5C58;
+  background:#2B3936; color:#fff; padding:6px 11px; cursor:pointer;
+}
+#tpbar button:disabled{ opacity:.35; cursor:default; }
+#tpbar #tp-next{ background:#2E7D6B; border-color:#2E7D6B; font-weight:700; }
+#tpbar select{ max-width:260px; }
+#tp-pos{ color:#B9C9C4; font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:12px; }
+body.tp-on{ padding-top:58px; }
+@media (max-width:620px){ body.tp-on{ padding-top:96px; } #tpbar select{ max-width:100%; flex:1 1 100%; order:9; } }
+
+.cv-teacher{ margin:16px 0 0; text-align:center; font-size:12.5px; }
+.cv-teacher a{ color:var(--ink-faint); }

@@ -76,6 +76,8 @@ function sheetBody(done) {
    Same shape every other site uses: tab "<game>_written", a fixed
    row of w1/w2/w3, paired to the score row by student name. */
 function submitWritten() {
+  /* Teacher preview must never write a student's save or a sheet row. */
+  if (window.PREVIEW) return;
   try {
     fetch(SHEET_URL, {
       method: 'POST', mode: 'no-cors',
@@ -94,6 +96,8 @@ function submitWritten() {
 }
 
 function post(done) {
+  /* Teacher preview must never write a student's save or a sheet row. */
+  if (window.PREVIEW) return;
   try {
     fetch(SHEET_URL, {
       method: 'POST', mode: 'no-cors',
@@ -628,6 +632,7 @@ const app = {
 
   /* ── persistence ── */
   save() {
+    if (window.PREVIEW) return;   /* never overwrite a student's save on this device */
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         studentName:this.studentName, phase:this.phase, score:this.score,
@@ -805,18 +810,11 @@ function buildStart() {
      student hears the one line they are stuck on instead of sitting through
      the screen. */
 
+  /* The Teacher button opens the full preview (preview.js): Back / Next
+     through every screen and every question, nothing saved or sent. It used
+     to jump once to a typed step number and then strand you there. */
   document.getElementById('teacher-btn').addEventListener('click', () => {
-    askPin('Teacher view — unlock to skip ahead to any step.', () => {
-      const step = prompt('Jump to which step?\n\n' + PHASES.map((p, i) => i + ' = ' + p).join('\n'), '2');
-      const i = parseInt(step, 10);
-      if (!isNaN(i) && PHASES[i]) {
-        app.studentName = app.studentName || 'Mr. O (Teacher)';
-        document.getElementById('who-chip').textContent = app.studentName;
-        app.startedAt = app.startedAt || new Date().toISOString();
-        app.startTimer();
-        app.go(PHASES[i]);
-      }
-    });
+    if (window.startTeacherPreview) window.startTeacherPreview();
   });
 }
 
@@ -1913,7 +1911,7 @@ function finish() {
 
   submitFinal();
   submitWritten();
-  try {
+  if (!window.PREVIEW) try {
     const all = JSON.parse(localStorage.getItem(SCORES_KEY) || '[]');
     all.push({ name:app.studentName, score:app.score, total:total, percent:pct,
                elapsed:app.timerSeconds, at:new Date().toISOString() });
