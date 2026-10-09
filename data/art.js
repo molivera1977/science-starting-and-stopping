@@ -178,3 +178,41 @@ window.art = function (markup, cls) {
   if (!markup) return '';
   return '<span class="art' + (cls ? ' ' + cls : '') + '" data-noread>' + markup + '</span>';
 };
+
+/* ── THE COVER SCENE ────────────────────────────────────
+   The first thing a student sees, at 2:25 on a Friday. It shows the whole
+   lesson in one picture: a cart being pushed on a track, a ramp with a car
+   on it, and the heavy truck — the three things they will actually do.
+   Wide, so it fills the top of the cover like a book jacket. */
+window.COVER_ART =
+  '<svg viewBox="0 0 400 150" aria-hidden="true" focusable="false" class="coverscene">' +
+  /* sky band */
+  '<rect width="400" height="150" fill="var(--sci-soft)"/>' +
+  /* the ramp, on the right */
+  '<path d="M250 118L330 118 330 56z" fill="var(--sci)" opacity=".22"/>' +
+  '<path d="M250 118L330 56" stroke="var(--sci)" stroke-width="4" stroke-linecap="round"/>' +
+  '<rect x="305" y="60" width="18" height="11" rx="2.5" fill="var(--accent)"/>' +
+  '<circle cx="310" cy="73" r="3.4" fill="var(--sci-dark)"/>' +
+  '<circle cx="319" cy="73" r="3.4" fill="var(--sci-dark)"/>' +
+  /* the ground */
+  '<path d="M14 118h372" stroke="var(--sci-dark)" stroke-width="5" stroke-linecap="round"/>' +
+  /* the cart, mid-push, on the left */
+  '<path d="M26 100h22" stroke="var(--accent)" stroke-width="5" stroke-linecap="round"/>' +
+  '<path d="M41 93l8 7-8 7" fill="none" stroke="var(--accent)" stroke-width="5" ' +
+    'stroke-linecap="round" stroke-linejoin="round"/>' +
+  '<rect x="56" y="88" width="34" height="19" rx="3" fill="var(--sci)"/>' +
+  '<circle cx="65" cy="111" r="5.5" fill="var(--sci-dark)"/>' +
+  '<circle cx="81" cy="111" r="5.5" fill="var(--sci-dark)"/>' +
+  /* the heavy truck, middle */
+  '<rect x="150" y="78" width="46" height="29" rx="3" fill="var(--accent)" opacity=".92"/>' +
+  '<rect x="196" y="90" width="18" height="17" rx="2.5" fill="var(--accent)" opacity=".75"/>' +
+  '<circle cx="161" cy="111" r="6" fill="var(--sci-dark)"/>' +
+  '<circle cx="186" cy="111" r="6" fill="var(--sci-dark)"/>' +
+  '<circle cx="206" cy="111" r="5" fill="var(--sci-dark)"/>' +
+  /* a few speed marks so the scene reads as movement */
+  '<path d="M104 86h16M100 95h12M106 104h14" stroke="var(--sci)" stroke-width="3" ' +
+    'stroke-linecap="round" opacity=".5"/>' +
+  /* measuring ticks along the ground */
+  '<path d="M30 124v7M110 124v7M190 124v7M270 124v7M350 124v7" stroke="var(--sci-dark)" ' +
+    'stroke-width="2.5" stroke-linecap="round" opacity=".45"/>' +
+  '</svg>';

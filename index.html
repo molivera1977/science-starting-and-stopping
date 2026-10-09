@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232E7D6B'/%3E%3Ccircle cx='11' cy='21' r='3' fill='%23fff'/%3E%3Ccircle cx='22' cy='21' r='3' fill='%23fff'/%3E%3Crect x='7' y='11' width='18' height='7' rx='2' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=cover1">
 </head>
 <body>
 <div class="wrap">
@@ -42,8 +42,47 @@
     <p class="wb-q" id="wb-q"></p>
   </div>
 
+  <!-- ══════════════ 0 · COVER ══════════════
+       The first thing a student sees. One picture of the whole lesson, the
+       question it answers, and one button. Nothing to decide here. -->
+  <section id="cover-screen" class="card cover">
+    <div id="cover-art" data-noread></div>
+    <span class="cv-eyebrow">Grade 4 Science &middot; Unit 1</span>
+    <h1 class="cv-title">Starting and Stopping</h1>
+    <p class="cv-sub">What makes things go, and what makes them stop?</p>
+
+    <div class="cv-q">
+      <span class="lbl">The big question for these two days</span>
+      <p id="cv-driving"></p>
+    </div>
+
+    <div class="cv-you">
+      <p><b>You will be the scientist.</b> You will push a cart, roll a car down a ramp,
+      and measure how far everything goes. Then your own numbers will tell you the answer.</p>
+    </div>
+
+    <div class="btnrow">
+      <button class="btn big" id="cover-go" type="button">Let&rsquo;s begin &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ══════════════ 1 · SUMMARY ══════════════
+       What the teacher just taught, before anyone types a name. It reads
+       itself out loud the moment it appears. -->
+  <section id="summary-screen" class="card hidden">
+    <div class="eyebrow">Before you start</div>
+    <h2>What we just talked about</h2>
+    <div id="recap-host"></div>
+    <hr class="hr">
+    <div id="ra-text" style="font-size:18.5px; line-height:1.7"></div>
+    <div class="btnrow">
+      <button class="btn" id="ra-next" type="button">Got it &mdash; let me start &rarr;</button>
+      <button class="btn ghost small" id="ra-again" data-noread type="button">&#128266; Read it again</button>
+    </div>
+  </section>
+
   <!-- ══════════════ 1 · START ══════════════ -->
-  <section id="start-screen" class="card">
+  <section id="start-screen" class="card hidden">
     <div class="eyebrow">Unit 1 &middot; Motion: Car Crashes &middot; NGSS 4-PS3-1 &amp; 4-PS3-3</div>
     <h2>Starting and Stopping</h2>
     <p class="lead" id="st-lead">Today you are a motion scientist. You will push a cart, roll it down
@@ -81,18 +120,6 @@
   </section>
 
   <!-- ══════════════ 2 · READ ALOUD ══════════════ -->
-  <section id="readaloud-screen" class="card hidden">
-    <div class="eyebrow">Listen first</div>
-    <h2>Before you begin</h2>
-    <div id="ra-text" style="font-size:18.5px; line-height:1.7; margin-top:12px"></div>
-    <div id="recap-host"></div>
-    <div class="btnrow">
-      <button class="btn" id="ra-next" type="button">I&rsquo;m ready &rarr;</button>
-      <button class="btn ghost small" id="ra-again" data-noread type="button">&#128266; Read it again</button>
-    </div>
-    <p class="counter" id="ra-timer-note">The timer starts on the next screen.</p>
-  </section>
-
   <!-- ══════════════ 3 · VOCABULARY ══════════════ -->
   <section id="vocab-screen" class="card hidden">
     <div class="eyebrow">Step 1 &middot; Words you need</div>
@@ -307,10 +334,10 @@
   </p>
 </div>
 
-<script src="data/art.js"></script>
-<script src="data/lesson.js"></script>
-<script src="data/questions.js"></script>
-<script src="script.js"></script>
+<script src="data/art.js?v=cover1"></script>
+<script src="data/lesson.js?v=cover1"></script>
+<script src="data/questions.js?v=cover1"></script>
+<script src="script.js?v=cover1"></script>
 
 <!-- ══════════════ WORD HELP — on every working screen ══════════════
      Marcos 10/9: "add reminders of those definitions. Don't expect them to

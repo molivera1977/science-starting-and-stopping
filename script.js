@@ -397,7 +397,7 @@ function attachSpeakers(root) {
    method words (trial, average, claim…) come from METHOD_WORDS, because
    those were used on screen dozens of times and never defined once.
 ══════════════════════════════════════════════════════ */
-const WH_HIDE_ON = ['start', 'readaloud', 'vocab', 'end'];
+const WH_HIDE_ON = ['cover', 'summary', 'start', 'vocab', 'end'];
 
 function buildWordHelp() {
   const row = document.getElementById('wh-words');
@@ -510,7 +510,7 @@ function syncWordHelp(phase) {
   if (wb) {
     const q = document.getElementById('wb-q');
     if (q && !q.innerHTML) { q.innerHTML = LESSON.driving; attachSpeakers(wb); }
-    wb.classList.toggle('hidden', ['start', 'readaloud', 'end'].indexOf(phase) !== -1);
+    wb.classList.toggle('hidden', ['cover', 'summary', 'start', 'end'].indexOf(phase) !== -1);
   }
 }
 
@@ -525,7 +525,7 @@ function logEvent(kind, extra) {
 /* ══════════════════════════════════════════════════════
    PHASES
 ══════════════════════════════════════════════════════ */
-const PHASES = ['start','readaloud','vocab','vq','predictA','runA','graphA',
+const PHASES = ['cover','summary','start','vocab','vq','predictA','runA','graphA',
                 'predictB','runB','graphB',
                 'daygate',
                 'predictC','runC','graphC',
@@ -581,7 +581,8 @@ const app = {
 
   /* ── screens ── */
   show(id) {
-    ['start-screen','readaloud-screen','vocab-screen','q-screen','lab-screen','write-screen','end-screen']
+    ['cover-screen','summary-screen','start-screen','vocab-screen','q-screen','lab-screen',
+     'daygate-screen','write-screen','end-screen']
       .forEach(s => { const el = document.getElementById(s); if (el) el.classList.add('hidden'); });
     const el = document.getElementById(id); if (el) el.classList.remove('hidden');
     window.scrollTo({ top:0, behavior:'smooth' });
@@ -716,12 +717,26 @@ function drawRail() {
     const cls = on ? 'step on' : (at > last ? 'step done' : 'step');
     return '<div class="' + cls + '"><span class="n">' + st.n + '</span><span class="l">' + st.l + '</span></div>';
   }).join('');
-  rail.classList.toggle('hidden', app.phase === 'start' || app.phase === 'readaloud');
+  rail.classList.toggle('hidden', ['cover','summary','start'].indexOf(app.phase) !== -1);
 }
 
 /* ══════════════════════════════════════════════════════
    START SCREEN
 ══════════════════════════════════════════════════════ */
+/* The cover. One picture, the question, one button — nothing to decide. */
+function buildCover() {
+  /* The app's default phase string is 'start', but the cover is what is on
+     screen at boot. Leaving them out of step would save and resume a student
+     to the wrong place and mislabel every event logged before they begin. */
+  app.phase = 'cover';
+  const art = document.getElementById('cover-art');
+  if (art) art.innerHTML = window.COVER_ART || '';
+  const q = document.getElementById('cv-driving');
+  if (q) q.innerHTML = LESSON.driving;
+  document.getElementById('cover-go').onclick = () => { logEvent('cover_begin'); showSummary(); };
+  attachSpeakers(document.getElementById('cover-screen'));
+}
+
 function buildStart() {
   document.getElementById('ican-list').innerHTML =
     LESSON.icanKid.map(s => '<li>I can ' + s + '</li>').join('');
@@ -765,7 +780,7 @@ function buildStart() {
     app.startedAt = new Date().toISOString();
     logEvent('start', { name:app.studentName });
     document.getElementById('who-chip').textContent = app.studentName;
-    showReadAloud();
+    app.go('vocab');
   });
 
   resumeBtn.addEventListener('click', () => {
@@ -774,7 +789,7 @@ function buildStart() {
     logEvent('resume');
     document.getElementById('who-chip').textContent = app.studentName;
     app.startTimer(); app.tickTimer();
-    app.go(app.phase === 'start' || app.phase === 'readaloud' ? 'vocab' : app.phase);
+    app.go(['cover','summary','start'].indexOf(app.phase) !== -1 ? 'vocab' : app.phase);
   });
 
   /* No whole-page reader anywhere now. Marcos 10/9: "I don't like the read to
@@ -815,17 +830,20 @@ function recapHTML(which) {
   '</div>';
 }
 
-function showReadAloud() {
-  app.phase = 'readaloud'; drawRail();
+function showSummary() {
+  app.phase = 'summary'; drawRail();
   const host = document.getElementById('ra-text');
   host.innerHTML = wrapWords(INTRO_TEXT);
   document.getElementById('recap-host').innerHTML = recapHTML('day1');
-  app.show('readaloud-screen');
-  attachSpeakers(document.getElementById('readaloud-screen'));
+  app.show('summary-screen');
+  attachSpeakers(document.getElementById('summary-screen'));
   /* The intro speaks itself as soon as it appears. */
   setTimeout(() => speech.say(host, null, null, INTRO_RATE), 420);
   document.getElementById('ra-again').onclick = () => speech.say(host, null, null, INTRO_RATE);
-  document.getElementById('ra-next').onclick = () => { speech.stop(); app.go('vocab'); };
+  /* Summary -> the name picker, not straight into the lesson. */
+  document.getElementById('ra-next').onclick = () => {
+    speech.stop(); app.phase = 'start'; app.show('start-screen'); drawRail();
+  };
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1934,6 +1952,7 @@ window.addEventListener('beforeunload', () => {
 });
 
 /* ── BOOT ───────────────────────────────────────────── */
+buildCover();
 buildStart();
 attachSpeakers(document.getElementById('start-screen'));
 drawRail();
