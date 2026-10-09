@@ -177,6 +177,43 @@ window.CARE_ART = {
       'stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>')
 };
 
+/* ── meet-your-cart pictures ──────────────────────────── */
+window.CART_ART = {
+  /* a laptop screen with a cart on it — the cart lives on the screen */
+  screen: svg(
+    '<rect x="6" y="8" width="36" height="24" rx="3" fill="none" stroke="var(--sci-dark)" stroke-width="3"/>' +
+    '<path d="M2 38h44" stroke="var(--sci-dark)" stroke-width="3.5" stroke-linecap="round"/>' +
+    '<path d="M11 26h26" stroke="var(--ink-faint)" stroke-width="1.8" stroke-linecap="round"/>' +
+    '<rect x="15" y="17" width="12" height="7" rx="1.5" fill="var(--sci)"/>' +
+    '<circle cx="18" cy="25" r="2" fill="var(--sci-dark)"/><circle cx="24" cy="25" r="2" fill="var(--sci-dark)"/>'),
+  /* a question mark beside a rolling cart */
+  why: svg(
+    '<rect x="4" y="24" width="20" height="11" rx="2.5" fill="var(--sci)"/>' +
+    '<circle cx="9" cy="37" r="3.2" fill="var(--sci-dark)"/><circle cx="19" cy="37" r="3.2" fill="var(--sci-dark)"/>' +
+    '<path d="M31 14c0-5 10-5 10 0 0 4-5 4-5 9" fill="none" stroke="var(--accent)" stroke-width="3.5" ' +
+      'stroke-linecap="round"/><circle cx="36" cy="30" r="2.4" fill="var(--accent)"/>')
+};
+/* The scene at the top of the page: the cart at START on the same kind of
+   track the lab draws, with the push arrow and distance marks. */
+window.MEET_CART_SCENE =
+  '<svg viewBox="0 0 400 120" aria-hidden="true" focusable="false" class="coverscene">' +
+  '<rect width="400" height="120" fill="var(--sci-soft)"/>' +
+  '<path d="M14 92h372" stroke="var(--sci-dark)" stroke-width="5" stroke-linecap="round"/>' +
+  '<path d="M80 92V40" stroke="var(--accent)" stroke-width="3" stroke-dasharray="4 4"/>' +
+  '<text x="64" y="32" font-size="12" font-weight="700" fill="var(--accent)" ' +
+    'font-family="IBM Plex Mono, monospace">START</text>' +
+  '<path d="M30 74h22" stroke="var(--accent)" stroke-width="5" stroke-linecap="round"/>' +
+  '<path d="M45 67l8 7-8 7" fill="none" stroke="var(--accent)" stroke-width="5" ' +
+    'stroke-linecap="round" stroke-linejoin="round"/>' +
+  '<rect x="84" y="62" width="44" height="22" rx="4" fill="var(--sci)"/>' +
+  '<circle cx="96" cy="87" r="6" fill="var(--sci-dark)"/><circle cx="116" cy="87" r="6" fill="var(--sci-dark)"/>' +
+  '<path d="M80 102v8M160 102v8M240 102v8M320 102v8" stroke="var(--sci-dark)" stroke-width="2.5" ' +
+    'stroke-linecap="round" opacity=".5"/>' +
+  '<g font-size="10" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">' +
+    '<text x="76" y="118">0</text><text x="148" y="118">1 m</text><text x="228" y="118">2 m</text>' +
+    '<text x="308" y="118">3 m</text></g>' +
+  '</svg>';
+
 /* ── surface swatches ───────────────────────────────────
    A chip beside the surface name. Sand should LOOK gritty and ice
    should look slick, so the word is not the only way in. */

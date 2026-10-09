@@ -33,7 +33,7 @@
   };
 
   const NAMES = {
-    cover: 'Cover', why: 'The big question', care: 'Why should you care', summary: 'What we just talked about', plan: 'Here is the plan',
+    cover: 'Cover', why: 'The big question', care: 'Why should you care', cart: 'Meet your cart', summary: 'What we just talked about', plan: 'Here is the plan',
     start: 'Pick your name', vocab: 'Six words', vq: 'Word check',
     predictA: 'Test 1 · predict', runA: 'Test 1 · push (surfaces)', graphA: 'Test 1 · graph',
     predictB: 'Test 2 · predict', runB: 'Test 2 · push (push size)', graphB: 'Test 2 · graph',
@@ -44,7 +44,7 @@
     exit: 'Exit ticket', end: 'Finished'
   };
   const GROUP = p =>
-    ['cover', 'why', 'care', 'summary', 'plan', 'start'].indexOf(p) !== -1 ? 'Before the lesson'
+    ['cover', 'why', 'care', 'summary', 'cart', 'plan', 'start'].indexOf(p) !== -1 ? 'Before the lesson'
     : PHASES.indexOf(p) < PHASES.indexOf('daygate') ? 'Day 1'
     : p === 'daygate' ? 'Day 1'
     : 'Day 2';
@@ -114,6 +114,7 @@
     else if (p === 'why')     { showWhy(); }
     else if (p === 'care')    { showCare(); }
     else if (p === 'summary') { showSummary(); }
+    else if (p === 'cart')    { showCart(); }
     else if (p === 'plan')    { showPlan(); }
     else if (p === 'start')   { app.phase = 'start'; app.show('start-screen'); drawRail(); }
     else {

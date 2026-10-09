@@ -418,7 +418,7 @@ function attachSpeakers(root) {
    method words (trial, average, claim…) come from METHOD_WORDS, because
    those were used on screen dozens of times and never defined once.
 ══════════════════════════════════════════════════════ */
-const WH_HIDE_ON = ['cover', 'why', 'care', 'summary', 'plan', 'start', 'vocab', 'end'];
+const WH_HIDE_ON = ['cover', 'why', 'care', 'summary', 'cart', 'plan', 'start', 'vocab', 'end'];
 
 function buildWordHelp() {
   const row = document.getElementById('wh-words');
@@ -531,7 +531,7 @@ function syncWordHelp(phase) {
   if (wb) {
     const q = document.getElementById('wb-q');
     if (q && !q.innerHTML) { q.innerHTML = LESSON.driving; attachSpeakers(wb); }
-    wb.classList.toggle('hidden', ['cover', 'why', 'care', 'summary', 'plan', 'start', 'end'].indexOf(phase) !== -1);
+    wb.classList.toggle('hidden', ['cover', 'why', 'care', 'summary', 'cart', 'plan', 'start', 'end'].indexOf(phase) !== -1);
   }
 }
 
@@ -546,7 +546,7 @@ function logEvent(kind, extra) {
 /* ══════════════════════════════════════════════════════
    PHASES
 ══════════════════════════════════════════════════════ */
-const PHASES = ['cover','why','care','summary','plan','start','vocab','vq','predictA','runA','graphA',
+const PHASES = ['cover','why','care','summary','cart','plan','start','vocab','vq','predictA','runA','graphA',
                 'predictB','runB','graphB',
                 'daygate',
                 'predictC','runC','graphC',
@@ -602,7 +602,7 @@ const app = {
 
   /* ── screens ── */
   show(id) {
-    ['cover-screen','why-screen','care-screen','summary-screen','plan-screen','start-screen','vocab-screen','q-screen','lab-screen',
+    ['cover-screen','why-screen','care-screen','summary-screen','cart-screen','plan-screen','start-screen','vocab-screen','q-screen','lab-screen',
      'daygate-screen','write-screen','end-screen']
       .forEach(s => { const el = document.getElementById(s); if (el) el.classList.add('hidden'); });
     const el = document.getElementById(id); if (el) el.classList.remove('hidden');
@@ -752,7 +752,7 @@ function drawRail() {
     const cls = on ? 'step on' : (at > last ? 'step done' : 'step');
     return '<div class="' + cls + '"><span class="n">' + st.n + '</span><span class="l">' + st.l + '</span></div>';
   }).join('');
-  rail.classList.toggle('hidden', ['cover','why','care','summary','plan','start'].indexOf(app.phase) !== -1);
+  rail.classList.toggle('hidden', ['cover','why','care','summary','cart','plan','start'].indexOf(app.phase) !== -1);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -846,7 +846,7 @@ function buildStart() {
     logEvent('resume');
     document.getElementById('who-chip').textContent = app.studentName;
     app.startTimer(); app.tickTimer();
-    app.go(['cover','why','care','summary','plan','start'].indexOf(app.phase) !== -1 ? 'vocab' : app.phase);
+    app.go(['cover','why','care','summary','cart','plan','start'].indexOf(app.phase) !== -1 ? 'vocab' : app.phase);
   });
 
   /* No whole-page reader anywhere now. Marcos 10/9: "I don't like the read to
@@ -930,11 +930,25 @@ function showSummary() {
   attachSpeakers(document.getElementById('summary-screen'));
   /* Nothing on these pages speaks on its own. Marcos 10/9: "this read on its
      own. It shouldn't." Twenty-two devices would all start talking at once. */
-  document.getElementById('sum-next').onclick = () => { speech.stop(); showPlan(); };
+  document.getElementById('sum-next').onclick = () => { speech.stop(); showCart(); };
 }
 
 /* The plan gets its own page. Marcos 10/9: the summary was one long screen,
    "perhaps push it to another page". */
+/* Meet your cart — the cart is introduced here and mentioned nowhere earlier.
+   Every point has a picture as well as words. */
+function showCart() {
+  app.phase = 'cart'; drawRail();
+  const scene = document.getElementById('cart-scene');
+  if (scene) scene.innerHTML = window.MEET_CART_SCENE || '';
+  const pics = Object.assign({}, window.THING_ART || {}, window.CART_ART || {});
+  document.getElementById('cart-tiles').innerHTML = (window.CART_INTRO || []).map(c =>
+    '<div class="ptile step3">' + art(pics[c.art], 'ptart') +
+    '<div><b class="pt">' + c.t + '</b><span class="pd">' + c.d + '</span></div></div>').join('');
+  app.show('cart-screen');
+  document.getElementById('cart-next').onclick = () => { speech.stop(); showPlan(); };
+}
+
 function showPlan() {
   app.phase = 'plan'; drawRail();
   const host = document.getElementById('ra-text');
@@ -1164,32 +1178,10 @@ function answerQ(q, picked, bank, ans) {
 }
 
 /* A one-line reason, so a wrong answer still teaches something. */
-const WHY = {
-  L01:'A force is any push or pull.',
-  L02:'Friction always pushes back against the direction an object is moving.',
-  L03:'Motion means the object changed position.',
-  L04:'Nothing moves without energy.',
-  L05:'Gravity pulls everything toward the center of Earth.',
-  L08:'Same push, different distances — so the surface had to be the cause.',
-  L10:'A bigger force gives the cart more energy, so it travels farther.',
-  L11:'The big push gave the cart the most energy of the three.',
-  L12:'A moving object keeps moving until an unbalanced force stops it. Ice has almost no friction.',
-  L13:'Carpet is rougher than ice, so carpet has more friction.',
-  L14:'Pulling is a force. Color, name and age are not forces.',
-  L15:'Friction between the ball and the grass slowed it down.',
-  L16:'More force means more energy, which means more distance.',
-  L17:'Snow is smoother than grass, so there is less friction.',
-  L18:'This is the big idea of the lesson — motion continues until a force stops it.',
-  L19:'The hard push gave the cart more energy of motion.'
-};
+/* Feedback comes from the question itself (questions.js, `why`). */
 function whyRight(q) {
-  if (WHY[q.id]) return WHY[q.id];
-  if (q.id === 'L06' || q.id === 'L07' || q.id === 'L09') {
-    const d = labSummary();
-    return 'Your table shows ' + d.farthestA + ' went the farthest (' + d.maxAvgA +
-           ' cm) and ' + d.shortestA + ' the shortest (' + d.minAvgA + ' cm).';
-  }
-  return '';
+  if (typeof q.why === 'function') { try { return q.why(labSummary()); } catch (e) { return ''; } }
+  return q.why || '';
 }
 
 /* ══════════════════════════════════════════════════════

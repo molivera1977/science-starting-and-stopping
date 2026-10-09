@@ -817,3 +817,12 @@ body.tp-on{ padding-top:58px; }
 #why-screen .cv-you{ margin-top:22px; }
 #why-screen .cv-you p{ font-size:clamp(18px,2vw,22px); line-height:1.5; }
 #why-screen .btn{ font-size:18px; padding:14px 30px; }
+
+
+/* Meet your cart: the scene, then four pictured cards in a 2×2 grid. */
+#cart-screen:not(.hidden){ display:flex; flex-direction:column; min-height:calc(100vh - 150px); }
+#cart-screen > .btnrow{ margin-top:auto; padding-top:22px; }
+#cart-scene{ line-height:0; border-radius:14px; overflow:hidden; margin:12px 0 16px; }
+#cart-scene svg{ display:block; width:100%; height:auto; }
+.cart-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media (max-width:620px){ .cart-grid{ grid-template-columns:1fr; } }

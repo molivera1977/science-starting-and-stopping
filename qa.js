@@ -12,7 +12,7 @@
 
    What it checks:
      C1  closing the tab on the cover does not wipe a saved lesson
-     C2  the opening path goes cover → why → care → summary → plan → start
+     C2  the opening path goes cover → why → care → summary → cart → plan → start
      C3  nothing starts talking on its own when a page opens
      C4  every preview stop shows exactly one screen, in the right phase
      C5  every visible piece of text belongs to a block that can be read aloud
@@ -53,15 +53,22 @@
 
   /* C2, C3 */
   const path = [app.phase], talked = [];
-  for (const id of ['cover-go', 'why-next', 'care-next', 'sum-next', 'ra-next']) {
+  for (const id of ['cover-go', 'why-next', 'care-next', 'sum-next', 'cart-next', 'ra-next']) {
     const b = document.getElementById(id);
     if (!b) { path.push('(no #' + id + ')'); break; }
     b.click(); await wait(1200);
     if (speechSynthesis.speaking || speechSynthesis.pending) talked.push(app.phase);
     hush(); path.push(app.phase);
   }
-  const wantPath = ['cover', 'why', 'care', 'summary', 'plan', 'start'];
+  const wantPath = ['cover', 'why', 'care', 'summary', 'cart', 'plan', 'start'];
   rec('C2', 'Opening path in order', JSON.stringify(path) === JSON.stringify(wantPath), path.join(' → '));
+
+  /* C11 — a thing is introduced before it is talked about. Marcos: "You start
+     talking about a cart and the kids have no idea why you are talking about
+     it." No page before Meet your cart may mention the cart. */
+  const early = ['cover-screen', 'why-screen', 'care-screen', 'summary-screen']
+    .filter(id => /\bcarts?\b/i.test((document.getElementById(id) || {}).textContent || ''));
+  rec('C11', 'Nothing mentions the cart before Meet your cart introduces it', early.length === 0, early.join(', '));
 
   /* enter the preview */
   if (!window.startTeacherPreview) { rec('C4', 'Teacher preview exists', false, 'preview.js not loaded'); return report(); }
@@ -120,6 +127,19 @@
       noSpeaker.length + ' missing. ' + noSpeaker.slice(0, 6).join(' | '));
   rec('C7', 'Every readable block lights up while read', noLight.length === 0,
       noLight.length + ' dark. ' + noLight.slice(0, 6).join(' | '));
+  /* C12 — every question carries its own feedback. On 10/9 the feedback
+     table was found keyed to the OLD question numbers: the truck question
+     explained push size and the newest questions had none. This catches a
+     missing or copy-pasted explanation (matching it to the right question
+     still needs a human read — see the list in the commit). */
+  const bank = [].concat(VOCAB_Q, ANALYSIS_Q, CLAIMS_Q, EXIT_Q).filter(q => !q.adaptive);
+  const fb = bank.map(q => ({ id: q.id, t: whyRight(q) }));
+  const empty = fb.filter(f => !f.t).map(f => f.id);
+  const seenT = {}, dupes = [];
+  fb.forEach(f => { if (f.t) { if (seenT[f.t]) dupes.push(f.id + '=' + seenT[f.t]); else seenT[f.t] = f.id; } });
+  rec('C12', 'Every question has its own feedback (' + bank.length + ' questions)',
+      !empty.length && !dupes.length, (empty.length ? 'none: ' + empty.join(' ') + '. ' : '') + (dupes.length ? 'same as another: ' + dupes.join(' ') : ''));
+
   rec('C8', 'No errors', errors.length === 0, errors.slice(0, 4).join(' | '));
   rec('C9', 'Nothing sent to the sheet', sends === 0, sends + ' sends');
 

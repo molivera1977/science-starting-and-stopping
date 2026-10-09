@@ -38,8 +38,7 @@ window.RECAP = {
       { t: 'A rougher surface has more friction, so it stops things sooner.',
         d: 'Remember sliding your hand on the desk, then on your sleeve. One was harder.' }
     ],
-    now: 'Today you do <b>two tests</b>. First you change what the cart rolls on. ' +
-         'Then you change how hard you push. Each test changes <b>one thing only</b>.'
+    now: 'Next, you get to <b>test these ideas yourself</b>.'
   },
   day2: {
     lead: 'Mr. O just showed you the two new tests. Here they are again.',
@@ -147,6 +146,26 @@ window.CARE = [
   { art: 'sneaker', test: 'You will test this in Test 1',
     t: 'The bumps on your sneakers',
     d: 'They grab the gym floor on purpose. That is how you stop fast without falling.' }
+];
+
+/* ══════════════════════════════════════════════════════
+   MEET YOUR CART — its own page, right before the plan
+
+   Marcos 10/9: "You start talking about a cart and the kids have no idea why
+   you are talking about it." The cart appeared on page two and on the
+   summary with no introduction — not what it is, not that it lives on the
+   screen, not why a scientist would use one. Now nothing mentions the cart
+   until this page has introduced it, with a picture for every point.
+═══════════════════════════════════════════════════════ */
+window.CART_INTRO = [
+  { art: 'cart',     t: 'This is a cart',
+    d: 'A little box on wheels that rolls. Like a toy car, or a skateboard.' },
+  { art: 'screen',   t: 'It is on your screen',
+    d: 'You do not push a real cart. You press a button, and the cart on your screen gets pushed.' },
+  { art: 'why',      t: 'Why use a cart?',
+    d: 'It rolls easily. So you can see exactly what slows it down and stops it.' },
+  { art: 'distance', t: 'Watch where it stops',
+    d: 'Every time, a number shows how far it went. That number is in centimeters.' }
 ];
 
 window.METHOD_WORDS = {
