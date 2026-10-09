@@ -72,8 +72,13 @@ window.THING_WORDS = {
 
 window.METHOD_WORDS = {
   predict:  'A <b>prediction</b> is your best guess <i>before</i> you test. It is never marked wrong.',
-  trial:    'A <b>trial</b> is one push. Some setups get two trials so you can check your own work.',
-  average:  'The <b>average</b> is the middle of your two trials. Add them together, then cut it in half.',
+  trial:    'A <b>trial</b> is one push.<br><br>In Investigation A you push <b>twice</b> on every ' +
+            'surface. Here is why. One push can go wrong &mdash; maybe your hand slipped, or you ' +
+            'pushed a tiny bit harder without meaning to. If you only pushed once you would never ' +
+            'know. Pushing twice lets you catch it. Real scientists never trust one try either.',
+  average:  'The <b>average</b> is the middle of your two trials. Add the two numbers together, ' +
+            'then cut that in half.<br><br>It is fairer than picking one. If one push went a ' +
+            'bit far and one went a bit short, the middle is closer to the truth than either one.',
   claim:    'A <b>claim</b> is what you think is true.',
   evidence: '<b>Evidence</b> is the numbers from your table that show it.',
   reasoning:'<b>Reasoning</b> is why it happened.'
@@ -185,6 +190,10 @@ window.LAB = {
       'Press <b>Write it in my table</b>.',
       'Do that 8 times. Then your table is full.'
     ],
+    /* The one question a child doing push 2 of 2 is actually asking. */
+    whyRepeat: 'You push <b>twice</b> on every surface. Why? Because one push can go wrong &mdash; ' +
+               'maybe your hand slipped. Two pushes let you catch it, and the middle of the two is ' +
+               'closer to the truth. Scientists never trust one try.',
     runs: [
       { surface: 'ice',    push: 'medium', trial: 1 },
       { surface: 'ice',    push: 'medium', trial: 2 },

@@ -33,6 +33,15 @@
 
   <div class="rail noprint" id="rail" data-noread></div>
 
+  <!-- The WHY, on every working screen. It was said once on the start screen
+       and then vanished; by push six nobody could tell you what they were
+       trying to find out. Marcos 10/9: "frequently remind them WHY we are
+       doing these experiments. That cannot get lost." -->
+  <div id="whybar" class="hidden">
+    <span class="wb-lbl">We are trying to find out</span>
+    <p class="wb-q" id="wb-q"></p>
+  </div>
+
   <!-- ══════════════ 1 · START ══════════════ -->
   <section id="start-screen" class="card">
     <div class="eyebrow">Unit 1 &middot; Motion: Car Crashes &middot; NGSS 4-PS3-1 &amp; 4-PS3-3</div>
@@ -149,6 +158,9 @@
 
       <div class="runbar">
         <span class="runnow" id="run-now"></span>
+      </div>
+      <div class="box todo hidden" id="run-whyrepeat" data-parts></div>
+      <div>
         <span class="readout" id="run-readout" aria-live="polite">Distance: &mdash;</span>
       </div>
       <div class="btnrow">
@@ -158,7 +170,7 @@
 
       <hr class="hr">
       <h3 id="table-head">My data table</h3>
-      <p class="counter" id="table-note">Every push is recorded. Two trials for each setup, because real scientists repeat a test before they trust it.</p>
+      <p class="counter" id="table-note"></p>
       <div class="tablewrap"><table class="data" id="data-table"></table></div>
 
       <div class="btnrow"><button class="btn hidden" id="run-done" type="button">My table is full &rarr;</button></div>
@@ -298,12 +310,19 @@
 <div id="wordhelp" class="hidden">
   <button id="wh-toggle" type="button" data-noread aria-expanded="false">
     <span class="wh-ic" aria-hidden="true">&#128161;</span>
-    <span>What does a word mean?</span>
+    <span>Stuck? Tap here</span>
     <span class="wh-chev" aria-hidden="true">&#9650;</span>
   </button>
   <div id="wh-panel" class="hidden">
-    <div class="chiprow" id="wh-words"></div>
-    <div id="wh-answer" class="hidden"></div>
+    <div class="wh-tabs" data-noread>
+      <button type="button" class="wh-tab on" data-tab="do">What do I do?</button>
+      <button type="button" class="wh-tab" data-tab="words">What does a word mean?</button>
+    </div>
+    <div id="wh-do"></div>
+    <div id="wh-wordpane" class="hidden">
+      <div class="chiprow" id="wh-words"></div>
+      <div id="wh-answer" class="hidden"></div>
+    </div>
   </div>
 </div>
 </body>

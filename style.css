@@ -555,3 +555,45 @@ table.data td.pending{color:var(--ink-faint)}
   background:var(--warn-soft); border-color:rgba(224,180,104,.7); color:var(--warn);
 }
 #wh-words .chipbtn.thing.on{ background:var(--warn); color:#fff; border-color:var(--warn); }
+
+
+/* ── TWO TABS: what to do, and what a word means ────────
+   Nothing on this site assumes a student got it the first time. The steps
+   for the screen they are on, and every word, are both one tap away on
+   every working screen. (Marcos 10/9: "we cannot assume they understand
+   anything the first time.") */
+.wh-tabs{ display:flex; gap:7px; margin-bottom:11px; flex-wrap:wrap; }
+.wh-tab{
+  font:inherit; font-size:14px; font-weight:600; cursor:pointer;
+  background:var(--surface-2); color:var(--ink-soft);
+  border:1px solid var(--line); border-radius:999px; padding:7px 14px;
+}
+.wh-tab.on{ background:var(--sci); color:#fff; border-color:var(--sci); }
+.wh-tab:hover:not(.on){ border-color:var(--sci); color:var(--sci-dark); }
+#wh-do.hidden, #wh-wordpane.hidden{ display:none; }
+.wh-steps{ margin:0; padding-left:1.3rem; }
+.wh-steps li{
+  font-size:16px; line-height:1.5; color:var(--ink); padding:5px 0;
+}
+.wh-steps li::marker{ color:var(--sci); font-weight:700; }
+
+
+/* ── THE WHY, ALWAYS ON SCREEN ──────────────────────────
+   The driving question used to appear once and vanish. It now rides every
+   working screen, so a student six pushes in can still say what they are
+   trying to find out. */
+#whybar{
+  background:var(--sci-soft); border:1px solid var(--sci-line);
+  border-left:5px solid var(--sci); border-radius:0 13px 13px 0;
+  padding:10px 15px; margin:0 0 14px;
+}
+#whybar.hidden{ display:none; }
+.wb-lbl{
+  display:block; font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--sci-dark); font-weight:700; margin-bottom:3px;
+}
+.wb-q{
+  margin:0; font-family:Fraunces,Georgia,serif; font-size:17.5px;
+  font-weight:600; line-height:1.35; color:var(--ink);
+}

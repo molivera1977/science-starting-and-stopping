@@ -240,7 +240,7 @@ const speech = {
     const SEL = 'h1,h2,h3,h4,p,li,td,th,' +
       '.vcard,.opt,.grow,.readout,.fb,.g,.sb,.step,.box,' +
       '.runnow,.note,.eyebrow,.qcount,.lbl,.same,.chg,.plain,.say,.counter,.chips-lbl,.qdata-h,' +
-      '.rcard,.rl,.rnow';
+      '.rcard,.rl,.rnow,.wh-def,.wh-ex,.wb-q';
     const out = [];
     root.querySelectorAll(SEL).forEach(el => {
       if (el.closest('[data-noread]')) return;
@@ -434,6 +434,16 @@ function buildWordHelp() {
     row.appendChild(b);
   });
 
+  document.querySelectorAll('.wh-tab').forEach(t => {
+    t.onclick = () => {
+      document.querySelectorAll('.wh-tab').forEach(x => x.classList.remove('on'));
+      t.classList.add('on');
+      const words = t.dataset.tab === 'words';
+      document.getElementById('wh-wordpane').classList.toggle('hidden', !words);
+      document.getElementById('wh-do').classList.toggle('hidden', words);
+    };
+  });
+
   const toggle = document.getElementById('wh-toggle');
   const panel = document.getElementById('wh-panel');
   toggle.onclick = () => {
@@ -443,11 +453,63 @@ function buildWordHelp() {
   };
 }
 
+/* What to do, on the screen they are on, at the moment they forget. The
+   steps are stated once on the predict screen and then gone — by push six a
+   student who lost the routine had nowhere to look. Marcos 10/9: "frequent
+   and constant reminding of what to do and how to do it." */
+const DO_STEPS = {
+  vq:       ['Read the question. Tap the speaker if you want it read to you.',
+             'Tap the answer you think is right.',
+             'Press <b>Check my answer</b>.'],
+  analysis: ['Look at <b>your own table</b> on this screen. The numbers are yours.',
+             'Read the question, then find the answer in your table.',
+             'Tap your answer, then press <b>Check my answer</b>.'],
+  claims:   ['You are building one explanation out of three picks.',
+             'First the <b>claim</b> — what you think is true.',
+             'Then the <b>evidence</b> — the numbers from your table.',
+             'Then the <b>reasoning</b> — why it happened.'],
+  exit:     ['Last few questions. Nothing new &mdash; same as before.',
+             'Read it, tap your answer, press <b>Check my answer</b>.']
+};
+function doStepsFor(phase) {
+  const m = /^(predict|run|graph)([ABCD])$/.exec(phase);
+  if (m) {
+    const inv = invOf(m[2]);
+    if (m[1] === 'predict')
+      return ['Read what this test changes.', 'Make your guess. A guess is never marked wrong.',
+              'Press <b>Lock in my prediction</b>.'];
+    if (m[1] === 'run') return (inv && inv.doSteps) || null;
+    return ['Look at the bars. Taller bar means it went farther.',
+            'Read what it says about your guess.', 'Press <b>Next</b> to keep going.'];
+  }
+  return DO_STEPS[phase] || null;
+}
+function renderDoSteps(phase) {
+  const host = document.getElementById('wh-do');
+  if (!host) return;
+  const steps = doStepsFor(phase);
+  if (!steps) { host.innerHTML = '<p class="wh-def">Keep going &mdash; press the green button to move on.</p>'; }
+  else {
+    host.innerHTML = '<ol class="wh-steps">' +
+      steps.map(t => '<li>' + t + '</li>').join('') + '</ol>';
+  }
+  attachSpeakers(host);
+}
+
 function syncWordHelp(phase) {
   const el = document.getElementById('wordhelp');
   if (!el) return;
   buildWordHelp();
   el.classList.toggle('hidden', WH_HIDE_ON.indexOf(phase) !== -1);
+  renderDoSteps(phase);
+
+  /* The driving question rides every working screen. */
+  const wb = document.getElementById('whybar');
+  if (wb) {
+    const q = document.getElementById('wb-q');
+    if (q && !q.innerHTML) { q.innerHTML = LESSON.driving; attachSpeakers(wb); }
+    wb.classList.toggle('hidden', ['start', 'readaloud', 'end'].indexOf(phase) !== -1);
+  }
 }
 
 function logEvent(kind, extra) {
@@ -1262,6 +1324,21 @@ function paintRun(invKey) {
 
   doneBtn.classList.add('hidden');
   const run = inv.runs[i];
+  /* The table note said "two trials for each setup" long after B, C and D
+     dropped to one. Say what this investigation actually does. */
+  const tnote = document.getElementById('table-note');
+  if (tnote) tnote.textContent = trialsFor(invKey) > 1
+    ? 'Every push is recorded. Two trials for each setup, because real scientists repeat a test before they trust it.'
+    : 'Every push is recorded. One push for each setup this time \u2014 you already practised repeating a test in Investigation A.';
+
+  const whyBox = document.getElementById('run-whyrepeat');
+  if (whyBox) {
+    const show = inv.whyRepeat && trialsFor(invKey) > 1;
+    whyBox.innerHTML = show
+      ? '<span class="lbl">Why twice?</span><p>' + inv.whyRepeat + '</p>' : '';
+    whyBox.classList.toggle('hidden', !show);
+    if (show) attachSpeakers(whyBox);
+  }
   const nTrials = trialsFor(invKey);
   now.innerHTML = 'Setup: ' + setupLine(run) +
     (nTrials > 1 ? ' &middot; trial ' + run.trial + ' of ' + nTrials : '');
