@@ -84,6 +84,17 @@ window.LAB = {
     changeValue: 'the surface',
     predictQ: 'Before you test &mdash; which surface do you think will let the cart roll the FARTHEST?',
     predictOpts: ['Ice', 'Wood', 'Carpet', 'Sand'],
+    /* Said out loud on the screen before they start. Nothing here is a hint
+       about the answer — it is only what their hands have to do. */
+    doCount: '8 pushes',
+    doWhy:   'That is 4 surfaces. You push 2 times on each one.',
+    doSteps: [
+      'The site sets up each push for you. Read the setup line.',
+      'Press <b>Push the cart</b>.',
+      'Watch where the cart stops.',
+      'Press <b>Write it in my table</b>.',
+      'Do that 8 times. Then your table is full.'
+    ],
     runs: [
       { surface: 'ice',    push: 'medium', trial: 1 },
       { surface: 'ice',    push: 'medium', trial: 2 },
@@ -130,15 +141,23 @@ window.LAB = {
     sameValue: 'Wood',
     changeLabel: 'What we change:',
     changeValue: 'how hard we push',
+    doCount: '3 pushes',
+    doWhy:   'One small push, one medium push, one big push. Just one each.',
+    doSteps: [
+      'The site sets up each push for you. Read the setup line.',
+      'Press <b>Push the cart</b>.',
+      'Watch where the cart stops.',
+      'Press <b>Write it in my table</b>.',
+      'Do that 3 times. Then your table is full.'
+    ],
     predictQ: 'Before you test &mdash; what will happen to the distance when the push gets BIGGER?',
     predictOpts: ['The cart will roll farther', 'The cart will roll a shorter way', 'The distance will stay the same', 'The cart will not move at all'],
+    /* One trial each. Investigation A already teaches averaging across two
+       trials; repeating it here cost six minutes we do not have. */
     runs: [
       { surface: 'wood', push: 'small',  trial: 1 },
-      { surface: 'wood', push: 'small',  trial: 2 },
       { surface: 'wood', push: 'medium', trial: 1 },
-      { surface: 'wood', push: 'medium', trial: 2 },
-      { surface: 'wood', push: 'big',    trial: 1 },
-      { surface: 'wood', push: 'big',    trial: 2 }
+      { surface: 'wood', push: 'big',    trial: 1 }
     ]
   },
 
@@ -154,15 +173,26 @@ window.LAB = {
     sameValue: 'The same car, on wood',
     changeLabel: 'What we change:',
     changeValue: 'how tall the ramp is',
+    runVerb: '&#9660; Let the car go',
+    runNoun: 'Run',
+    doCount: '3 runs',
+    doWhy:   'One run from each ramp. 1 book, 2 books, 3 books.',
+    /* The "you do not push" line is first and said twice, because in A and B
+       they pushed every time and the habit carries over. */
+    doSteps: [
+      '<b>You do not push the car this time.</b> You let it go at the top.',
+      'The site sets up each ramp for you. Read the setup line.',
+      'Press <b>Let the car go</b>.',
+      'Watch where the car stops.',
+      'Press <b>Write it in my table</b>.',
+      'Do that 3 times. Remember: no pushing.'
+    ],
     predictQ: 'Before you test &mdash; what happens when the ramp gets TALLER?',
     predictOpts: ['The car rolls farther', 'The car rolls a shorter way', 'The distance stays the same', 'The car rolls backwards'],
     runs: [
       { surface: 'wood', ramp: 'low',  trial: 1 },
-      { surface: 'wood', ramp: 'low',  trial: 2 },
       { surface: 'wood', ramp: 'mid',  trial: 1 },
-      { surface: 'wood', ramp: 'mid',  trial: 2 },
-      { surface: 'wood', ramp: 'high', trial: 1 },
-      { surface: 'wood', ramp: 'high', trial: 2 }
+      { surface: 'wood', ramp: 'high', trial: 1 }
     ]
   },
 
@@ -177,13 +207,20 @@ window.LAB = {
     sameValue: 'Medium push, on wood',
     changeLabel: 'What we change:',
     changeValue: 'how heavy the vehicle is',
+    doCount: '2 pushes',
+    doWhy:   'One push for the car. One push for the truck. The pushes are the same size.',
+    doSteps: [
+      'The site sets up each push for you. Read the setup line.',
+      'Press <b>Push the cart</b>.',
+      'Watch where it stops.',
+      'Press <b>Write it in my table</b>.',
+      'Do that 2 times. Then your table is full.'
+    ],
     predictQ: 'Before you test &mdash; which one goes FARTHER with the very same push?',
     predictOpts: ['The car', 'The truck', 'They go exactly the same distance', 'Neither one moves'],
     runs: [
       { surface: 'wood', push: 'medium', vehicle: 'car',   trial: 1 },
-      { surface: 'wood', push: 'medium', vehicle: 'car',   trial: 2 },
-      { surface: 'wood', push: 'medium', vehicle: 'truck', trial: 1 },
-      { surface: 'wood', push: 'medium', vehicle: 'truck', trial: 2 }
+      { surface: 'wood', push: 'medium', vehicle: 'truck', trial: 1 }
     ]
   }
 };

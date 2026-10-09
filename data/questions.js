@@ -171,8 +171,23 @@ window.WHY_DISTRACTORS = [
    without doing the thinking. */
 window.WRITTEN_Q = [
   { id:'W01', min:140,
-    frame:'The cart stopped sooner on ____. On ice it rolled ____ cm. ' +
-          'On sand it rolled only ____ cm. Sand stopped the cart faster because ____.',
+    /* NOT a fill-in-the-blank frame. Marcos watched blank-filling fail on the
+       reading test 10/8/2026: a template full of ____ asks a struggling writer
+       to edit inside someone else's sentence, which is harder than writing,
+       and a half-edited template looks like failure on the screen.
+       These are starters you TAP. Each one drops its words into the student's
+       own box at the cursor and leaves them writing forward. Nothing is ever
+       deleted, nothing has to be edited in place, and a tap can always be
+       undone by backspacing like any other typing. */
+    starters:[
+      'The cart stopped sooner on',
+      'On ice it rolled',
+      'On sand it rolled only',
+      'This happened because',
+      'There is more friction on'
+    ],
+    /* The words this task needs that a Level-1 speller will stall on. */
+    wordbank:['friction', 'sand', 'ice', 'centimeters', 'surface', 'distance'],
     q:'Explain why the cart stopped much sooner on <b>sand</b> than on <b>ice</b>, even though you gave it the same push every time.',
     hints:['<b>Claim</b> &mdash; say which surface stopped the cart sooner.',
            '<b>Evidence</b> &mdash; use two real numbers from your data table.',
@@ -197,3 +212,40 @@ window.EXIT_Q = [
   { id:'L28', q:'Two carts are the same size. One is pushed hard and one is pushed softly. Which cart has <b>more energy of motion</b>?',
     opts:['The cart pushed hard','The cart pushed softly','They have the same energy','Neither cart has energy'], a:0 }
 ];
+
+/* ═══════════════════════════════════════════════════════
+   THE CORE SET — what fits two thirty-minute sessions.
+
+   The bank above is the whole lesson. It is 28 scored items across
+   11 skills, and 17 of those 28 are the second-or-later ask of a
+   skill already tested: friction is asked six times, reading the
+   data table five. Asking a Level-1 reader the same thing six times
+   is not rigour, it is the reason the lesson did not fit.
+
+   CORE keeps ONE ask per skill — the one tied to the investigation
+   the student has just run, so their own numbers are still on the
+   screen when they answer. Nine of the eleven skills are tested.
+   The two that are not, "motion and position" and "gravity", are
+   still TAUGHT on the vocabulary screen and are reinforced on IXL
+   (XPH, 8GH) — see the lesson plan.
+
+   Everything cut stays in the file. Set CORE_ONLY to false and the
+   full bank comes back for the take-anywhere tail: WIN block, home,
+   a sub day.
+
+   Session 1   vocab + Investigation A   -> L01 L02 L06 L09   (8 runs)
+   Session 2   Investigations B, C, D    -> L10 L14 L16 L18
+                                            L20 L21 W01 L26 L28  (8 runs)
+═══════════════════════════════════════════════════════ */
+window.CORE_ONLY = true;
+window.CORE_IDS = ['L01','L02','L06','L09','L10','L14','L16','L18',
+                   'L20','L21','W01','L26','L28'];
+
+if (window.CORE_ONLY) {
+  const keep = a => a.filter(q => window.CORE_IDS.indexOf(q.id) !== -1);
+  window.VOCAB_Q    = keep(window.VOCAB_Q);
+  window.ANALYSIS_Q = keep(window.ANALYSIS_Q);
+  window.CLAIMS_Q   = keep(window.CLAIMS_Q);
+  window.EXIT_Q     = keep(window.EXIT_Q);
+  window.WRITTEN_Q  = keep(window.WRITTEN_Q);
+}

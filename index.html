@@ -122,6 +122,11 @@
         <div class="same"><span class="lb" id="pr-same-lb"></span><span class="v" id="pr-same-v"></span></div>
         <div class="chg"><span class="lb" id="pr-chg-lb"></span><span class="v" id="pr-chg-v"></span></div>
       </div>
+      <div class="box todo" id="pr-todo" data-parts>
+        <span class="lbl">What you will do &mdash; <span id="pr-docount"></span></span>
+        <p id="pr-dowhy"></p>
+        <ol id="pr-dosteps"></ol>
+      </div>
       <hr class="hr">
       <p class="qtext" id="pr-predict"></p>
       <p class="counter">A prediction is not graded right or wrong. Scientists write it down <i>before</i> they test, then check it after.</p>
@@ -185,8 +190,19 @@
     <button class="btn ghost small" id="w-speak" data-noread type="button">&#128266; Read to me</button>
     <h3 style="font-size:16px; margin-top:16px">Put all three in your answer</h3>
     <ul class="hintlist" id="w-hints"></ul>
-    <div class="btnrow" style="margin-top:12px">
-      <button class="btn ghost small" id="w-frame" type="button">&#9999;&#65039; Give me a sentence starter</button>
+    <div class="box todo" data-parts style="margin-top:12px">
+      <span class="lbl">How long &mdash; <span style="color:var(--accent)">about 3 sentences</span></span>
+      <p>Write it in your own words. The buttons under the box put words straight into your writing
+      &mdash; tap one and keep going from there. The <b>Turn in</b> button turns green when your
+      answer is long enough. Nothing is lost if you stop and come back.</p>
+    </div>
+    <div id="w-starterwrap" class="chips">
+      <span class="chips-lbl">Tap to put these words in your box</span>
+      <div class="chiprow" id="w-starters"></div>
+    </div>
+    <div id="w-bankwrap" class="chips">
+      <span class="chips-lbl">Hard words &mdash; tap to spell them for you</span>
+      <div class="chiprow" id="w-wordbank"></div>
     </div>
     <label class="fld" style="margin-top:12px">
       <span class="lb">Your explanation</span>
@@ -194,7 +210,7 @@
     </label>
     <p class="counter" id="w-counter"></p>
     <div class="tablewrap" style="margin-top:12px">
-      <details><summary style="cursor:pointer; color:var(--sci); font-weight:600">&#128202; Show my data table again</summary>
+      <details open><summary style="cursor:pointer; color:var(--sci); font-weight:600">&#128202; My data table &mdash; your evidence numbers are in here</summary>
       <div id="w-data"></div></details>
     </div>
     <div class="btnrow"><button class="btn" id="w-next" type="button" disabled>Turn in my explanation &rarr;</button></div>
@@ -235,6 +251,7 @@
   </p>
 </div>
 
+<script src="data/art.js"></script>
 <script src="data/lesson.js"></script>
 <script src="data/questions.js"></script>
 <script src="script.js"></script>

@@ -343,3 +343,69 @@ table.data td.pending{color:var(--ink-faint)}
 .mini-spk:focus-visible{outline:3px solid var(--hl-line); outline-offset:2px; border-radius:4px}
 .opt .mini-spk, .vcard .mini-spk{margin-left:auto; padding-left:.5rem}
 @media (prefers-reduced-motion:reduce){ .mini-spk:hover{transform:none} }
+
+
+/* ── WHAT YOU WILL DO ───────────────────────────────────
+   Stated on the predict screen before a single push. The count, the
+   reason for the count, and the exact buttons. Each <li> is its own
+   read-aloud block, so a student can replay one step without
+   re-hearing the whole list. */
+.box.todo{
+  border:1px solid var(--sci-line); border-left:5px solid var(--sci);
+  border-radius:0 13px 13px 0; background:var(--sci-soft);
+  padding:14px 17px; margin:16px 0;
+}
+.box.todo .lbl{
+  display:block; font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--sci-dark); font-weight:600; margin-bottom:7px;
+}
+.box.todo #pr-docount{ color:var(--accent); }
+.box.todo > p{ margin:0 0 9px; font-size:15.5px; color:var(--ink-soft); }
+.box.todo ol{ margin:0; padding-left:1.25rem; }
+.box.todo li{
+  font-size:16px; color:var(--ink); padding:4px 0; line-height:1.5;
+}
+.box.todo li::marker{ color:var(--sci); font-weight:700; }
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .box.todo{ background:var(--surface-2); }
+}
+:root[data-theme="dark"] .box.todo{ background:var(--surface-2); }
+
+
+/* ── TAPPABLE STARTERS AND WORD BANK ────────────────────
+   Replaces the fill-in-the-blank frame. A tap drops the words into the
+   student's own box and leaves them writing forward — there is never a
+   half-finished template on screen, which is what made blanks fail. */
+.chips{ margin:12px 0 0; }
+.chips.hidden{ display:none; }
+.chips-lbl{
+  display:block; font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--ink-faint); font-weight:600; margin-bottom:6px;
+}
+.chiprow{ display:flex; flex-wrap:wrap; gap:7px; }
+.chipbtn{
+  font:inherit; font-size:15px; cursor:pointer;
+  background:var(--sci-soft); color:var(--sci-dark);
+  border:1px solid var(--sci-line); border-radius:999px;
+  padding:7px 14px; line-height:1.3; text-align:left;
+  transition:background .12s ease, transform .08s ease;
+}
+.chipbtn:hover{ background:var(--surface); border-color:var(--sci); }
+.chipbtn:active{ transform:translateY(1px); }
+.chipbtn.word{
+  background:var(--surface-2); color:var(--ink);
+  border-color:var(--line); font-weight:600;
+}
+.chipbtn.word:hover{ border-color:var(--accent); color:var(--accent); }
+@media (prefers-reduced-motion:reduce){ .chipbtn{ transition:none } }
+
+/* ── decorative art ─────────────────────────────────────
+   Inline SVG, sized by its slot, never read aloud. */
+.art{ display:inline-block; line-height:0; }
+.art svg{ display:block; width:100%; height:100%; }
+.art.wordart{ width:44px; height:44px; margin-bottom:4px; }
+.art.invart{ width:34px; height:34px; vertical-align:-7px; margin-right:9px; }
+.art.swatch{ width:26px; height:19px; vertical-align:-4px; margin-right:7px;
+  border-radius:4px; overflow:hidden; box-shadow:0 0 0 1px rgba(22,33,31,.12) inset; }

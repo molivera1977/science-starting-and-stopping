@@ -227,7 +227,12 @@ const speech = {
     root.querySelectorAll(SEL).forEach(el => {
       if (el.closest('[data-noread]')) return;
       if (el.offsetParent === null && getComputedStyle(el).position !== 'fixed') return;  /* hidden */
-      if (out.some(prev => prev.contains(el))) return;      /* already inside one we took */
+      /* A container marked data-parts is a wrapper, not a block: its children
+         are what get spoken. Directions are the case that needs this — a step
+         a student did not catch has to be replayable on its own, without
+         sitting through the whole list again. */
+      if (el.hasAttribute('data-parts')) return;
+      if (out.some(prev => prev.contains(el) && !prev.hasAttribute('data-parts'))) return;
       if (!this.textOf(el)) return;
       out.push(el);
     });
@@ -367,15 +372,17 @@ const PHASES = ['start','readaloud','vocab','vq','predictA','runA','graphA',
                 'predictB','runB','graphB','predictC','runC','graphC',
                 'predictD','runD','graphD','analysis','claims','write','exit','end'];
 
-/* Day 1 is the two investigations that need no new apparatus; Day 2 adds the
-   ramp and the truck, then all the thinking. The site resumes mid-lab, so the
-   split costs the student nothing. */
-const DAY2_STARTS = 'predictC';
+/* Session 1 is the words and Investigation A — the only investigation that
+   runs two trials, because averaging only needs teaching once. Session 2 is
+   the other three at one push each, plus all of the thinking. Thirty minutes
+   a session is the entire budget; see the lesson plan for where it goes.
+   The site resumes mid-lab, so the split costs the student nothing. */
+const DAY2_STARTS = 'predictB';
 
 const RAIL = [
   { key:'words', n:'Day 1', l:'Words',   phases:['vocab','vq'] },
   { key:'invA',  n:'Day 1', l:'Surfaces',phases:['predictA','runA','graphA'] },
-  { key:'invB',  n:'Day 1', l:'Push',    phases:['predictB','runB','graphB'] },
+  { key:'invB',  n:'Day 2', l:'Push',    phases:['predictB','runB','graphB'] },
   { key:'invC',  n:'Day 2', l:'Ramp',    phases:['predictC','runC','graphC'] },
   { key:'invD',  n:'Day 2', l:'Weight',  phases:['predictD','runD','graphD'] },
   { key:'anal',  n:'Day 2', l:'Analyze', phases:['analysis'] },
@@ -642,7 +649,8 @@ function showReadAloud() {
 ══════════════════════════════════════════════════════ */
 function renderVocab() {
   document.getElementById('vocab-cards').innerHTML = LESSON.vocab.map(v =>
-    '<div class="vcard"><div class="w">' + v.word + '</div>' +
+    '<div class="vcard">' + art(WORD_ART[v.word], 'wordart') +
+    '<div class="w">' + v.word + '</div>' +
     '<div class="es">en espa&ntilde;ol: ' + v.es + '</div>' +
     '<div class="d">' + v.def + '</div></div>').join('');
   document.getElementById('vocab-next').onclick = () => app.go('vq');
@@ -1027,12 +1035,25 @@ function renderPredict(inv) {
   document.getElementById('graph-card').classList.add('hidden');
 
   document.getElementById('pr-eyebrow').innerHTML = inv.label;
-  document.getElementById('pr-head').innerHTML = inv.heading;
+  document.getElementById('pr-head').innerHTML = art(INV_ART[inv.id], 'invart') + inv.heading;
   document.getElementById('pr-question').innerHTML = inv.question;
   document.getElementById('pr-same-lb').innerHTML = inv.sameLabel;
   document.getElementById('pr-same-v').innerHTML = inv.sameValue;
   document.getElementById('pr-chg-lb').innerHTML = inv.changeLabel;
   document.getElementById('pr-chg-v').innerHTML = inv.changeValue;
+
+  /* Say the job out loud before they start: how many pushes, why that many,
+     and the exact buttons to press. A student who cannot infer the routine
+     from the interface should not have to. */
+  document.getElementById('pr-docount').textContent = inv.doCount || '';
+  document.getElementById('pr-dowhy').textContent   = inv.doWhy || '';
+  const steps = document.getElementById('pr-dosteps');
+  steps.innerHTML = '';
+  (inv.doSteps || []).forEach(t => {
+    const li = document.createElement('li');
+    li.innerHTML = t;
+    steps.appendChild(li);
+  });
   document.getElementById('pr-predict').innerHTML = inv.predictQ;
 
   const box = document.getElementById('pr-opts');
@@ -1097,17 +1118,24 @@ function paintRun(invKey) {
   const total = inv.runs.length;
   const done = i >= total;
 
-  document.getElementById('run-progress').textContent = 'Push ' + Math.min(i + 1, total) + ' of ' + total;
+  /* Investigation C is released, not pushed — the counter has to agree with
+     the button and the steps, or the screen contradicts itself. */
+  const unit = inv.runNoun || 'Push';
+  document.getElementById('run-progress').textContent =
+    unit + ' ' + Math.min(i + 1, total) + ' of ' + total;
   renderTable(invKey);
 
   const runBtn = document.getElementById('run-btn');
+  /* Investigation C releases the car from a ramp — nobody pushes it. The
+     button has to say so, because the screen told them it would. */
+  runBtn.innerHTML = inv.runVerb || '&#128072; Push the cart';
   const recBtn = document.getElementById('run-record');
   const doneBtn = document.getElementById('run-done');
   const now = document.getElementById('run-now');
   const read = document.getElementById('run-readout');
 
   if (done) {
-    now.innerHTML = '<b>All ' + total + ' pushes are recorded.</b> Now look at what your numbers say.';
+    now.innerHTML = '<b>All ' + total + ' ' + (inv.runNoun ? inv.runNoun.toLowerCase() + 's' : 'pushes') + ' are recorded.</b> Now look at what your numbers say.';
     read.textContent = 'Table complete';
     runBtn.classList.add('hidden'); recBtn.classList.add('hidden');
     doneBtn.classList.remove('hidden');
@@ -1119,7 +1147,9 @@ function paintRun(invKey) {
 
   doneBtn.classList.add('hidden');
   const run = inv.runs[i];
-  now.innerHTML = 'Setup: ' + setupLine(run) + ' &middot; trial ' + run.trial + ' of 2';
+  const nTrials = trialsFor(invKey);
+  now.innerHTML = 'Setup: ' + setupLine(run) +
+    (nTrials > 1 ? ' &middot; trial ' + run.trial + ' of ' + nTrials : '');
   /* A push that has landed but is not recorded yet keeps the cart where it
      stopped — redrawing at zero here used to snap it back to the start line
      while the readout still showed the distance. */
@@ -1208,7 +1238,9 @@ function invOf(k) { return { A:LAB.invA, B:LAB.invB, C:LAB.invC, D:LAB.invD }[k]
    then the setting it holds constant. Each investigation changes exactly one
    thing, which is the method the whole lesson is teaching. */
 const INV_COLUMNS = {
-  A: { first:'Surface', second:'Push',    a:r => LAB.surfaces[r.surface].name, b:r => LAB.pushes[r.push].name },
+  A: { first:'Surface', second:'Push',
+       a:r => art(SURFACE_ART[r.surface], 'swatch') + LAB.surfaces[r.surface].name,
+       b:r => LAB.pushes[r.push].name },
   B: { first:'Push',    second:'Surface', a:r => LAB.pushes[r.push].name,      b:r => LAB.surfaces[r.surface].name },
   C: { first:'Ramp',    second:'Surface', a:r => LAB.ramps[r.ramp].name,       b:r => LAB.surfaces[r.surface].name },
   D: { first:'Vehicle', second:'Push',    a:r => LAB.vehicles[r.vehicle].name, b:r => LAB.pushes[r.push].name }
@@ -1223,22 +1255,37 @@ function groupsFor(invKey) {
   });
   return out;
 }
+/* Investigation A runs two trials so averaging gets taught; B, C and D run one
+   each, because repeating the lesson cost minutes the period does not have. */
+function trialsFor(invKey) {
+  return invOf(invKey).runs.reduce((m, r) => Math.max(m, r.trial), 1);
+}
 function cellsFor(invKey, g) {
   const rows = app.data[invKey].filter(r => runKey(r) === g.key);
   const t1 = rows.find(r => r.trial === 1), t2 = rows.find(r => r.trial === 2);
-  const avg = (t1 && t2) ? Math.round((t1.cm + t2.cm) / 2) : null;
+  const need = trialsFor(invKey);
+  const got  = [t1, t2].slice(0, need).filter(Boolean);
+  const avg  = got.length === need
+    ? Math.round(got.reduce((a, r) => a + r.cm, 0) / need)
+    : null;
   return { t1:t1 ? t1.cm : null, t2:t2 ? t2.cm : null, avg:avg };
 }
 
 function tableHTML(invKey) {
   const col = INV_COLUMNS[invKey];
-  let h = '<thead><tr><th>' + col.first + '</th><th>' + col.second +
-    '</th><th>Trial 1 (cm)</th><th>Trial 2 (cm)</th><th>Average (cm)</th></tr></thead><tbody>';
+  const two = trialsFor(invKey) > 1;
+  let h = '<thead><tr><th>' + col.first + '</th><th>' + col.second + '</th>' +
+    (two ? '<th>Trial 1 (cm)</th><th>Trial 2 (cm)</th><th>Average (cm)</th>'
+         : '<th>Distance (cm)</th>') + '</tr></thead><tbody>';
   groupsFor(invKey).forEach(g => {
     const c = cellsFor(invKey, g);
     const cell = v => v == null ? '<td class="num pending">—</td>' : '<td class="num">' + v + '</td>';
-    h += '<tr><td><b>' + col.a(g) + '</b></td><td>' + col.b(g) + '</td>' + cell(c.t1) + cell(c.t2) +
-         (c.avg == null ? '<td class="num pending">—</td>' : '<td class="num"><b>' + c.avg + '</b></td>') + '</tr>';
+    h += '<tr><td><b>' + col.a(g) + '</b></td><td>' + col.b(g) + '</td>' +
+         (two ? cell(c.t1) + cell(c.t2) +
+                (c.avg == null ? '<td class="num pending">—</td>'
+                               : '<td class="num"><b>' + c.avg + '</b></td>')
+              : (c.avg == null ? '<td class="num pending">—</td>'
+                               : '<td class="num"><b>' + c.avg + '</b></td>')) + '</tr>';
   });
   return h + '</tbody>';
 }
@@ -1295,9 +1342,9 @@ function renderGraph(invKey) {
   document.getElementById('gr-head').innerHTML = 'What my data looks like';
   const LEAD = {
     A: 'Each bar is the average of your two trials on that surface. The push was the same every time.',
-    B: 'Each bar is the average of your two trials with that push. The surface was wood every time.',
-    C: 'Each bar is the average of your two trials from that ramp. You never pushed the car — you let it go.',
-    D: 'Each bar is the average of your two trials for that vehicle. Both got the very same push, on wood.'
+    B: 'Each bar is your one push at that strength. The surface was wood every time.',
+    C: 'Each bar is your one run from that ramp. You never pushed the car — you let it go.',
+    D: 'Each bar is your one push for that vehicle. Both got the very same push, on wood.'
   };
   document.getElementById('gr-lead').innerHTML = LEAD[invKey];
 
@@ -1404,41 +1451,56 @@ function renderWrite() {
   const nx  = document.getElementById('w-next');
   box.value = app.written[w.id] || '';
 
-  /* The starter drops the frame in; the student fills every blank. A frame with
-     blanks still in it is not an explanation, so it cannot satisfy the length
-     rule on its own. */
-  const frameBtn = document.getElementById('w-frame');
-  frameBtn.classList.toggle('hidden', !w.frame);
-  frameBtn.onclick = () => {
-    if (!w.frame) return;
-    if (box.value.trim() && !box.value.includes('____') &&
-        !confirm('This will replace what you have written. Keep going anyway?')) return;
-    box.value = w.frame;
-    box.dispatchEvent(new Event('input'));
+  /* Tapping a starter INSERTS its words where the cursor is and leaves the
+     student writing forward. It never replaces what they have, never asks them
+     to edit inside a sentence somebody else wrote, and leaves nothing on screen
+     that looks like an unfinished form. Backspace undoes it like any typing. */
+  function insertAtCursor(text) {
+    const start = box.selectionStart == null ? box.value.length : box.selectionStart;
+    const end   = box.selectionEnd   == null ? box.value.length : box.selectionEnd;
+    const before = box.value.slice(0, start);
+    const after  = box.value.slice(end);
+    /* space before, unless we are at the very start or already after one */
+    const lead  = (before === '' || /[\s(]$/.test(before)) ? '' : ' ';
+    const added = lead + text;
+    box.value = before + added + after;
+    const caret = start + added.length;
     box.focus();
-    const i = box.value.indexOf('____');
-    if (i >= 0) box.setSelectionRange(i, i + 4);
-    logEvent('frame', { id:w.id });
-  };
+    box.setSelectionRange(caret, caret);
+    box.dispatchEvent(new Event('input'));
+  }
+
+  const starterRow = document.getElementById('w-starters');
+  starterRow.innerHTML = '';
+  (w.starters || []).forEach(t => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chipbtn'; b.setAttribute('data-noread', '');
+    b.textContent = t;
+    b.onclick = () => { insertAtCursor(t); logEvent('starter', { id:w.id, t:t }); };
+    starterRow.appendChild(b);
+  });
+  document.getElementById('w-starterwrap').classList.toggle('hidden', !(w.starters || []).length);
+
+  const bankRow = document.getElementById('w-wordbank');
+  bankRow.innerHTML = '';
+  (w.wordbank || []).forEach(t => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chipbtn word'; b.setAttribute('data-noread', '');
+    b.textContent = t;
+    b.onclick = () => { insertAtCursor(t); logEvent('word', { id:w.id, t:t }); };
+    bankRow.appendChild(b);
+  });
+  document.getElementById('w-bankwrap').classList.toggle('hidden', !(w.wordbank || []).length);
 
   const upd = () => {
     const v = box.value;
     const n = v.trim().length;
-    const blanks = (v.match(/_{3,}/g) || []).length;
     const need = Math.max(0, w.min - n);
-    if (blanks > 0) {
-      cnt.textContent = blanks === 1
-        ? 'One blank left to fill in.'
-        : blanks + ' blanks left to fill in.';
-      cnt.className = 'counter';
-      nx.disabled = true;
-    } else {
-      cnt.textContent = need > 0
-        ? n + ' letters so far — write about ' + need + ' more to turn this in.'
-        : n + ' letters. That is enough to turn in.';
-      cnt.className = 'counter' + (need > 0 ? '' : ' ok');
-      nx.disabled = need > 0;
-    }
+    cnt.textContent = need > 0
+      ? n + ' letters so far — write about ' + need + ' more to turn this in.'
+      : n + ' letters. That is enough to turn in.';
+    cnt.className = 'counter' + (need > 0 ? '' : ' ok');
+    nx.disabled = need > 0;
     app.written[w.id] = v;
   };
   box.oninput = () => { upd(); if (box.value.length % 40 === 0) app.save(); };
