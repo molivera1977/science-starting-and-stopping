@@ -645,3 +645,58 @@ table.data td.pending{color:var(--ink-faint)}
 .cv-you p{ margin:0; font-size:16.5px; line-height:1.55; color:var(--ink-soft); }
 .card.cover .btnrow{ justify-content:center; margin:22px 18px 0; }
 .btn.big{ font-size:19px; padding:15px 32px; }
+
+
+/* ── THE PLAN ───────────────────────────────────────────
+   Replaces an eight-sentence grey paragraph. Two days side by side, a
+   picture per test, three numbered things they do every time, one calm
+   line at the bottom. Nothing longer than two short sentences in a block. */
+#ra-text{ font-size:inherit !important; line-height:inherit !important; }
+.plan-h{
+  display:block; margin:6px 0 9px;
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:11px;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--sci-dark); font-weight:700;
+}
+.plan-days{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px; }
+@media (max-width:620px){ .plan-days{ grid-template-columns:1fr; } }
+.plan-day{
+  background:var(--surface); border:1px solid var(--sci-line);
+  border-top:5px solid var(--sci); border-radius:13px; padding:11px 13px 6px;
+}
+.plan-day + .plan-day{ border-top-color:var(--ink-faint); border-style:dashed; border-top-style:solid; }
+.pday{
+  margin:0 0 8px; font-family:Fraunces,Georgia,serif; font-weight:600;
+  font-size:19px; color:var(--sci-dark);
+}
+.plan-day + .plan-day .pday{ color:var(--ink-soft); }
+.ptile{
+  display:flex; gap:11px; align-items:flex-start;
+  padding:9px 0; border-top:1px solid var(--line-soft, var(--line));
+}
+.plan-day .ptile:first-of-type{ border-top:0; }
+.art.ptart{ flex:none; width:42px; height:42px; }
+.ptile .pt{ display:block; font-size:16px; color:var(--ink); line-height:1.3; }
+.ptile .pd{ display:block; font-size:15px; color:var(--ink-soft); line-height:1.45; margin-top:2px; }
+
+.plan-every{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+@media (max-width:620px){ .plan-every{ grid-template-columns:1fr; } }
+.ptile.step3{
+  position:relative; flex-direction:column; align-items:center; text-align:center;
+  background:var(--sci-soft); border:1px solid var(--sci-line); border-radius:13px;
+  padding:16px 12px 13px;
+}
+.ptile.step3 .art.ptart{ width:46px; height:46px; }
+.pnum{
+  position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+  width:24px; height:24px; border-radius:50%; background:var(--accent); color:#fff;
+  font-weight:700; font-size:13px; display:grid; place-items:center;
+}
+@media (max-width:620px){
+  .ptile.step3{ flex-direction:row; text-align:left; align-items:center; padding:14px 13px 11px 20px; }
+  .pnum{ left:-8px; top:50%; transform:translateY(-50%); }
+}
+.plan-calm{
+  margin:16px 0 0; padding:12px 15px; border-radius:12px;
+  background:var(--warn-soft); border:1px solid rgba(224,180,104,.55);
+  font-size:16px; line-height:1.5; color:var(--ink); text-align:center;
+}

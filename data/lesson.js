@@ -99,6 +99,35 @@ window.WHY_REPEAT =
   'slipped, or you pushed a little harder without meaning to. Doing it twice lets you catch it, ' +
   'and the middle of the two is closer to the truth. Scientists never trust one try.';
 
+/* ══════════════════════════════════════════════════════
+   THE PLAN — what used to be one eight-sentence paragraph
+
+   Marcos 10/9: "this paragraph is too boring and needs to be broken up.
+   Visually it's too monotonous." Same content, cut into pieces a student
+   can see at a glance: which tests happen which day, each with its own
+   picture, then the three things they do every time, then one calm line.
+═══════════════════════════════════════════════════════ */
+window.INTRO_PLAN = {
+  days: [
+    { label: 'Today', tests: [
+      { inv: 'A', t: 'Test 1 &mdash; the surface',
+        d: 'Push the cart on ice, wood, carpet and sand. Which one lets it go farthest?' },
+      { inv: 'B', t: 'Test 2 &mdash; the push',
+        d: 'Push it small, medium and big. Does a bigger push send it farther?' } ] },
+    { label: 'Next time', tests: [
+      { inv: 'C', t: 'Test 3 &mdash; the ramp',
+        d: 'Let a car roll down a ramp. Does a taller ramp send it farther?' },
+      { inv: 'D', t: 'Test 4 &mdash; the truck',
+        d: 'Push a car and a heavy truck the same way. Which one goes farther?' } ] }
+  ],
+  every: [
+    { art: 'distance',      t: 'Measure it',     d: 'See how far it went, in centimeters.' },
+    { art: 'data table',    t: 'Write it down',  d: 'Put the number in your data table.' },
+    { art: 'investigation', t: 'Explain it',     d: 'Use your own numbers to say why it stopped.' }
+  ],
+  calm: 'Take your time. This takes two days. Good scientists test more than once.'
+};
+
 window.METHOD_WORDS = {
   predict:  'A <b>prediction</b> is your best guess <i>before</i> you test. It is never marked wrong.',
   trial:    'A <b>trial</b> is one push.<br><br>In Investigation A you push <b>twice</b> on every ' +

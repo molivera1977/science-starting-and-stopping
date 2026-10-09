@@ -217,7 +217,7 @@ const speech = {
          card spoke as "surfacethe top of the thing you roll on". Put a full
          stop between block-level children so the voice pauses where the
          layout already does. */
-      c.querySelectorAll('div,p,li,h1,h2,h3,h4,td,th').forEach(b => {
+      c.querySelectorAll('div,p,li,h1,h2,h3,h4,td,th,.pt,.pd,.cerlbl').forEach(b => {
         const txt = (b.textContent || '').trim();
         if (txt && !/[.!?:,]$/.test(txt)) b.appendChild(document.createTextNode('.'));
         b.appendChild(document.createTextNode(' '));
@@ -240,7 +240,7 @@ const speech = {
     const SEL = 'h1,h2,h3,h4,p,li,td,th,' +
       '.vcard,.opt,.grow,.readout,.fb,.g,.sb,.step,.box,' +
       '.runnow,.note,.eyebrow,.qcount,.lbl,.same,.chg,.plain,.say,.counter,.chips-lbl,.qdata-h,' +
-      '.rcard,.rl,.rnow,.wh-def,.wh-ex,.wb-q';
+      '.rcard,.rl,.rnow,.wh-def,.wh-ex,.wb-q,.ptile';
     const out = [];
     root.querySelectorAll(SEL).forEach(el => {
       if (el.closest('[data-noread]')) return;
@@ -397,7 +397,7 @@ function attachSpeakers(root) {
    method words (trial, average, claim…) come from METHOD_WORDS, because
    those were used on screen dozens of times and never defined once.
 ══════════════════════════════════════════════════════ */
-const WH_HIDE_ON = ['cover', 'summary', 'start', 'vocab', 'end'];
+const WH_HIDE_ON = ['cover', 'summary', 'plan', 'start', 'vocab', 'end'];
 
 function buildWordHelp() {
   const row = document.getElementById('wh-words');
@@ -510,7 +510,7 @@ function syncWordHelp(phase) {
   if (wb) {
     const q = document.getElementById('wb-q');
     if (q && !q.innerHTML) { q.innerHTML = LESSON.driving; attachSpeakers(wb); }
-    wb.classList.toggle('hidden', ['cover', 'summary', 'start', 'end'].indexOf(phase) !== -1);
+    wb.classList.toggle('hidden', ['cover', 'summary', 'plan', 'start', 'end'].indexOf(phase) !== -1);
   }
 }
 
@@ -525,7 +525,7 @@ function logEvent(kind, extra) {
 /* ══════════════════════════════════════════════════════
    PHASES
 ══════════════════════════════════════════════════════ */
-const PHASES = ['cover','summary','start','vocab','vq','predictA','runA','graphA',
+const PHASES = ['cover','summary','plan','start','vocab','vq','predictA','runA','graphA',
                 'predictB','runB','graphB',
                 'daygate',
                 'predictC','runC','graphC',
@@ -581,7 +581,7 @@ const app = {
 
   /* ── screens ── */
   show(id) {
-    ['cover-screen','summary-screen','start-screen','vocab-screen','q-screen','lab-screen',
+    ['cover-screen','summary-screen','plan-screen','start-screen','vocab-screen','q-screen','lab-screen',
      'daygate-screen','write-screen','end-screen']
       .forEach(s => { const el = document.getElementById(s); if (el) el.classList.add('hidden'); });
     const el = document.getElementById(id); if (el) el.classList.remove('hidden');
@@ -717,7 +717,7 @@ function drawRail() {
     const cls = on ? 'step on' : (at > last ? 'step done' : 'step');
     return '<div class="' + cls + '"><span class="n">' + st.n + '</span><span class="l">' + st.l + '</span></div>';
   }).join('');
-  rail.classList.toggle('hidden', ['cover','summary','start'].indexOf(app.phase) !== -1);
+  rail.classList.toggle('hidden', ['cover','summary','plan','start'].indexOf(app.phase) !== -1);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -789,7 +789,7 @@ function buildStart() {
     logEvent('resume');
     document.getElementById('who-chip').textContent = app.studentName;
     app.startTimer(); app.tickTimer();
-    app.go(['cover','summary','start'].indexOf(app.phase) !== -1 ? 'vocab' : app.phase);
+    app.go(['cover','summary','plan','start'].indexOf(app.phase) !== -1 ? 'vocab' : app.phase);
   });
 
   /* No whole-page reader anywhere now. Marcos 10/9: "I don't like the read to
@@ -830,17 +830,50 @@ function recapHTML(which) {
   '</div>';
 }
 
+/* The plan, as tiles: two days side by side with a picture for each test,
+   then the three things they do every time, then one calm line. Each tile
+   is one read-aloud block so a student can hear just that piece. */
+function planHTML() {
+  const P = window.INTRO_PLAN;
+  if (!P) return '';
+  const tArt = window.THING_ART || {};
+  return '<span class="plan-h">Which test, which day</span>' +
+    '<div class="plan-days">' + P.days.map(day =>
+      '<div class="plan-day"><p class="pday">' + day.label + '</p>' +
+      day.tests.map(t =>
+        '<div class="ptile">' + art(INV_ART[t.inv], 'ptart') +
+        '<div><b class="pt">' + t.t + '</b><span class="pd">' + t.d + '</span></div></div>'
+      ).join('') + '</div>').join('') +
+    '</div>' +
+    '<span class="plan-h">Every single time</span>' +
+    '<div class="plan-every">' + P.every.map((e, i) =>
+      '<div class="ptile step3"><span class="pnum" data-noread>' + (i + 1) + '</span>' +
+      art(tArt[e.art], 'ptart') +
+      '<div><b class="pt">' + e.t + '</b><span class="pd">' + e.d + '</span></div></div>'
+    ).join('') + '</div>' +
+    '<p class="plan-calm">' + P.calm + '</p>';
+}
+
 function showSummary() {
   app.phase = 'summary'; drawRail();
-  const host = document.getElementById('ra-text');
-  host.innerHTML = wrapWords(INTRO_TEXT);
   document.getElementById('recap-host').innerHTML = recapHTML('day1');
   app.show('summary-screen');
   attachSpeakers(document.getElementById('summary-screen'));
-  /* The intro speaks itself as soon as it appears. */
-  setTimeout(() => speech.say(host, null, null, INTRO_RATE), 420);
-  document.getElementById('ra-again').onclick = () => speech.say(host, null, null, INTRO_RATE);
-  /* Summary -> the name picker, not straight into the lesson. */
+  /* Nothing on these pages speaks on its own. Marcos 10/9: "this read on its
+     own. It shouldn't." Twenty-two devices would all start talking at once. */
+  document.getElementById('sum-next').onclick = () => { speech.stop(); showPlan(); };
+}
+
+/* The plan gets its own page. Marcos 10/9: the summary was one long screen,
+   "perhaps push it to another page". */
+function showPlan() {
+  app.phase = 'plan'; drawRail();
+  const host = document.getElementById('ra-text');
+  host.innerHTML = planHTML();
+  app.show('plan-screen');
+  attachSpeakers(document.getElementById('plan-screen'));
+  document.getElementById('ra-again').onclick = () => speech.sayScreen(host, INTRO_RATE);
+  /* Plan -> the name picker, not straight into the lesson. */
   document.getElementById('ra-next').onclick = () => {
     speech.stop(); app.phase = 'start'; app.show('start-screen'); drawRail();
   };
