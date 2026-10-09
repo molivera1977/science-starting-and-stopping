@@ -406,10 +406,15 @@ function buildWordHelp() {
 
   const items = LESSON.vocab.map(v => ({
     label: v.word,
-    html: '<b>' + v.word + '</b> &mdash; ' + v.def +
-          (v.ex ? '<span class="wh-ex"><span class="exlbl">Like this</span>' + v.ex + '</span>' : '')
-  })).concat(Object.keys(METHOD_WORDS || {}).map(k => ({
-    label: k, cls: 'word', html: METHOD_WORDS[k]
+    html: '<p class="wh-def"><b>' + v.word + '</b> &mdash; ' + v.def + '</p>' +
+          (v.ex ? '<p class="wh-ex"><span class="exlbl" data-noread>For example</span>' + v.ex + '</p>' : '')
+  })).concat(Object.keys(window.THING_WORDS || {}).map(k => ({
+    label: k, cls: 'thing',
+    html: '<p class="wh-def"><b>' + k + '</b> &mdash; ' + THING_WORDS[k].def + '</p>' +
+          '<p class="wh-ex"><span class="exlbl" data-noread>For example</span>' +
+          THING_WORDS[k].ex + '</p>'
+  }))).concat(Object.keys(METHOD_WORDS || {}).map(k => ({
+    label: k, cls: 'word', html: '<p class="wh-def">' + METHOD_WORDS[k] + '</p>'
   })));
 
   items.forEach(it => {
@@ -770,7 +775,7 @@ function renderVocab() {
        never tries to pronounce it. */
     '<div class="es" data-noread>en espa&ntilde;ol: ' + v.es + '</div>' +
     '<div class="d">' + v.def + '</div>' +
-    (v.ex ? '<div class="ex"><span class="exlbl">Like this</span>' + v.ex + '</div>' : '') +
+    (v.ex ? '<div class="ex"><span class="exlbl">For example</span>' + v.ex + '</div>' : '') +
     '</div>').join('');
   document.getElementById('vocab-next').onclick = () => app.go('vq');
 }

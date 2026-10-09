@@ -532,3 +532,26 @@ table.data td.pending{color:var(--ink-faint)}
   border-left:5px solid var(--accent); border-radius:0 13px 13px 0;
   padding:12px 15px; font-size:16.5px; line-height:1.5; margin-top:11px;
 }
+
+
+/* Examples carry more than definitions do for this class, so they stop
+   looking like a footnote: own panel, same size as the definition, warm
+   label. (Marcos 10/9: "Examples are everything for 4th graders much more
+   than definitions.") */
+.vcard .ex{
+  margin-top:9px; padding:9px 11px; border-top:0;
+  background:var(--warn-soft); border:1px solid rgba(224,180,104,.55);
+  border-radius:10px;
+  font-size:15px; line-height:1.5; color:var(--ink);
+}
+.exlbl{ color:var(--warn); }
+#wh-answer .wh-def{ margin:0; font-size:16px; line-height:1.5; }
+#wh-answer .wh-ex{
+  background:var(--warn-soft); border:1px solid rgba(224,180,104,.55);
+  border-radius:10px; padding:9px 11px; margin:9px 0 0;
+  border-top:0; font-size:15px; color:var(--ink);
+}
+#wh-words .chipbtn.thing{
+  background:var(--warn-soft); border-color:rgba(224,180,104,.7); color:var(--warn);
+}
+#wh-words .chipbtn.thing.on{ background:var(--warn); color:#fff; border-color:var(--warn); }

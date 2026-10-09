@@ -55,6 +55,21 @@ window.RECAP = {
   }
 };
 
+/* The equipment. None of these are science terms, which is exactly why they
+   slipped through — "cart" appears in 57 places across the lesson and was
+   never explained. A child who does not know what a cart is cannot follow a
+   single instruction on the screen. */
+window.THING_WORDS = {
+  cart:   { def: 'a little box on wheels that rolls',
+            ex: 'Think of a toy car. Or a skateboard. Or the wagon you pull behind you. ' +
+                'On your screen it is the small box with two wheels.' },
+  track:  { def: 'the long straight path the cart rolls down',
+            ex: 'Like a bowling lane, or a hallway, or the lines on a running track.' },
+  ramp:   { def: 'a slope that something rolls down',
+            ex: 'A slide at the park. A wheelchair ramp. A skateboard ramp. ' +
+                'A piece of cardboard with one end up on some books.' }
+};
+
 window.METHOD_WORDS = {
   predict:  'A <b>prediction</b> is your best guess <i>before</i> you test. It is never marked wrong.',
   trial:    'A <b>trial</b> is one push. Some setups get two trials so you can check your own work.',
@@ -99,17 +114,17 @@ window.LESSON = {
      a pacing document lists it. Marcos asked for it 10/9/2026. */
   vocab: [
     { word: 'force',    es: 'fuerza',     def: 'a push or a pull on an object',
-      ex: 'Pushing a shopping cart. Pulling a door open. Kicking a ball.' },
+      ex: 'Pushing a shopping cart at the store. Pulling the classroom door open. Kicking a ball. Pressing a button. Dragging your backpack across the floor.' },
     { word: 'friction', es: 'resistencia',def: 'a force that pushes back on a moving object and slows it down',
-      ex: 'Your sneakers gripping the gym floor. Rubbing your hands to get warm. A bike slowing down when you stop pedalling.' },
+      ex: 'Your sneakers gripping the gym floor so you do not slip. Rubbing your hands together to get warm. A bike slowing down after you stop pedalling. A book sliding across a desk and stopping. Why it is hard to run on sand.' },
     { word: 'motion',   es: '&mdash;',    def: 'when an object changes its position',
-      ex: 'A bus pulling away from the stop. A ball rolling down the hall. You, walking to lunch.' },
+      ex: 'A bus pulling away from the stop. A ball rolling down the hall. You, walking to lunch. A door swinging open. A pencil rolling off a desk.' },
     { word: 'energy',   es: 'energ&iacute;a',def: 'what an object needs in order to move or do work',
-      ex: 'The food you ate at lunch. The battery in a toy. The gas in a car.' },
+      ex: 'The food you ate at lunch, which lets you run at recess. The battery in a toy or a tablet. The gas in a car. Wind pushing a flag.' },
     { word: 'gravity',  es: 'gravedad',   def: 'the force that pulls objects down toward Earth',
-      ex: 'A dropped phone hitting the floor. Rain falling. A ball coming back down after you throw it up.' },
+      ex: 'A dropped phone hitting the floor. Rain falling down, never up. A ball coming back down after you throw it. Sliding down a slide. Water going down a drain.' },
     { word: 'surface',  es: 'superficie', def: 'the top of the thing an object moves on',
-      ex: 'The gym floor. A carpet. An icy sidewalk. Sand at the beach.' }
+      ex: 'The gym floor. The carpet in the classroom. An icy sidewalk in winter. Sand at the beach. The top of your desk.' }
   ]
 };
 
