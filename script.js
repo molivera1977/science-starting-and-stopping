@@ -213,6 +213,15 @@ const speech = {
       badge.remove();
       t = letter + '. ' + (c.textContent || '');
     } else {
+      /* textContent runs block children straight together, so a vocabulary
+         card spoke as "surfacethe top of the thing you roll on". Put a full
+         stop between block-level children so the voice pauses where the
+         layout already does. */
+      c.querySelectorAll('div,p,li,h1,h2,h3,h4,td,th').forEach(b => {
+        const txt = (b.textContent || '').trim();
+        if (txt && !/[.!?:,]$/.test(txt)) b.appendChild(document.createTextNode('.'));
+        b.appendChild(document.createTextNode(' '));
+      });
       t = c.textContent || '';
     }
     t = t.replace(/\s+/g, ' ').trim();
@@ -383,6 +392,7 @@ function logEvent(kind, extra) {
    PHASES
 ══════════════════════════════════════════════════════ */
 const PHASES = ['start','readaloud','vocab','vq','predictA','runA','graphA',
+                'daygate',
                 'predictB','runB','graphB','predictC','runC','graphC',
                 'predictD','runD','graphD','analysis','claims','write','exit','end'];
 
@@ -391,11 +401,11 @@ const PHASES = ['start','readaloud','vocab','vq','predictA','runA','graphA',
    the other three at one push each, plus all of the thinking. Thirty minutes
    a session is the entire budget; see the lesson plan for where it goes.
    The site resumes mid-lab, so the split costs the student nothing. */
-const DAY2_STARTS = 'predictB';
+const DAY2_STARTS = 'daygate';   /* the stop between the two sessions */
 
 const RAIL = [
   { key:'words', n:'Day 1', l:'Words',   phases:['vocab','vq'] },
-  { key:'invA',  n:'Day 1', l:'Surfaces',phases:['predictA','runA','graphA'] },
+  { key:'invA',  n:'Day 1', l:'Surfaces',phases:['predictA','runA','graphA','daygate'] },
   { key:'invB',  n:'Day 2', l:'Push',    phases:['predictB','runB','graphB'] },
   { key:'invC',  n:'Day 2', l:'Ramp',    phases:['predictC','runC','graphC'] },
   { key:'invD',  n:'Day 2', l:'Weight',  phases:['predictD','runD','graphD'] },
@@ -445,7 +455,8 @@ const app = {
       predictB:'Push predict',     runB:'Push runs',     graphB:'Push graph',
       predictC:'Ramp predict',     runC:'Ramp runs',     graphC:'Ramp graph',
       predictD:'Weight predict',   runD:'Weight runs',   graphD:'Weight graph',
-      analysis:'Analyze data', claims:'Claim and evidence', write:'Explain', exit:'Exit ticket', end:'Done' };
+      analysis:'Analyze data', claims:'Claim and evidence', write:'Explain',
+      daygate:'End of Day 1', exit:'Exit ticket', end:'Done' };
     return m[this.phase] || this.phase;
   },
 
@@ -544,6 +555,7 @@ const app = {
     else if (phase === 'graphB')   { renderGraph('B'); }
     else if (phase === 'graphC')   { renderGraph('C'); }
     else if (phase === 'graphD')   { renderGraph('D'); }
+    else if (phase === 'daygate')  { renderDayGate(); }
     else if (phase === 'write')    { renderWrite(); }
     else if (phase === 'end')      { finish(); }
     submitPartial();
@@ -626,11 +638,10 @@ function buildStart() {
     app.go(app.phase === 'start' || app.phase === 'readaloud' ? 'vocab' : app.phase);
   });
 
-  /* The start screen carries the driving question and all four objectives, and
-     it is the first thing a struggling reader meets. Each I-can lights up as it
-     is read. */
-  document.getElementById('st-speak').addEventListener('click', () =>
-    speech.sayScreen(document.getElementById('start-screen')));
+  /* No whole-page reader anywhere now. Marcos 10/9: "I don't like the read to
+     me that reads the entire page." Every block carries its own speaker, so a
+     student hears the one line they are stuck on instead of sitting through
+     the screen. */
 
   document.getElementById('teacher-btn').addEventListener('click', () => {
     askPin('Teacher view — unlock to skip ahead to any step.', () => {
@@ -665,11 +676,12 @@ function renderVocab() {
   document.getElementById('vocab-cards').innerHTML = LESSON.vocab.map(v =>
     '<div class="vcard">' + art(WORD_ART[v.word], 'wordart') +
     '<div class="w">' + v.word + '</div>' +
-    '<div class="es">en espa&ntilde;ol: ' + v.es + '</div>' +
+    /* data-noread: textOf() strips these before speaking, so the Spanish
+       stays on screen for the reader who wants it and the English voice
+       never tries to pronounce it. */
+    '<div class="es" data-noread>en espa&ntilde;ol: ' + v.es + '</div>' +
     '<div class="d">' + v.def + '</div></div>').join('');
   document.getElementById('vocab-next').onclick = () => app.go('vq');
-  document.getElementById('vocab-speak').onclick = () =>
-    speech.sayScreen(document.getElementById('vocab-screen'));
 }
 
 /* ══════════════════════════════════════════════════════
@@ -763,8 +775,6 @@ function renderQ() {
   qt.innerHTML = wrapWords(stemOf(q));
   /* Read-aloud says the question AND the four choices — a student who cannot
      read the options cannot answer a question they understood. */
-  document.getElementById('q-speak').onclick = () =>
-    speech.sayScreen(document.getElementById('q-screen'));
 
   /* L06–L13 ask the student to read their own table. Keeping it on the same
      screen means the question tests the science, not their memory of a table
@@ -1050,6 +1060,7 @@ function renderPredict(inv) {
 
   document.getElementById('pr-eyebrow').innerHTML = inv.label;
   document.getElementById('pr-head').innerHTML = art(INV_ART[inv.id], 'invart') + inv.heading;
+  document.getElementById('pr-plain').innerHTML = inv.headingPlain || '';
   document.getElementById('pr-question').innerHTML = inv.question;
   document.getElementById('pr-same-lb').innerHTML = inv.sameLabel;
   document.getElementById('pr-same-v').innerHTML = inv.sameValue;
@@ -1091,9 +1102,6 @@ function renderPredict(inv) {
   attachSpeakers(document.getElementById('predict-card'));
   nx.onclick = () => { logEvent('predict', { inv:inv.id, v:stripTags(app.predictions[inv.id]) }); app.next(); };
 
-  document.getElementById('pr-speak').onclick = () =>
-    speech.sayScreen(document.getElementById('predict-card'));
-
 }
 
 /* Describes a run in the words of whatever it varies. */
@@ -1117,9 +1125,6 @@ function renderRun(invKey) {
   document.getElementById('run-eyebrow').innerHTML = inv.label;
   document.getElementById('run-head').innerHTML = inv.heading;
   document.getElementById('table-head').innerHTML = inv.label + ' &mdash; my data table';
-
-  document.getElementById('run-speak').onclick = () =>
-    speech.sayScreen(document.getElementById('run-card'));
 
   app.lastRun = null;
   paintRun(invKey);
@@ -1172,6 +1177,14 @@ function paintRun(invKey) {
 
   if (app.lastRun && app.lastRun.index === i) {
     read.textContent = 'Distance: ' + app.lastRun.cm + ' cm';
+    /* Say what just happened, in a sentence, and say what to do next. A chip
+       reading "Distance: 501 cm" is a label; it does not tell a student that
+       their push landed or that the number is not saved yet. The live region
+       means a screen reader announces it too. */
+    const noun = (inv.runNoun || 'Push');
+    now.innerHTML = '<b>' + noun + ' ' + (i + 1) + ' went ' + app.lastRun.cm +
+      ' cm.</b> It is not in your table yet &mdash; press <b>Write it in my table</b>.';
+    now.setAttribute('aria-live', 'polite');
     runBtn.classList.add('hidden');
     recBtn.classList.remove('hidden');
     recBtn.onclick = () => {
@@ -1411,9 +1424,6 @@ function renderGraph(invKey) {
            : 'Your prediction did not match — and that is worth knowing. The heavier vehicle keeps less of the push.');
   }
 
-  document.getElementById('gr-speak').onclick = () =>
-    speech.sayScreen(document.getElementById('graph-card'));
-
 
   attachSpeakers(document.getElementById('graph-card'));
 
@@ -1447,6 +1457,31 @@ function missedPredictions() {
   return out;
 }
 
+/* ══════════════════════════════════════════════════════
+   END OF DAY 1 — a real stop, not a scroll-past
+
+   Day 1 is the words and Investigation A. Without a gate a fast student
+   runs straight into the ramp and the truck, which are Day 2's lesson and
+   have not been briefed yet. This asks them out loud, tells them what they
+   already did, and lets them stop with everything saved.
+══════════════════════════════════════════════════════ */
+function renderDayGate() {
+  app.show('daygate-screen');
+  const pushes = (app.data.A || []).length;
+  const surfaces = new Set((app.data.A || []).map(r => r.surface)).size;
+  document.getElementById('dg-did').innerHTML =
+    'You learned <b>six words</b>. You did <b>' + pushes + ' pushes</b> on <b>' +
+    surfaces + ' different surfaces</b>. All of it is saved.';
+  document.getElementById('dg-next').onclick = () => { logEvent('day2_start'); app.next(); };
+  document.getElementById('dg-stop').onclick = () => {
+    logEvent('day1_stop'); app.save(); submitPartial();
+    document.getElementById('dg-choices').classList.add('hidden');
+    document.getElementById('dg-stopped').classList.remove('hidden');
+    speech.stop();
+  };
+  attachSpeakers(document.getElementById('daygate-screen'));
+}
+
 function renderWrite() {
   /* pick up at the first prompt that is still short */
   wIdx = WRITTEN_Q.findIndex(w => (app.written[w.id] || '').trim().length < w.min);
@@ -1459,8 +1494,6 @@ function renderWrite() {
     : 'Explain it like a scientist';
   const wt = document.getElementById('w-text');
   wt.innerHTML = wrapWords(w.q);
-  document.getElementById('w-speak').onclick = () =>
-    speech.sayScreen(document.getElementById('write-screen'));
   document.getElementById('w-hints').innerHTML = w.hints.map(h => '<li>' + h + '</li>').join('');
   document.getElementById('w-data').innerHTML = allTablesHTML();
 
@@ -1611,9 +1644,6 @@ function finish() {
   app.save();
 
   attachSpeakers(document.getElementById('end-screen'));
-
-  document.getElementById('end-speak').onclick = () =>
-    speech.sayScreen(document.getElementById('end-screen'));
 
 
   document.getElementById('end-print').onclick = () => window.print();

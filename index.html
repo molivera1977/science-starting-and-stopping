@@ -49,7 +49,6 @@
     <h3 id="st-ican-head">By the end you can &hellip;</h3>
     <ul class="objlist" id="ican-list"></ul>
     <div class="btnrow" style="margin-top:.2rem">
-      <button class="btn ghost small" id="st-speak" data-noread type="button">&#128266; Read this to me</button>
     </div>
 
     <hr class="hr">
@@ -87,12 +86,11 @@
   <!-- ══════════════ 3 · VOCABULARY ══════════════ -->
   <section id="vocab-screen" class="card hidden">
     <div class="eyebrow">Step 1 &middot; Words you need</div>
-    <h2>Five words for today</h2>
-    <p class="lead">Read these five words. You will use them all through the lab.</p>
+    <h2>Six words for today</h2>
+    <p class="lead">Read these six words. You will use them all through the lab.</p>
     <div class="vgrid" id="vocab-cards"></div>
     <div class="btnrow">
       <button class="btn" id="vocab-next" type="button">Check that I know them &rarr;</button>
-      <button class="btn ghost small" id="vocab-speak" data-noread type="button">&#128266; Read the words to me</button>
     </div>
   </section>
 
@@ -103,7 +101,6 @@
       <span class="qcount" id="q-phase"></span>
     </div>
     <p class="qtext" id="q-text" tabindex="-1"></p>
-    <button class="btn ghost small" id="q-speak" data-noread type="button">&#128266; Read to me</button>
     <div id="q-data" class="hidden"></div>
     <div class="opts" id="q-opts"></div>
     <div id="q-fb" aria-live="polite" role="status"></div>
@@ -117,6 +114,7 @@
     <div class="card" id="predict-card">
       <div class="eyebrow" id="pr-eyebrow"></div>
       <h2 id="pr-head"></h2>
+      <p class="plain" id="pr-plain"></p>
       <p class="lead" id="pr-question"></p>
       <div class="varbox">
         <div class="same"><span class="lb" id="pr-same-lb"></span><span class="v" id="pr-same-v"></span></div>
@@ -133,7 +131,6 @@
       <div class="opts" id="pr-opts"></div>
       <div class="btnrow">
         <button class="btn" id="pr-next" type="button" disabled>Lock in my prediction &rarr;</button>
-        <button class="btn ghost small" id="pr-speak" data-noread type="button">&#128266; Read to me</button>
       </div>
     </div>
 
@@ -156,7 +153,6 @@
       <div class="btnrow">
         <button class="btn" id="run-btn" type="button">&#128072; Push the cart</button>
         <button class="btn ghost small hidden" id="run-record" type="button">Write it in my table &rarr;</button>
-        <button class="btn ghost small" id="run-speak" data-noread type="button">&#128266; Read to me</button>
       </div>
 
       <hr class="hr">
@@ -176,10 +172,40 @@
       <div id="gr-predict-check" class="note"></div>
       <div class="btnrow">
         <button class="btn" id="gr-next" type="button">Keep going &rarr;</button>
-        <button class="btn ghost small" id="gr-speak" data-noread type="button">&#128266; Read to me</button>
       </div>
     </div>
 
+  </section>
+
+  <!-- ══════════════ 5b · END OF DAY 1 ══════════════ -->
+  <section id="daygate-screen" class="card hidden">
+    <div class="eyebrow">End of Day 1</div>
+    <h2>Nice work. That is all of Day 1.</h2>
+    <p class="lead" id="dg-did"></p>
+    <div class="box todo" data-parts>
+      <span class="lbl">Day 2 is</span>
+      <ol>
+        <li>The ramp. You let a car go instead of pushing it.</li>
+        <li>The truck against the car.</li>
+        <li>How hard you push.</li>
+        <li>Then you explain what you found.</li>
+      </ol>
+    </div>
+    <div id="dg-choices">
+      <p class="qtext">Are you ready to start Day 2?</p>
+      <div class="btnrow">
+        <button class="btn" id="dg-next" type="button">Yes &mdash; start Day 2 &rarr;</button>
+        <button class="btn ghost" id="dg-stop" type="button">No &mdash; stop here for today</button>
+      </div>
+    </div>
+    <div id="dg-stopped" class="hidden">
+      <div class="box todo" data-parts>
+        <span class="lbl">Saved</span>
+        <p>Your work is saved. You can close this now.</p>
+        <p>When you open the lesson again on <b>this same computer</b>, press
+        <b>Pick up where I left off</b> and you will start Day 2.</p>
+      </div>
+    </div>
   </section>
 
   <!-- ══════════════ 6 · WRITTEN ══════════════ -->
@@ -187,7 +213,6 @@
     <div class="eyebrow">Step 4 &middot; Explain it like a scientist</div>
     <h2 id="w-head">Claim, Evidence, Reasoning</h2>
     <p class="qtext" id="w-text"></p>
-    <button class="btn ghost small" id="w-speak" data-noread type="button">&#128266; Read to me</button>
     <h3 style="font-size:16px; margin-top:16px">Put all three in your answer</h3>
     <ul class="hintlist" id="w-hints"></ul>
     <div class="box todo" data-parts style="margin-top:12px">
@@ -226,7 +251,6 @@
     <div id="end-cer" class="hidden"></div>
     <div id="end-miss"></div>
     <div class="btnrow">
-      <button class="btn ghost small" id="end-speak" data-noread type="button">&#128266; Read my results to me</button>
       <button class="btn ghost small" id="end-print" type="button">&#128424; Print my lab sheet</button>
       <button class="btn ghost small" id="end-restart" type="button">Start over (teacher PIN)</button>
     </div>

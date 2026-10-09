@@ -36,13 +36,19 @@ window.LESSON = {
     'model the cause-and-effect relationship between the force acting on an object and the object&rsquo;s motion.'
   ],
 
-  /* Week 1 vocabulary from the Unit Plan, with its Spanish cognates. */
+  /* Week 1 vocabulary from the Unit Plan, with its Spanish cognates.
+
+     "surface" is NOT one of the district's five. It is here because the lab
+     leans on it constantly — "First the surface, then the push" — and a word
+     the task cannot be done without belongs on the word screen whether or not
+     a pacing document lists it. Marcos asked for it 10/9/2026. */
   vocab: [
     { word: 'force',    es: 'fuerza',     def: 'a push or a pull on an object' },
     { word: 'friction', es: 'resistencia',def: 'a force that pushes back on a moving object and slows it down' },
     { word: 'motion',   es: '&mdash;',    def: 'when an object changes its position' },
     { word: 'energy',   es: 'energ&iacute;a',def: 'what an object needs in order to move or do work' },
-    { word: 'gravity',  es: 'gravedad',   def: 'the force that pulls objects down toward Earth' }
+    { word: 'gravity',  es: 'gravedad',   def: 'the force that pulls objects down toward Earth' },
+    { word: 'surface',  es: 'superficie', def: 'the top of the thing you roll on, like ice or sand' }
   ]
 };
 
@@ -77,6 +83,7 @@ window.LAB = {
     id: 'A',
     label: 'Investigation A',
     heading: 'Same push, different surfaces',
+    headingPlain: 'That means you push the same way every time. The only thing that changes is what the cart rolls on.',
     question: 'If the push stays exactly the same, does the surface change how far the cart rolls?',
     sameLabel: 'Push stays the same:',
     sameValue: 'Medium push',
@@ -136,6 +143,7 @@ window.LAB = {
     id: 'B',
     label: 'Investigation B',
     heading: 'Same surface, different pushes',
+    headingPlain: 'That means the cart always rolls on wood. The only thing that changes is how hard you push.',
     question: 'If the surface stays exactly the same, does the size of the push change how far the cart rolls?',
     sameLabel: 'Surface stays the same:',
     sameValue: 'Wood',
@@ -168,6 +176,7 @@ window.LAB = {
     id: 'C',
     label: 'Investigation C',
     heading: 'Same car, different ramp heights',
+    headingPlain: 'That means the same car on the same wood every time. The only thing that changes is how tall the ramp is.',
     question: 'If the car always starts from rest, does a taller ramp send it farther?',
     sameLabel: 'Car and surface stay the same:',
     sameValue: 'The same car, on wood',
@@ -202,6 +211,7 @@ window.LAB = {
     id: 'D',
     label: 'Investigation D',
     heading: 'Same push, car against truck',
+    headingPlain: 'That means the same push on the same wood every time. The only thing that changes is which one you push.',
     question: 'If the push is exactly the same, does a heavier vehicle travel as far?',
     sameLabel: 'Push and surface stay the same:',
     sameValue: 'Medium push, on wood',

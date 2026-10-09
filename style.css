@@ -432,3 +432,13 @@ table.data td.pending{color:var(--ink-faint)}
   :root:not([data-theme="light"]) .box.cer{ background:var(--surface-2); }
 }
 :root[data-theme="dark"] .box.cer{ background:var(--surface-2); }
+
+
+/* The plain-English reading of an investigation heading. "Same push,
+   different surfaces" is the controlled-variable idea in four words, and
+   four words is what a struggling reader skims past. */
+.plain{
+  margin:.35rem 0 .7rem; font-size:16px; line-height:1.5;
+  color:var(--ink-soft); font-style:italic;
+  border-left:3px solid var(--sci-line); padding-left:.7rem;
+}

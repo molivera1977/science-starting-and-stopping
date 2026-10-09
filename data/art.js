@@ -51,6 +51,14 @@ window.WORD_ART = {
     '<path d="M27 4L12 28h10l-3 16 17-25H25z" fill="none" stroke="var(--sci-dark)" ' +
       'stroke-width="1.5" stroke-linejoin="round"/>'),
 
+  /* two strips, one smooth and one rough — the thing you roll ON */
+  surface: svg(
+    '<rect x="4" y="10" width="40" height="9" rx="2" fill="var(--sci)" opacity=".8"/>' +
+    '<path d="M4 34l5-4 5 4 5-4 5 4 5-4 5 4 5-4 5 4" fill="none" ' +
+      'stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<circle cx="14" cy="6" r="2.5" fill="var(--ink-faint)"/>' +
+    '<circle cx="14" cy="27" r="2.5" fill="var(--ink-faint)"/>'),
+
   /* an apple on its way down, with the pull arrow */
   gravity: svg(
     '<circle cx="24" cy="12" r="7" fill="var(--accent)"/>' +
