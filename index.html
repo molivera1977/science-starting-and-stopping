@@ -280,5 +280,23 @@
 <script src="data/lesson.js"></script>
 <script src="data/questions.js"></script>
 <script src="script.js"></script>
+
+<!-- ══════════════ WORD HELP — on every working screen ══════════════
+     Marcos 10/9: "add reminders of those definitions. Don't expect them to
+     remember after one time being told." The vocabulary screen happens once,
+     in minute three of Day 1. Everything after it assumed the words had
+     stuck. This sits at the bottom of every working screen so a word is
+     always one tap away, with its example. -->
+<div id="wordhelp" class="hidden">
+  <button id="wh-toggle" type="button" data-noread aria-expanded="false">
+    <span class="wh-ic" aria-hidden="true">&#128161;</span>
+    <span>What does a word mean?</span>
+    <span class="wh-chev" aria-hidden="true">&#9650;</span>
+  </button>
+  <div id="wh-panel" class="hidden">
+    <div class="chiprow" id="wh-words"></div>
+    <div id="wh-answer" class="hidden"></div>
+  </div>
+</div>
 </body>
 </html>

@@ -442,3 +442,49 @@ table.data td.pending{color:var(--ink-faint)}
   color:var(--ink-soft); font-style:italic;
   border-left:3px solid var(--sci-line); padding-left:.7rem;
 }
+
+
+/* Real things these kids have touched, under every definition. A word with
+   no example is a word they will nod at and not keep. */
+.vcard .ex{
+  margin-top:8px; padding-top:7px; border-top:1px dashed var(--line);
+  font-size:14px; line-height:1.45; color:var(--ink-soft);
+}
+.exlbl{
+  display:block; font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:9.5px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--accent); font-weight:600; margin-bottom:2px;
+}
+
+
+/* ── WORD HELP ──────────────────────────────────────────
+   Sticks to the bottom of every working screen. Closed it is one line;
+   open it is the six lesson words plus the method words, each a tap. */
+#wordhelp{
+  position:sticky; bottom:0; z-index:40; margin:18px -16px 0;
+  background:var(--surface); border-top:2px solid var(--sci-line);
+  box-shadow:0 -4px 18px rgba(22,33,31,.09);
+}
+#wordhelp.hidden{ display:none; }
+#wh-toggle{
+  display:flex; align-items:center; gap:9px; width:100%;
+  font:inherit; font-size:15.5px; font-weight:600; cursor:pointer;
+  background:none; border:0; color:var(--sci-dark); padding:13px 18px; text-align:left;
+}
+#wh-toggle:hover{ background:var(--sci-soft); }
+.wh-ic{ font-size:19px; line-height:1; }
+.wh-chev{ margin-left:auto; font-size:11px; color:var(--ink-faint);
+  transition:transform .18s ease; }
+#wordhelp.open .wh-chev{ transform:rotate(180deg); }
+#wh-panel{ padding:0 18px 16px; }
+#wh-panel.hidden{ display:none; }
+#wh-words .chipbtn.on{ background:var(--sci); color:#fff; border-color:var(--sci); }
+#wh-answer{
+  margin-top:11px; padding:13px 15px; border-radius:12px;
+  background:var(--sci-soft); border:1px solid var(--sci-line);
+  font-size:16px; line-height:1.5; color:var(--ink);
+}
+#wh-answer.hidden{ display:none; }
+.wh-ex{ display:block; margin-top:8px; padding-top:7px;
+  border-top:1px dashed var(--sci-line); font-size:14.5px; color:var(--ink-soft); }
+@media (prefers-reduced-motion:reduce){ .wh-chev{ transition:none } }

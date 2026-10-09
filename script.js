@@ -380,6 +380,62 @@ function attachSpeakers(root) {
   });
 }
 
+/* ══════════════════════════════════════════════════════
+   WORD HELP — the definitions, always one tap away
+
+   Shown on every screen between the word check and the exit ticket. The
+   lesson words come from LESSON.vocab so there is one source of truth; the
+   method words (trial, average, claim…) come from METHOD_WORDS, because
+   those were used on screen dozens of times and never defined once.
+══════════════════════════════════════════════════════ */
+const WH_HIDE_ON = ['start', 'readaloud', 'vocab', 'end'];
+
+function buildWordHelp() {
+  const row = document.getElementById('wh-words');
+  const ans = document.getElementById('wh-answer');
+  if (!row || row.childElementCount) return;
+
+  const items = LESSON.vocab.map(v => ({
+    label: v.word,
+    html: '<b>' + v.word + '</b> &mdash; ' + v.def +
+          (v.ex ? '<span class="wh-ex"><span class="exlbl">Like this</span>' + v.ex + '</span>' : '')
+  })).concat(Object.keys(METHOD_WORDS || {}).map(k => ({
+    label: k, cls: 'word', html: METHOD_WORDS[k]
+  })));
+
+  items.forEach(it => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chipbtn' + (it.cls ? ' ' + it.cls : '');
+    b.setAttribute('data-noread', '');
+    b.textContent = it.label;
+    b.onclick = () => {
+      ans.innerHTML = it.html;
+      ans.classList.remove('hidden');
+      [...row.children].forEach(c => c.classList.remove('on'));
+      b.classList.add('on');
+      attachSpeakers(ans);
+      logEvent('wordhelp', { w: it.label });
+    };
+    row.appendChild(b);
+  });
+
+  const toggle = document.getElementById('wh-toggle');
+  const panel = document.getElementById('wh-panel');
+  toggle.onclick = () => {
+    const open = panel.classList.toggle('hidden') === false;
+    toggle.setAttribute('aria-expanded', String(open));
+    document.getElementById('wordhelp').classList.toggle('open', open);
+  };
+}
+
+function syncWordHelp(phase) {
+  const el = document.getElementById('wordhelp');
+  if (!el) return;
+  buildWordHelp();
+  el.classList.toggle('hidden', WH_HIDE_ON.indexOf(phase) !== -1);
+}
+
 function logEvent(kind, extra) {
   if (!app.events) app.events = [];
   app.events.push(Object.assign({
@@ -535,6 +591,7 @@ const app = {
     this.phase = phase;
     this.qLocked = false;
     drawRail();
+    syncWordHelp(phase);
     this.save();
 
     if (phase === 'vocab')    { this.startTimer(); renderVocab(); this.show('vocab-screen'); attachSpeakers(document.getElementById('vocab-screen')); }
@@ -680,7 +737,9 @@ function renderVocab() {
        stays on screen for the reader who wants it and the English voice
        never tries to pronounce it. */
     '<div class="es" data-noread>en espa&ntilde;ol: ' + v.es + '</div>' +
-    '<div class="d">' + v.def + '</div></div>').join('');
+    '<div class="d">' + v.def + '</div>' +
+    (v.ex ? '<div class="ex"><span class="exlbl">Like this</span>' + v.ex + '</div>' : '') +
+    '</div>').join('');
   document.getElementById('vocab-next').onclick = () => app.go('vq');
 }
 

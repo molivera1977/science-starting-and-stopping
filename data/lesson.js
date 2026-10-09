@@ -9,6 +9,20 @@
    Nothing here is invented.
 ═══════════════════════════════════════════════════════ */
 
+/* The words the METHOD uses. Every one of these was used on screen without
+   ever being explained — "trial" 19 times, "evidence" 19, "predict" 17.
+   A word the task is built on cannot be assumed; these are shown at the
+   point of use. Marcos 10/9: "explain everything and take nothing for
+   granted. These are kids who will easily lose focus at 2:30pm." */
+window.METHOD_WORDS = {
+  predict:  'A <b>prediction</b> is your best guess <i>before</i> you test. It is never marked wrong.',
+  trial:    'A <b>trial</b> is one push. Some setups get two trials so you can check your own work.',
+  average:  'The <b>average</b> is the middle of your two trials. Add them together, then cut it in half.',
+  claim:    'A <b>claim</b> is what you think is true.',
+  evidence: '<b>Evidence</b> is the numbers from your table that show it.',
+  reasoning:'<b>Reasoning</b> is why it happened.'
+};
+
 window.LESSON = {
   unit:   'Unit 1 · Motion: Car Crashes',
   title:  'Starting and Stopping',
@@ -43,12 +57,18 @@ window.LESSON = {
      the task cannot be done without belongs on the word screen whether or not
      a pacing document lists it. Marcos asked for it 10/9/2026. */
   vocab: [
-    { word: 'force',    es: 'fuerza',     def: 'a push or a pull on an object' },
-    { word: 'friction', es: 'resistencia',def: 'a force that pushes back on a moving object and slows it down' },
-    { word: 'motion',   es: '&mdash;',    def: 'when an object changes its position' },
-    { word: 'energy',   es: 'energ&iacute;a',def: 'what an object needs in order to move or do work' },
-    { word: 'gravity',  es: 'gravedad',   def: 'the force that pulls objects down toward Earth' },
-    { word: 'surface',  es: 'superficie', def: 'the top of the thing you roll on, like ice or sand' }
+    { word: 'force',    es: 'fuerza',     def: 'a push or a pull on an object',
+      ex: 'Pushing a shopping cart. Pulling a door open. Kicking a ball.' },
+    { word: 'friction', es: 'resistencia',def: 'a force that pushes back on a moving object and slows it down',
+      ex: 'Your sneakers gripping the gym floor. Rubbing your hands to get warm. A bike slowing down when you stop pedalling.' },
+    { word: 'motion',   es: '&mdash;',    def: 'when an object changes its position',
+      ex: 'A bus pulling away from the stop. A ball rolling down the hall. You, walking to lunch.' },
+    { word: 'energy',   es: 'energ&iacute;a',def: 'what an object needs in order to move or do work',
+      ex: 'The food you ate at lunch. The battery in a toy. The gas in a car.' },
+    { word: 'gravity',  es: 'gravedad',   def: 'the force that pulls objects down toward Earth',
+      ex: 'A dropped phone hitting the floor. Rain falling. A ball coming back down after you throw it up.' },
+    { word: 'surface',  es: 'superficie', def: 'the top of the thing an object moves on',
+      ex: 'The gym floor. A carpet. An icy sidewalk. Sand at the beach.' }
   ]
 };
 
@@ -64,16 +84,23 @@ window.LAB = {
   trackCm: 900,
 
   surfaces: {
-    ice:    { name: 'Ice',    mu: 0.05, color: '#8FD3E8', emoji: '&#129482;', note: 'very smooth' },
-    wood:   { name: 'Wood',   mu: 0.12, color: '#C98B4B', emoji: '&#129717;', note: 'a little rough' },
-    carpet: { name: 'Carpet', mu: 0.25, color: '#9B7FB8', emoji: '&#129532;', note: 'rough' },
-    sand:   { name: 'Sand',   mu: 0.45, color: '#E0C27C', emoji: '&#127958;', note: 'very rough' }
+    ice:    { name: 'Ice',    mu: 0.05, color: '#8FD3E8', emoji: '&#129482;', note: 'very smooth',
+              ex: 'like a hockey rink or a frozen puddle' },
+    wood:   { name: 'Wood',   mu: 0.12, color: '#C98B4B', emoji: '&#129717;', note: 'a little rough',
+              ex: 'like the gym floor or the top of your desk' },
+    carpet: { name: 'Carpet', mu: 0.25, color: '#9B7FB8', emoji: '&#129532;', note: 'rough',
+              ex: 'like the rug in a classroom' },
+    sand:   { name: 'Sand',   mu: 0.45, color: '#E0C27C', emoji: '&#127958;', note: 'very rough',
+              ex: 'like the beach or a sandbox' }
   },
 
   pushes: {
-    small:  { name: 'Small push',  v0: 1.6, arrows: '&rarr;' },
-    medium: { name: 'Medium push', v0: 2.2, arrows: '&rarr;&rarr;' },
-    big:    { name: 'Big push',    v0: 2.8, arrows: '&rarr;&rarr;&rarr;' }
+    small:  { name: 'Small push',  v0: 1.6, arrows: '&rarr;',
+              note: 'a little tap, like sliding a pencil' },
+    medium: { name: 'Medium push', v0: 2.2, arrows: '&rarr;&rarr;',
+              note: 'a normal push, like sliding a book across a desk' },
+    big:    { name: 'Big push',    v0: 2.8, arrows: '&rarr;&rarr;&rarr;',
+              note: 'a hard shove, as hard as you can' }
   },
 
   /* Investigation A — same push every time, four different surfaces.
@@ -121,9 +148,9 @@ window.LAB = {
      surface's friction. Heights are book-stack heights, as the district's
      own Rolling Cars picture shows (a board propped on a pile of books). */
   ramps: {
-    low:  { name: '1 book',  cm: 10, blocks: 1 },
-    mid:  { name: '2 books', cm: 20, blocks: 2 },
-    high: { name: '3 books', cm: 30, blocks: 3 }
+    low:  { name: '1 book',  cm: 10, blocks: 1, note: 'the lowest ramp' },
+    mid:  { name: '2 books', cm: 20, blocks: 2, note: 'twice as tall as 1 book' },
+    high: { name: '3 books', cm: 30, blocks: 3, note: 'the tallest ramp' }
   },
 
   /* Vehicles for Investigation D. Same push means the same WORK done on the
@@ -132,8 +159,9 @@ window.LAB = {
          d = W / (µ m g)   — twice the mass, half the distance.
      Mass is relative to the car, which is 1. */
   vehicles: {
-    car:   { name: 'Car',   mass: 1,   emoji: '\u{1F697}' },
-    truck: { name: 'Truck', mass: 2.5, emoji: '\u{1F69B}' }
+    car:   { name: 'Car',   mass: 1,   emoji: '\u{1F697}', note: 'the light one' },
+    truck: { name: 'Truck', mass: 2.5, emoji: '\u{1F69B}',
+             note: 'the heavy one \u2014 it has more mass' }
   },
 
   /* Investigation B — same surface every time, three different pushes.
