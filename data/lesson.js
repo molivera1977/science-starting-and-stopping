@@ -58,6 +58,30 @@ window.RECAP = {
    never explained. A child who does not know what a cart is cannot follow a
    single instruction on the screen. */
 window.THING_WORDS = {
+  /* Found by counting every word students see against what anything defines.
+     "investigation" was used 13 times and never once explained — it is the
+     word the whole lesson is organised around. "data table" 25 times,
+     "distance" 10, "setup" 6. Marcos 10/9: "These Science lessons must be
+     SUPER explicit and perhaps over explain." */
+  investigation:
+          { def: 'one test, where you change one thing and keep everything else the same',
+            ex: 'Investigation A is the surface test. You change what the cart rolls on, ' +
+                'and you keep the push exactly the same. That is one investigation. ' +
+                'This lesson has four of them.' },
+  'data table':
+          { def: 'the boxes where you write your numbers down',
+            ex: 'Like a chart with rows and columns. Every time the cart stops you write ' +
+                'that number in a box. By the end the table is full, and the numbers in it ' +
+                'are what you use to answer the questions.' },
+  distance:
+          { def: 'how far something went',
+            ex: 'From where the cart started to where it stopped. You measure it in ' +
+                'centimeters. 500 cm is about as long as three desks in a row. ' +
+                '50 cm is about the length of your arm.' },
+  setup:  { def: 'how everything is arranged before you push',
+            ex: 'The line at the top of the screen that says Setup: Ice, Medium push. ' +
+                'It is telling you which surface and which push to use for this one. ' +
+                'The site picks it for you &mdash; you just read it and press the button.' },
   cart:   { def: 'a little box on wheels that rolls',
             ex: 'Think of a toy car. Or a skateboard. Or the wagon you pull behind you. ' +
                 'On your screen it is the small box with two wheels.' },
@@ -124,17 +148,17 @@ window.LESSON = {
      a pacing document lists it. Marcos asked for it 10/9/2026. */
   vocab: [
     { word: 'force',    es: 'fuerza',     def: 'a push or a pull on an object',
-      ex: 'Pushing a shopping cart at the store. Pulling the classroom door open. Kicking a ball. Pressing a button. Dragging your backpack across the floor.' },
+      ex: 'Pushing a shopping cart at the store. Pulling the classroom door open. Kicking a ball. Dragging your backpack across the floor. Every single one of those is you making something move or stop. That is what a force does.' },
     { word: 'friction', es: 'resistencia',def: 'a force that pushes back on a moving object and slows it down',
-      ex: 'Your sneakers gripping the gym floor so you do not slip. Rubbing your hands together to get warm. A bike slowing down after you stop pedalling. A book sliding across a desk and stopping. Why it is hard to run on sand.' },
+      ex: 'Your sneakers gripping the gym floor so you do not slip. Rubbing your hands together to get warm. A bike slowing down after you stop pedalling. Why it is hard to run on sand. In every one of those, something is rubbing and that rubbing is slowing things down. The rubbing is the friction.' },
     { word: 'motion',   es: '&mdash;',    def: 'when an object changes its position',
-      ex: 'A bus pulling away from the stop. A ball rolling down the hall. You, walking to lunch. A door swinging open. A pencil rolling off a desk.' },
+      ex: 'A bus pulling away from the stop. A ball rolling down the hall. You, walking to lunch. A pencil rolling off a desk. In every one, the thing is in a different spot than it was a second ago. Changing spot is what motion means.' },
     { word: 'energy',   es: 'energ&iacute;a',def: 'what an object needs in order to move or do work',
-      ex: 'The food you ate at lunch, which lets you run at recess. The battery in a toy or a tablet. The gas in a car. Wind pushing a flag.' },
+      ex: 'The food you ate at lunch, which is what lets you run at recess. The battery in a toy. The gas in a car. Take any of those away and the thing stops working. That is what it means to need energy.' },
     { word: 'gravity',  es: 'gravedad',   def: 'the force that pulls objects down toward Earth',
-      ex: 'A dropped phone hitting the floor. Rain falling down, never up. A ball coming back down after you throw it. Sliding down a slide. Water going down a drain.' },
+      ex: 'A dropped phone hitting the floor. Rain falling down and never up. A ball coming back down after you throw it. Notice they all go the same direction: DOWN. Gravity is what is pulling them there.' },
     { word: 'surface',  es: 'superficie', def: 'the top of the thing an object moves on',
-      ex: 'The gym floor. The carpet in the classroom. An icy sidewalk in winter. Sand at the beach. The top of your desk.' }
+      ex: 'The gym floor. The carpet in the classroom. An icy sidewalk. Sand at the beach. Each one of those feels different under your shoe, and that is exactly why the cart will not roll the same way on each one.' }
   ]
 };
 
@@ -151,13 +175,13 @@ window.LAB = {
 
   surfaces: {
     ice:    { name: 'Ice',    mu: 0.05, color: '#8FD3E8', emoji: '&#129482;', note: 'very smooth',
-              ex: 'like a hockey rink or a frozen puddle' },
+              ex: 'Like a frozen puddle in winter. If you step on one your foot slides right out from under you. Nothing grips. That is how little friction ice has.' },
     wood:   { name: 'Wood',   mu: 0.12, color: '#C98B4B', emoji: '&#129717;', note: 'a little rough',
-              ex: 'like the gym floor or the top of your desk' },
+              ex: 'Like the gym floor. You can slide a book a long way across it, but not forever. It grips a little, but not much.' },
     carpet: { name: 'Carpet', mu: 0.25, color: '#9B7FB8', emoji: '&#129532;', note: 'rough',
-              ex: 'like the rug in a classroom' },
+              ex: 'Like the rug in a classroom. Try sliding a book across a rug and it stops fast. The fuzzy top grabs it.' },
     sand:   { name: 'Sand',   mu: 0.45, color: '#E0C27C', emoji: '&#127958;', note: 'very rough',
-              ex: 'like the beach or a sandbox' }
+              ex: 'Like the beach. Running on sand is hard work and your feet sink in. The sand grabs anything that tries to move across it.' }
   },
 
   pushes: {

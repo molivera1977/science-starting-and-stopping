@@ -107,6 +107,47 @@ window.INV_ART = {
     '<circle cx="40" cy="37" r="3" fill="var(--ink-faint)"/>')
 };
 
+/* ── the equipment and the method, drawn ───────────────
+   Every word in the helper gets a picture as well as words. Marcos 10/9:
+   "examples are not just visuals, they must be explained with easy to
+   understand words" — and then "words and visuals". Both, for each. */
+window.THING_ART = {
+  cart: svg(
+    '<rect x="10" y="16" width="28" height="14" rx="3" fill="var(--sci)" opacity=".85"/>' +
+    '<circle cx="18" cy="35" r="5" fill="var(--ink-faint)"/>' +
+    '<circle cx="32" cy="35" r="5" fill="var(--ink-faint)"/>' +
+    '<path d="M4 42h40" stroke="var(--ink-faint)" stroke-width="2.5" stroke-linecap="round"/>'),
+  track: svg(
+    '<path d="M4 30h40" stroke="var(--sci)" stroke-width="5" stroke-linecap="round"/>' +
+    '<path d="M8 20v6M18 20v6M28 20v6M38 20v6" stroke="var(--ink-faint)" stroke-width="2" ' +
+      'stroke-linecap="round"/>' +
+    '<path d="M4 38h40" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="3 4" ' +
+      'stroke-linecap="round"/>'),
+  ramp: svg(
+    '<path d="M6 40L40 40 40 12z" fill="var(--sci)" opacity=".3"/>' +
+    '<path d="M6 40L40 12" stroke="var(--sci)" stroke-width="3.5" stroke-linecap="round"/>' +
+    '<circle cx="33" cy="19" r="4.5" fill="var(--accent)"/>' +
+    '<path d="M4 42h40" stroke="var(--ink-faint)" stroke-width="2.5" stroke-linecap="round"/>'),
+  investigation: svg(
+    '<circle cx="21" cy="20" r="12" fill="none" stroke="var(--sci)" stroke-width="4"/>' +
+    '<path d="M30 29l12 12" stroke="var(--sci)" stroke-width="4.5" stroke-linecap="round"/>' +
+    '<path d="M16 20h10M21 15v10" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>'),
+  'data table': svg(
+    '<rect x="5" y="9" width="38" height="30" rx="3" fill="none" stroke="var(--sci)" stroke-width="3"/>' +
+    '<path d="M5 19h38M5 29h38M19 9v30M31 9v30" stroke="var(--sci)" stroke-width="2" opacity=".65"/>' +
+    '<rect x="20" y="20" width="10" height="8" fill="var(--accent)" opacity=".75"/>'),
+  distance: svg(
+    '<path d="M6 24h36" stroke="var(--sci)" stroke-width="3.5" stroke-linecap="round"/>' +
+    '<path d="M6 16v16M42 16v16" stroke="var(--accent)" stroke-width="3.5" stroke-linecap="round"/>' +
+    '<path d="M12 19l-6 5 6 5M36 19l6 5-6 5" fill="none" stroke="var(--sci)" stroke-width="2.5" ' +
+      'stroke-linecap="round" stroke-linejoin="round"/>'),
+  setup: svg(
+    '<rect x="5" y="11" width="38" height="9" rx="2" fill="var(--sci)" opacity=".8"/>' +
+    '<rect x="5" y="25" width="24" height="9" rx="2" fill="var(--accent)" opacity=".8"/>' +
+    '<path d="M34 29.5h9" stroke="var(--ink-faint)" stroke-width="2.5" stroke-linecap="round" ' +
+      'stroke-dasharray="2 3"/>')
+};
+
 /* ── surface swatches ───────────────────────────────────
    A chip beside the surface name. Sand should LOOK gritty and ice
    should look slick, so the word is not the only way in. */

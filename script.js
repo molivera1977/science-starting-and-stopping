@@ -406,11 +406,13 @@ function buildWordHelp() {
 
   const items = LESSON.vocab.map(v => ({
     label: v.word,
-    html: '<p class="wh-def"><b>' + v.word + '</b> &mdash; ' + v.def + '</p>' +
+    html: art(WORD_ART[v.word], 'whart') +
+          '<p class="wh-def"><b>' + v.word + '</b> &mdash; ' + v.def + '</p>' +
           (v.ex ? '<p class="wh-ex"><span class="exlbl" data-noread>For example</span>' + v.ex + '</p>' : '')
   })).concat(Object.keys(window.THING_WORDS || {}).map(k => ({
     label: k, cls: 'thing',
-    html: '<p class="wh-def"><b>' + k + '</b> &mdash; ' + THING_WORDS[k].def + '</p>' +
+    html: art((window.THING_ART || {})[k], 'whart') +
+          '<p class="wh-def"><b>' + k + '</b> &mdash; ' + THING_WORDS[k].def + '</p>' +
           '<p class="wh-ex"><span class="exlbl" data-noread>For example</span>' +
           THING_WORDS[k].ex + '</p>'
   }))).concat(Object.keys(METHOD_WORDS || {}).map(k => ({
@@ -1331,6 +1333,30 @@ function paintRun(invKey) {
   if (tnote) tnote.textContent = trialsFor(invKey) > 1
     ? 'Every push is recorded. Two trials for each setup, because real scientists repeat a test before they trust it.'
     : 'Every push is recorded. One push for each setup this time \u2014 you already practised repeating a test in Investigation A.';
+
+  /* Spell out every piece of THIS push. The surface notes only ever existed
+     on the canvas, which a speaker button cannot read; the surface examples
+     I added were never rendered at all; the vehicle notes were never shown
+     anywhere. All three now sit in a readable box above the button, so a
+     student knows what "Ice" and "Medium push" actually mean each time
+     rather than once at the start. */
+  const setupBox = document.getElementById('run-setupwhat');
+  if (setupBox) {
+    const bits = [];
+    const sf = LAB.surfaces[run.surface];
+    if (sf) bits.push([art(SURFACE_ART[run.surface], 'swatch'), 'Surface', stripTags(sf.name),
+      sf.note + (sf.ex ? ' &mdash; ' + sf.ex : '')]);
+    if (run.ramp) { const r = LAB.ramps[run.ramp];
+      bits.push([art((window.THING_ART || {}).ramp, 'swatch'), 'Ramp', r.name,
+        (r.note || '') + '. You let the car go. You do not push it.']); }
+    if (run.vehicle) { const v = LAB.vehicles[run.vehicle];
+      bits.push([art(INV_ART.D, 'swatch'), 'Vehicle', stripTags(v.name), v.note || '']); }
+    if (run.push && !run.ramp) { const pu = LAB.pushes[run.push];
+      bits.push([art(INV_ART.B, 'swatch'), 'Push', stripTags(pu.name), pu.note || '']); }
+    setupBox.innerHTML = '<span class="lbl">What you are using for this one</span>' +
+      bits.map(b => '<p>' + b[0] + '<b>' + b[1] + ': ' + b[2] + '</b> &mdash; ' + b[3] + '</p>').join('');
+    attachSpeakers(setupBox);
+  }
 
   const whyBox = document.getElementById('run-whyrepeat');
   if (whyBox) {

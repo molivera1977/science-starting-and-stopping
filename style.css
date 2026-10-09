@@ -597,3 +597,12 @@ table.data td.pending{color:var(--ink-faint)}
   margin:0; font-family:Fraunces,Georgia,serif; font-size:17.5px;
   font-weight:600; line-height:1.35; color:var(--ink);
 }
+
+
+/* A picture with every word in the helper, and with every part of a setup.
+   Words and visuals, not one or the other. */
+.art.whart{ width:40px; height:40px; float:left; margin:0 11px 4px 0; }
+#wh-answer{ overflow:hidden; }
+#run-setupwhat p{ margin:0 0 7px; font-size:15.5px; line-height:1.5; }
+#run-setupwhat p:last-child{ margin-bottom:0; }
+#run-setupwhat .art.swatch{ width:24px; height:18px; margin-right:8px; vertical-align:-3px; }
