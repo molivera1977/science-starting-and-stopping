@@ -26,6 +26,10 @@ window.SKILLS = {
 
   W01: 'Explain with evidence',
 
+  L29: 'Back a claim with evidence',
+  L30: 'Back a claim with evidence',
+  L31: 'Friction slows motion',
+
   L23: 'Identify forces',       L24: 'Friction slows motion',
   L25: 'More force = more distance', L26: 'Friction slows motion',
   L27: 'Objects keep moving unless a force acts',
@@ -143,7 +147,47 @@ window.CLAIMS_Q = [
     ],
     resolve: d => 'On ' + d.farthestA.toLowerCase() + ' the cart rolled about ' + d.maxAvgA + ' cm, and it still stopped' },
 
-  { id:'L22', adaptive:true, q:'', opts:[] }
+  { id:'L22', adaptive:true, q:'', opts:[] },
+
+  /* ── THE EXPLANATION, BUILT BY PICKING ──────────────
+     This replaces the written response. Marcos ruled 10/8/2026: typing it
+     was too much for the period, and the tap-to-insert starters that
+     replaced the blanks would confuse the class just as badly.
+
+     So the explanation is now three picks — claim, then evidence, then
+     reasoning — and the three are stitched into one paragraph and shown
+     back to the student at the end. They do not write it. They still watch
+     it get built, in the right order, out of their own numbers.
+
+     Known trade: 4-PS3-1 asks a student to CONSTRUCT an explanation, and
+     choosing from four options tests recognition. Marcos's call, with the
+     period and the reading levels in front of him. */
+  { id:'L29', cer:'claim',
+    q:'Time to explain your Investigation A results. Start with your <b>claim</b>. ' +
+      'Which surface stopped the cart the soonest?',
+    opts:['Ice','Wood','Carpet','Sand'], resolve: d => d.shortestA },
+
+  { id:'L30', cer:'evidence',
+    q:'Now the <b>evidence</b>. Which two numbers from <b>your own table</b> show it best?',
+    optsFrom: d => [
+      'On ' + d.farthestA.toLowerCase() + ' it rolled ' + d.maxAvgA +
+        ' cm, but on ' + d.shortestA.toLowerCase() + ' only ' + d.minAvgA + ' cm',
+      'On ' + d.farthestA.toLowerCase() + ' it rolled ' + d.maxAvgA + ' cm',
+      'Every surface gave about the same number',
+      'The truck did not go as far as the car'
+    ],
+    resolve: d => 'On ' + d.farthestA.toLowerCase() + ' it rolled ' + d.maxAvgA +
+      ' cm, but on ' + d.shortestA.toLowerCase() + ' only ' + d.minAvgA + ' cm' },
+
+  { id:'L31', cer:'reasoning',
+    q:'Last part &mdash; the <b>reasoning</b>. WHY did that surface stop the cart soonest?',
+    optsFrom: d => [
+      'It has the most friction, and friction slows a moving object down',
+      'It got a smaller push than the other surfaces',
+      'The cart was heavier on that surface',
+      'There is no reason &mdash; it just happened that way'
+    ],
+    resolve: d => 'It has the most friction, and friction slows a moving object down' }
 ];
 
 /* The explanation that fits each investigation, plus three wrong turns that
@@ -239,7 +283,7 @@ window.EXIT_Q = [
 ═══════════════════════════════════════════════════════ */
 window.CORE_ONLY = true;
 window.CORE_IDS = ['L01','L02','L06','L09','L10','L14','L16','L18',
-                   'L20','L21','W01','L26','L28'];
+                   'L20','L21','L29','L30','L31','L26','L28'];
 
 if (window.CORE_ONLY) {
   const keep = a => a.filter(q => window.CORE_IDS.indexOf(q.id) !== -1);

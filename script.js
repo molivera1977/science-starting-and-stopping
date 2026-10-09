@@ -1239,7 +1239,11 @@ function invOf(k) { return { A:LAB.invA, B:LAB.invB, C:LAB.invC, D:LAB.invD }[k]
    thing, which is the method the whole lesson is teaching. */
 const INV_COLUMNS = {
   A: { first:'Surface', second:'Push',
-       a:r => art(SURFACE_ART[r.surface], 'swatch') + LAB.surfaces[r.surface].name,
+       a:r => LAB.surfaces[r.surface].name,
+       /* display only — a() is the key avgsFor() builds the averages on, and
+          every data question matches its options against that key, so no
+          markup may ever go in it. */
+       aArt:r => art(SURFACE_ART[r.surface], 'swatch'),
        b:r => LAB.pushes[r.push].name },
   B: { first:'Push',    second:'Surface', a:r => LAB.pushes[r.push].name,      b:r => LAB.surfaces[r.surface].name },
   C: { first:'Ramp',    second:'Surface', a:r => LAB.ramps[r.ramp].name,       b:r => LAB.surfaces[r.surface].name },
@@ -1280,7 +1284,7 @@ function tableHTML(invKey) {
   groupsFor(invKey).forEach(g => {
     const c = cellsFor(invKey, g);
     const cell = v => v == null ? '<td class="num pending">—</td>' : '<td class="num">' + v + '</td>';
-    h += '<tr><td><b>' + col.a(g) + '</b></td><td>' + col.b(g) + '</td>' +
+    h += '<tr><td>' + (col.aArt ? col.aArt(g) : '') + '<b>' + col.a(g) + '</b></td><td>' + col.b(g) + '</td>' +
          (two ? cell(c.t1) + cell(c.t2) +
                 (c.avg == null ? '<td class="num pending">—</td>'
                                : '<td class="num"><b>' + c.avg + '</b></td>')
@@ -1543,6 +1547,29 @@ function finish() {
     [clock(app.labSeconds()), 'On the investigation']
   ].map(x => '<div class="sb"><div class="n tnum">' + x[0] + '</div><div class="l">' + x[1] + '</div></div>').join('');
 
+  /* The three picks become one explanation, in the order a scientist writes
+     one. They did not type it, but it is theirs — every part came from their
+     own table — and seeing it whole is the point of having built it. */
+  const cerFor = k => {
+    const q = CLAIMS_Q.find(x => x.cer === k);
+    return q ? (app.claimsAns[q.id] || '') : '';
+  };
+  const claim = cerFor('claim'), ev = cerFor('evidence'), why = cerFor('reasoning');
+  const cerBox = document.getElementById('end-cer');
+  if (claim && ev && why) {
+    cerBox.innerHTML =
+      '<hr class="hr"><h3 style="font-size:17px">The explanation you built</h3>' +
+      '<div class="box cer" data-parts>' +
+      '<p><span class="cerlbl">Claim</span>The cart stopped soonest on ' +
+        stripTags(claim).toLowerCase() + '.</p>' +
+      '<p><span class="cerlbl">Evidence</span>' + stripTags(ev) + '.</p>' +
+      '<p><span class="cerlbl">Reasoning</span>' + stripTags(why) + '.</p>' +
+      '</div>';
+    cerBox.classList.remove('hidden');
+  } else {
+    cerBox.innerHTML = ''; cerBox.classList.add('hidden');
+  }
+
   const miss = app.missedQuestions;
   document.getElementById('end-miss').innerHTML = miss.length
     ? '<hr class="hr"><h3 style="font-size:17px">Look at these again with Mr. O</h3><ul class="misslist">' +
@@ -1553,9 +1580,11 @@ function finish() {
   document.getElementById('end-answer-back').innerHTML =
     '<hr class="hr"><h3 style="font-size:17px">My finished data</h3>' +
     '<div class="tablewrap">' + allTablesHTML() + '</div>' +
-    '<h3 style="font-size:17px; margin-top:16px">My explanations</h3>' +
-    WRITTEN_Q.map(w => '<p class="lead"><b>' + stripTags(w.q) + '</b><br>' +
-      (app.written[w.id] ? app.written[w.id].replace(/</g, '&lt;') : '(blank)') + '</p>').join('');
+    (WRITTEN_Q.length
+      ? '<h3 style="font-size:17px; margin-top:16px">My explanations</h3>' +
+        WRITTEN_Q.map(w => '<p class="lead"><b>' + stripTags(w.q) + '</b><br>' +
+          (app.written[w.id] ? app.written[w.id].replace(/</g, '&lt;') : '(blank)') + '</p>').join('')
+      : '');
 
   submitFinal();
   submitWritten();
