@@ -186,33 +186,41 @@ window.art = function (markup, cls) {
    Wide, so it fills the top of the cover like a book jacket. */
 window.COVER_ART =
   '<svg viewBox="0 0 400 150" aria-hidden="true" focusable="false" class="coverscene">' +
-  /* sky band */
   '<rect width="400" height="150" fill="var(--sci-soft)"/>' +
-  /* the ramp, on the right */
-  '<path d="M250 118L330 118 330 56z" fill="var(--sci)" opacity=".22"/>' +
-  '<path d="M250 118L330 56" stroke="var(--sci)" stroke-width="4" stroke-linecap="round"/>' +
-  '<rect x="305" y="60" width="18" height="11" rx="2.5" fill="var(--accent)"/>' +
-  '<circle cx="310" cy="73" r="3.4" fill="var(--sci-dark)"/>' +
-  '<circle cx="319" cy="73" r="3.4" fill="var(--sci-dark)"/>' +
+  /* The ramp is on the LEFT and slopes down to the RIGHT, matching the lab,
+     where it is drawn to the left of the start line so the car rolls toward
+     the measured track. Everything in this scene therefore travels the same
+     way the cart does: rightward. */
+  '<path d="M22 46L104 118 22 118z" fill="var(--sci)" opacity=".22"/>' +
+  '<path d="M22 46L104 118" stroke="var(--sci)" stroke-width="4" stroke-linecap="round"/>' +
+  /* books holding the ramp up */
+  '<rect x="14" y="96" width="26" height="8" rx="1.5" fill="var(--accent)" opacity=".75"/>' +
+  '<rect x="14" y="86" width="26" height="8" rx="1.5" fill="var(--sci-dark)" opacity=".55"/>' +
+  /* the car, sitting ON the slope and pointing down it */
+  '<g transform="translate(40,66) rotate(41)">' +
+    '<rect x="-11" y="-9" width="22" height="11" rx="2.5" fill="var(--accent)"/>' +
+    '<circle cx="-6" cy="3" r="3.4" fill="var(--sci-dark)"/>' +
+    '<circle cx="6" cy="3" r="3.4" fill="var(--sci-dark)"/>' +
+  '</g>' +
   /* the ground */
   '<path d="M14 118h372" stroke="var(--sci-dark)" stroke-width="5" stroke-linecap="round"/>' +
-  /* the cart, mid-push, on the left */
-  '<path d="M26 100h22" stroke="var(--accent)" stroke-width="5" stroke-linecap="round"/>' +
-  '<path d="M41 93l8 7-8 7" fill="none" stroke="var(--accent)" stroke-width="5" ' +
+  /* the cart, mid-push, moving right */
+  '<path d="M126 100h20" stroke="var(--accent)" stroke-width="5" stroke-linecap="round"/>' +
+  '<path d="M139 93l8 7-8 7" fill="none" stroke="var(--accent)" stroke-width="5" ' +
     'stroke-linecap="round" stroke-linejoin="round"/>' +
-  '<rect x="56" y="88" width="34" height="19" rx="3" fill="var(--sci)"/>' +
-  '<circle cx="65" cy="111" r="5.5" fill="var(--sci-dark)"/>' +
-  '<circle cx="81" cy="111" r="5.5" fill="var(--sci-dark)"/>' +
-  /* the heavy truck, middle */
-  '<rect x="150" y="78" width="46" height="29" rx="3" fill="var(--accent)" opacity=".92"/>' +
-  '<rect x="196" y="90" width="18" height="17" rx="2.5" fill="var(--accent)" opacity=".75"/>' +
-  '<circle cx="161" cy="111" r="6" fill="var(--sci-dark)"/>' +
-  '<circle cx="186" cy="111" r="6" fill="var(--sci-dark)"/>' +
-  '<circle cx="206" cy="111" r="5" fill="var(--sci-dark)"/>' +
-  /* a few speed marks so the scene reads as movement */
-  '<path d="M104 86h16M100 95h12M106 104h14" stroke="var(--sci)" stroke-width="3" ' +
-    'stroke-linecap="round" opacity=".5"/>' +
+  '<rect x="154" y="88" width="34" height="19" rx="3" fill="var(--sci)"/>' +
+  '<circle cx="163" cy="111" r="5.5" fill="var(--sci-dark)"/>' +
+  '<circle cx="179" cy="111" r="5.5" fill="var(--sci-dark)"/>' +
+  /* speed marks BEHIND the cart, so they read as motion to the right */
+  '<path d="M196 86h16M200 95h13M194 104h14" stroke="var(--sci)" stroke-width="3" ' +
+    'stroke-linecap="round" opacity=".45"/>' +
+  /* the heavy truck, further right, also facing right */
+  '<rect x="262" y="78" width="46" height="29" rx="3" fill="var(--accent)" opacity=".92"/>' +
+  '<rect x="308" y="90" width="18" height="17" rx="2.5" fill="var(--accent)" opacity=".75"/>' +
+  '<circle cx="273" cy="111" r="6" fill="var(--sci-dark)"/>' +
+  '<circle cx="298" cy="111" r="6" fill="var(--sci-dark)"/>' +
+  '<circle cx="318" cy="111" r="5" fill="var(--sci-dark)"/>' +
   /* measuring ticks along the ground */
-  '<path d="M30 124v7M110 124v7M190 124v7M270 124v7M350 124v7" stroke="var(--sci-dark)" ' +
+  '<path d="M110 124v7M180 124v7M250 124v7M320 124v7M380 124v7" stroke="var(--sci-dark)" ' +
     'stroke-width="2.5" stroke-linecap="round" opacity=".45"/>' +
   '</svg>';
