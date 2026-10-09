@@ -239,7 +239,8 @@ const speech = {
        — "Push stays the same: Medium push" — instead of as two fragments. */
     const SEL = 'h1,h2,h3,h4,p,li,td,th,' +
       '.vcard,.opt,.grow,.readout,.fb,.g,.sb,.step,.box,' +
-      '.runnow,.note,.eyebrow,.qcount,.lbl,.same,.chg,.plain,.say,.counter,.chips-lbl,.qdata-h';
+      '.runnow,.note,.eyebrow,.qcount,.lbl,.same,.chg,.plain,.say,.counter,.chips-lbl,.qdata-h,' +
+      '.rcard,.rl,.rnow';
     const out = [];
     root.querySelectorAll(SEL).forEach(el => {
       if (el.closest('[data-noread]')) return;
@@ -478,12 +479,15 @@ const RAIL = [
   { key:'exit',  n:'Day 2', l:'Exit',    phases:['exit','end'] }
 ];
 
+/* Kept in step with the sessions: Day 1 is Investigation A on its own,
+   Day 2 is the other three. It used to say "two today, two next time",
+   which stopped being true when the lesson was cut to fit the period. */
 const INTRO_TEXT =
   'A force is a push or a pull. When you push a cart, it starts to move. ' +
   'But it does not keep going forever. Something slows it down and stops it. ' +
-  'Today you will run two investigations. Next time you will run two more. ' +
-  'Each one changes just one thing. First the surface, then how hard the push is. ' +
-  'After that, how tall a ramp is, and how heavy the vehicle is. ' +
+  'Today you will run one investigation. You will change the surface the cart ' +
+  'rolls on, and nothing else. Next time you will run three more: how hard the ' +
+  'push is, how tall a ramp is, and how heavy the vehicle is. ' +
   'Every push gets measured in centimeters and written in your data table. ' +
   'Then you will use your own numbers to explain what makes a moving object stop. ' +
   'Take your time. This takes two days. Good scientists test more than once.';
@@ -723,11 +727,31 @@ function buildStart() {
   });
 }
 
+/* The teacher-led minutes and the lab are the same lesson, but a student
+   who looks up from the board to a screen has nothing carrying the thread.
+   This is that thread: what Mr. O just did, named by its demo, with the
+   one rule of the day underneath. */
+function recapHTML(which) {
+  const r = (window.RECAP || {})[which];
+  if (!r) return '';
+  return '<div class="recap">' +
+    '<span class="lbl">What Mr. O just showed you</span>' +
+    '<p class="rl">' + r.lead + '</p>' +
+    r.items.map((it, i) =>
+      '<div class="rcard"><span class="rnum" data-noread>' + (i + 1) + '</span>' +
+      '<div class="rbody"><div class="rt">' + it.t + '</div>' +
+      '<div class="rd">' + it.d + '</div></div></div>').join('') +
+    '<div class="rnow">' + r.now + '</div>' +
+  '</div>';
+}
+
 function showReadAloud() {
   app.phase = 'readaloud'; drawRail();
   const host = document.getElementById('ra-text');
   host.innerHTML = wrapWords(INTRO_TEXT);
+  document.getElementById('recap-host').innerHTML = recapHTML('day1');
   app.show('readaloud-screen');
+  attachSpeakers(document.getElementById('readaloud-screen'));
   /* The intro speaks itself as soon as it appears. */
   setTimeout(() => speech.say(host, null, null, INTRO_RATE), 420);
   document.getElementById('ra-again').onclick = () => speech.say(host, null, null, INTRO_RATE);
@@ -1536,10 +1560,29 @@ function renderDayGate() {
   app.show('daygate-screen');
   const pushes = (app.data.A || []).length;
   const surfaces = new Set((app.data.A || []).map(r => r.surface)).size;
+  /* "1 different surfaces" is not a sentence. Count words out properly —
+     this screen is congratulating a child on their work and bad grammar in
+     a congratulation reads as carelessness. */
+  const plural = (n, one, many) => n + ' ' + (n === 1 ? one : many);
   document.getElementById('dg-did').innerHTML =
-    'You learned <b>six words</b>. You did <b>' + pushes + ' pushes</b> on <b>' +
-    surfaces + ' different surfaces</b>. All of it is saved.';
-  document.getElementById('dg-next').onclick = () => { logEvent('day2_start'); app.next(); };
+    'You learned <b>' + LESSON.vocab.length + ' words</b>. You did <b>' +
+    plural(pushes, 'push', 'pushes') + '</b> on <b>' +
+    (surfaces === 1 ? '1 surface' : surfaces + ' different surfaces') +
+    '</b>. All of it is saved.';
+  /* The teacher's answer is logged either way, so Mr. O can see on the
+     dashboard who went on and who was told to wait. */
+  document.getElementById('dg-next').onclick = () => {
+    logEvent('day2_start', { cleared: 'teacher said yes' });
+    document.getElementById('dg-choices').classList.add('hidden');
+    const host = document.getElementById('dg-recap');
+    host.innerHTML = recapHTML('day2') +
+      '<div class="btnrow"><button class="btn" id="dg-go" type="button">' +
+      'Start the push test &rarr;</button></div>';
+    host.classList.remove('hidden');
+    attachSpeakers(host);
+    document.getElementById('dg-go').onclick = () => app.next();
+    host.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  };
   document.getElementById('dg-stop').onclick = () => {
     logEvent('day1_stop'); app.save(); submitPartial();
     document.getElementById('dg-choices').classList.add('hidden');

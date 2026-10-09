@@ -14,6 +14,47 @@
    A word the task is built on cannot be assumed; these are shown at the
    point of use. Marcos 10/9: "explain everything and take nothing for
    granted. These are kids who will easily lose focus at 2:30pm." */
+/* ══════════════════════════════════════════════════════
+   WHAT MR. O JUST SHOWED YOU
+
+   The bridge from the teacher-led minutes into the lab. Marcos 10/9:
+   "in the beginning they should be reminded about what they learned in
+   the teacher led session prior to the experiments."
+
+   Every line here matches a step in the lesson plan's teach sequence, and
+   names the DEMO as well as the idea — a student who has forgotten "force
+   is a push or a pull" often still remembers Mr. O shoving a chair. The
+   demo is the handle on the idea.
+═══════════════════════════════════════════════════════ */
+window.RECAP = {
+  day1: {
+    lead: 'Mr. O just showed you three things. Here they are again, so you ' +
+          'have them while you work.',
+    items: [
+      { t: 'A <b>force</b> is a push or a pull.',
+        d: 'Remember the chair &mdash; pushing it and pulling it are both forces.' },
+      { t: '<b>Friction</b> pushes back on anything that moves.',
+        d: 'Remember rubbing your hands together and feeling them get warm. That is friction.' },
+      { t: 'A rougher surface has more friction, so it stops things sooner.',
+        d: 'Remember sliding your hand on the desk, then on your sleeve. One was harder.' }
+    ],
+    now: 'Today you change <b>one thing only</b>: what the cart rolls on. ' +
+         'Everything else stays exactly the same.'
+  },
+  day2: {
+    lead: 'Mr. O just showed you the three new tests. Here they are again.',
+    items: [
+      { t: 'The <b>push</b> test &mdash; you change how hard you push.',
+        d: 'Same wood floor every time. Only your push changes.' },
+      { t: 'The <b>ramp</b> test &mdash; you change how tall the ramp is.',
+        d: 'You do NOT push the car. You let it go at the top and gravity does the rest.' },
+      { t: 'The <b>truck</b> test &mdash; you change which one you push.',
+        d: 'The truck is heavier than the car. Both get the very same push.' }
+    ],
+    now: 'Every test still changes <b>one thing only</b>. That is what makes it fair.'
+  }
+};
+
 window.METHOD_WORDS = {
   predict:  'A <b>prediction</b> is your best guess <i>before</i> you test. It is never marked wrong.',
   trial:    'A <b>trial</b> is one push. Some setups get two trials so you can check your own work.',

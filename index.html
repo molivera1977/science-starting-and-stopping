@@ -76,6 +76,7 @@
     <div class="eyebrow">Listen first</div>
     <h2>Before you begin</h2>
     <div id="ra-text" style="font-size:18.5px; line-height:1.7; margin-top:12px"></div>
+    <div id="recap-host"></div>
     <div class="btnrow">
       <button class="btn" id="ra-next" type="button">I&rsquo;m ready &rarr;</button>
       <button class="btn ghost small" id="ra-again" data-noread type="button">&#128266; Read it again</button>
@@ -185,19 +186,26 @@
     <div class="box todo" data-parts>
       <span class="lbl">Day 2 is</span>
       <ol>
+        <li>How hard you push.</li>
         <li>The ramp. You let a car go instead of pushing it.</li>
         <li>The truck against the car.</li>
-        <li>How hard you push.</li>
         <li>Then you explain what you found.</li>
       </ol>
     </div>
     <div id="dg-choices">
-      <p class="qtext">Are you ready to start Day 2?</p>
+      <div class="box ask" data-parts>
+        <span class="lbl">Stop here</span>
+        <p><b>Ask Mr. O if you should go on to Day 2.</b></p>
+        <p>Put your hand up and ask. Do not start Day 2 on your own &mdash; he will
+        show the class the new tests first, and they are easier to do after he does.</p>
+      </div>
+      <p class="qtext">What did Mr. O say?</p>
       <div class="btnrow">
-        <button class="btn" id="dg-next" type="button">Yes &mdash; start Day 2 &rarr;</button>
-        <button class="btn ghost" id="dg-stop" type="button">No &mdash; stop here for today</button>
+        <button class="btn" id="dg-next" type="button">He said I can start Day 2 &rarr;</button>
+        <button class="btn ghost" id="dg-stop" type="button">He said stop here for today</button>
       </div>
     </div>
+    <div id="dg-recap" class="hidden"></div>
     <div id="dg-stopped" class="hidden">
       <div class="box todo" data-parts>
         <span class="lbl">Saved</span>

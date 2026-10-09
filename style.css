@@ -488,3 +488,47 @@ table.data td.pending{color:var(--ink-faint)}
 .wh-ex{ display:block; margin-top:8px; padding-top:7px;
   border-top:1px dashed var(--sci-line); font-size:14.5px; color:var(--ink-soft); }
 @media (prefers-reduced-motion:reduce){ .wh-chev{ transition:none } }
+
+
+/* ── ASK THE TEACHER ────────────────────────────────────
+   The Day 1 / Day 2 boundary is Mr. O's call, not the student's. Amber,
+   because it is the one box on the site that says stop. */
+.box.ask{
+  border:1px solid var(--warn); border-left:5px solid var(--warn);
+  border-radius:0 13px 13px 0; background:var(--warn-soft);
+  padding:14px 17px; margin:16px 0;
+}
+.box.ask .lbl{
+  display:block; font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--warn); font-weight:700; margin-bottom:6px;
+}
+.box.ask p{ margin:0 0 7px; font-size:16px; line-height:1.5; color:var(--ink); }
+.box.ask p:last-child{ margin-bottom:0; }
+
+/* ── WHAT MR. O JUST SHOWED YOU ─────────────────────────
+   The bridge from the teacher-led minutes into the lab. */
+.recap{ margin:18px 0 4px; }
+.recap > .lbl{
+  display:block; font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--sci-dark); font-weight:700; margin-bottom:6px;
+}
+.recap .rl{ font-size:16.5px; color:var(--ink-soft); margin:0 0 11px; }
+.rcard{
+  display:flex; gap:12px; align-items:flex-start;
+  background:var(--sci-soft); border:1px solid var(--sci-line);
+  border-radius:13px; padding:12px 15px; margin-bottom:9px;
+}
+.rnum{
+  flex:none; width:27px; height:27px; border-radius:50%;
+  background:var(--sci); color:#fff; font-weight:700; font-size:15px;
+  display:grid; place-items:center;
+}
+.rbody .rt{ font-size:16.5px; line-height:1.45; color:var(--ink); }
+.rbody .rd{ font-size:14.5px; line-height:1.45; color:var(--ink-soft); margin-top:4px; }
+.recap .rnow{
+  background:var(--surface); border:1px solid var(--line);
+  border-left:5px solid var(--accent); border-radius:0 13px 13px 0;
+  padding:12px 15px; font-size:16.5px; line-height:1.5; margin-top:11px;
+}
