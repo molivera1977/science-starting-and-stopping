@@ -353,7 +353,21 @@ function attachSpeakers(root) {
     const fire = e => { e.preventDefault(); e.stopPropagation(); speech.sayOne(el); };
     b.addEventListener('click', fire);
     b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') fire(e); });
-    el.appendChild(b);
+    /* BEFORE the text, not after. A reader who needs the button should meet it
+       on the way in, not after reading to the end of the line to find it — and
+       IXL puts its speakers on the left, so this is the placement the class
+       already knows.
+
+       It goes before the first thing that CARRIES TEXT, so on a vocabulary
+       card it sits beside the word rather than between the picture and the
+       word. Leading decoration is skipped. */
+    let anchor = el.firstChild;
+    while (anchor &&
+           ((anchor.nodeType === 3 && !anchor.textContent.trim()) ||
+            (anchor.nodeType === 1 && anchor.classList && anchor.classList.contains('art')))) {
+      anchor = anchor.nextSibling;
+    }
+    el.insertBefore(b, anchor);
   });
 }
 

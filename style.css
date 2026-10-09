@@ -335,13 +335,17 @@ table.data td.pending{color:var(--ink-faint)}
    the whole page. A span rather than a button, because answer choices are
    buttons and buttons cannot nest. */
 .mini-spk{
-  display:inline-block; margin-left:.45rem; cursor:pointer;
-  font-size:.85em; line-height:1; opacity:.5;
+  display:inline-block; margin-left:0; cursor:pointer;
+  font-size:.92em; line-height:1; opacity:.72;
   vertical-align:baseline; user-select:none;
 }
 .mini-spk:hover, .mini-spk:focus-visible{opacity:1; transform:scale(1.18)}
 .mini-spk:focus-visible{outline:3px solid var(--hl-line); outline-offset:2px; border-radius:4px}
-.opt .mini-spk, .vcard .mini-spk{margin-left:auto; padding-left:.5rem}
+/* Speakers sit BEFORE the text now, so the old push-to-the-right rule is gone.
+   An option's letter badge comes first, then the speaker, then the words. */
+.mini-spk{ margin-right:.42rem; }
+.opt .mini-spk{ margin-left:.3rem; margin-right:.42rem; }
+.vcard .mini-spk{ margin-right:.4rem; }
 @media (prefers-reduced-motion:reduce){ .mini-spk:hover{transform:none} }
 
 
