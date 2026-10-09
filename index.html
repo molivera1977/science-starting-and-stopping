@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232E7D6B'/%3E%3Ccircle cx='11' cy='21' r='3' fill='%23fff'/%3E%3Ccircle cx='22' cy='21' r='3' fill='%23fff'/%3E%3Crect x='7' y='11' width='18' height='7' rx='2' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="style.css?v=split1">
+<link rel="stylesheet" href="style.css?v=save1">
 </head>
 <body>
 <div class="wrap">
@@ -53,6 +53,10 @@
     <div class="btnrow">
       <button class="btn big" id="cover-go" type="button">Let&rsquo;s begin &rarr;</button>
     </div>
+    <div id="cv-resume" class="cv-resume hidden">
+      <p>Already started this lesson?</p>
+      <button class="btn ghost" id="cv-resume-go" type="button">Pick up where I left off &rarr;</button>
+    </div>
     <p class="cv-teacher" data-noread><a href="?teacher" id="cv-teacher">Teacher preview</a></p>
   </section>
 
@@ -71,14 +75,22 @@
       and measure how far everything goes. Then your own numbers will tell you the answer.</p>
     </div>
 
+    <div class="btnrow">
+      <button class="btn" id="why-next" type="button">Next &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ══════════════ 0c · WHY SHOULD YOU CARE ══════════════
+       Its own page. Marcos 10/9: "I'd rather have more clicking rather than
+       info getting ignored and lost on the page." -->
+  <section id="care-screen" class="card hidden">
     <div class="cv-care">
       <span class="lbl">Why should you care?</span>
       <p class="cv-care-lead">Stopping is everywhere in your life. Sometimes it is what keeps you safe.</p>
       <div class="care-grid" id="cv-care"></div>
     </div>
-
     <div class="btnrow">
-      <button class="btn" id="why-next" type="button">Next &rarr;</button>
+      <button class="btn" id="care-next" type="button">Next &rarr;</button>
     </div>
   </section>
 
@@ -360,11 +372,11 @@
   </p>
 </div>
 
-<script src="data/art.js?v=split1"></script>
-<script src="data/lesson.js?v=split1"></script>
-<script src="data/questions.js?v=split1"></script>
-<script src="script.js?v=split1"></script>
-<script src="preview.js?v=split1"></script>
+<script src="data/art.js?v=save1"></script>
+<script src="data/lesson.js?v=save1"></script>
+<script src="data/questions.js?v=save1"></script>
+<script src="script.js?v=save1"></script>
+<script src="preview.js?v=save1"></script>
 
 <!-- ══════════════ WORD HELP — on every working screen ══════════════
      Marcos 10/9: "add reminders of those definitions. Don't expect them to

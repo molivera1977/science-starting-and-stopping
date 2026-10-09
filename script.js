@@ -401,7 +401,7 @@ function attachSpeakers(root) {
    method words (trial, average, claim…) come from METHOD_WORDS, because
    those were used on screen dozens of times and never defined once.
 ══════════════════════════════════════════════════════ */
-const WH_HIDE_ON = ['cover', 'why', 'summary', 'plan', 'start', 'vocab', 'end'];
+const WH_HIDE_ON = ['cover', 'why', 'care', 'summary', 'plan', 'start', 'vocab', 'end'];
 
 function buildWordHelp() {
   const row = document.getElementById('wh-words');
@@ -514,7 +514,7 @@ function syncWordHelp(phase) {
   if (wb) {
     const q = document.getElementById('wb-q');
     if (q && !q.innerHTML) { q.innerHTML = LESSON.driving; attachSpeakers(wb); }
-    wb.classList.toggle('hidden', ['cover', 'why', 'summary', 'plan', 'start', 'end'].indexOf(phase) !== -1);
+    wb.classList.toggle('hidden', ['cover', 'why', 'care', 'summary', 'plan', 'start', 'end'].indexOf(phase) !== -1);
   }
 }
 
@@ -529,7 +529,7 @@ function logEvent(kind, extra) {
 /* ══════════════════════════════════════════════════════
    PHASES
 ══════════════════════════════════════════════════════ */
-const PHASES = ['cover','why','summary','plan','start','vocab','vq','predictA','runA','graphA',
+const PHASES = ['cover','why','care','summary','plan','start','vocab','vq','predictA','runA','graphA',
                 'predictB','runB','graphB',
                 'daygate',
                 'predictC','runC','graphC',
@@ -585,7 +585,7 @@ const app = {
 
   /* ── screens ── */
   show(id) {
-    ['cover-screen','why-screen','summary-screen','plan-screen','start-screen','vocab-screen','q-screen','lab-screen',
+    ['cover-screen','why-screen','care-screen','summary-screen','plan-screen','start-screen','vocab-screen','q-screen','lab-screen',
      'daygate-screen','write-screen','end-screen']
       .forEach(s => { const el = document.getElementById(s); if (el) el.classList.add('hidden'); });
     const el = document.getElementById(id); if (el) el.classList.remove('hidden');
@@ -633,6 +633,12 @@ const app = {
   /* ── persistence ── */
   save() {
     if (window.PREVIEW) return;   /* never overwrite a student's save on this device */
+    /* Never write a session with no student in it. Closing the tab on the
+       cover — before anyone has picked a name — used to save an EMPTY
+       session over the real one, wiping a student's yesterday. Caught
+       10/9: a planted save with 8 pushes came back with 0. Guarding here
+       rather than at each caller closes every path at once. */
+    if (!this.studentName) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         studentName:this.studentName, phase:this.phase, score:this.score,
@@ -722,7 +728,7 @@ function drawRail() {
     const cls = on ? 'step on' : (at > last ? 'step done' : 'step');
     return '<div class="' + cls + '"><span class="n">' + st.n + '</span><span class="l">' + st.l + '</span></div>';
   }).join('');
-  rail.classList.toggle('hidden', ['cover','why','summary','plan','start'].indexOf(app.phase) !== -1);
+  rail.classList.toggle('hidden', ['cover','why','care','summary','plan','start'].indexOf(app.phase) !== -1);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -747,6 +753,20 @@ function buildCover() {
     '<div><b class="pt">' + c.t + '</b><span class="pd">' + c.d + '</span>' +
     '<span class="ctest">' + c.test + '</span></div></div>').join('');
   document.getElementById('cover-go').onclick = () => { logEvent('cover_begin'); showWhy(); };
+
+  /* Coming back? The resume button lives on the name-picker page, which is
+     now six pages in. If this device holds an unfinished lesson, the cover
+     offers a shortcut straight to the name picker — and the name check there
+     still stops one student picking up another's work on a shared device. */
+  const back = document.getElementById('cv-resume');
+  const saved = app.loadSaved();
+  if (back && saved && saved.studentName && saved.phase && saved.phase !== 'end') {
+    back.classList.remove('hidden');
+    document.getElementById('cv-resume-go').onclick = () => {
+      logEvent('cover_resume');
+      app.phase = 'start'; app.show('start-screen'); drawRail();
+    };
+  }
   attachSpeakers(document.getElementById('cover-screen'));
 }
 
@@ -802,7 +822,7 @@ function buildStart() {
     logEvent('resume');
     document.getElementById('who-chip').textContent = app.studentName;
     app.startTimer(); app.tickTimer();
-    app.go(['cover','why','summary','plan','start'].indexOf(app.phase) !== -1 ? 'vocab' : app.phase);
+    app.go(['cover','why','care','summary','plan','start'].indexOf(app.phase) !== -1 ? 'vocab' : app.phase);
   });
 
   /* No whole-page reader anywhere now. Marcos 10/9: "I don't like the read to
@@ -867,7 +887,16 @@ function showWhy() {
   app.phase = 'why'; drawRail();
   app.show('why-screen');
   attachSpeakers(document.getElementById('why-screen'));
-  document.getElementById('why-next').onclick = () => { speech.stop(); showSummary(); };
+  document.getElementById('why-next').onclick = () => { speech.stop(); showCare(); };
+}
+
+/* Why should you care — its own page, so the three cards are not a scroll
+   away under the big question. */
+function showCare() {
+  app.phase = 'care'; drawRail();
+  app.show('care-screen');
+  attachSpeakers(document.getElementById('care-screen'));
+  document.getElementById('care-next').onclick = () => { speech.stop(); showSummary(); };
 }
 
 function showSummary() {
@@ -1993,11 +2022,13 @@ document.addEventListener('visibilitychange', () => {
     app.startTimer();
     /* A push that was mid-animation when the student left still lands. */
     if (app._runPending) { const f = app._runPending; app._runPending = null; f(); }
-    else if (app.phase === 'runA' || app.phase === 'runB') paintRun(app.phase === 'runA' ? 'A' : 'B');
+    else { const m = /^run([ABCD])$/.exec(app.phase); if (m) paintRun(m[1]); }   /* all four, not just A and B */
   }
 });
 window.addEventListener('beforeunload', () => {
-  if (app.phase !== 'start' && app.phase !== 'end') { logEvent('close'); app.save(); submitPartial(); }
+  if (app.studentName && PHASES.indexOf(app.phase) > PHASES.indexOf('start') && app.phase !== 'end') {
+    logEvent('close'); app.save(); submitPartial();
+  }
 });
 
 /* ── BOOT ───────────────────────────────────────────── */

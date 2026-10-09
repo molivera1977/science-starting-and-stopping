@@ -763,3 +763,11 @@ body.tp-on{ padding-top:58px; }
 /* The cover is now just the picture, the title and one button — give it room. */
 .card.cover{ padding-bottom:30px; }
 .card.cover .cv-sub{ margin-bottom:6px; }
+
+#care-screen .cv-care{ margin:0; }
+
+
+/* Coming back to an unfinished lesson: a second, quieter way in from the cover. */
+.cv-resume{ margin:14px 18px 0; text-align:center; }
+.cv-resume.hidden{ display:none; }
+.cv-resume p{ margin:0 0 6px; font-size:15px; color:var(--ink-soft); }
