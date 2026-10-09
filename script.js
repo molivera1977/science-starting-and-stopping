@@ -231,7 +231,15 @@ const speech = {
 
   readable(root) {
     if (!root) return [];
-    const SEL = 'h1,h2,h3,h4,p,li,td,th,.vcard,.opt,.grow,.readout,.fb,.g,.sb,.step,.box';
+    /* Everything a student can see, they can hear. Audited 10/9 by walking
+       every phase and listing text blocks with no speaker: 19 of them,
+       including the line announcing where a push landed and the graph's
+       verdict on their prediction. The pair blocks (.same/.chg) are listed
+       rather than their .lb/.v halves so a label is spoken with its value
+       — "Push stays the same: Medium push" — instead of as two fragments. */
+    const SEL = 'h1,h2,h3,h4,p,li,td,th,' +
+      '.vcard,.opt,.grow,.readout,.fb,.g,.sb,.step,.box,' +
+      '.runnow,.note,.eyebrow,.qcount,.lbl,.same,.chg,.plain,.say,.counter,.chips-lbl,.qdata-h';
     const out = [];
     root.querySelectorAll(SEL).forEach(el => {
       if (el.closest('[data-noread]')) return;
