@@ -1020,6 +1020,17 @@ li.gstep{ margin:10px 0; }
 .tnote b{ color:var(--ink); }
 .tablezone table.data{ margin-top:8px; }
 
+/* what an average is: two dots and the middle, sized to read, not to fill */
+.avgline{ line-height:0; margin:8px 0 4px; }
+.avgline svg{ display:block; width:100%; max-width:440px; height:auto; }
+.avgline svg text{ font-family:"Public Sans",system-ui,sans-serif; }
+.avgbox p, .newcard p + p{ margin-top:8px; }
+.box.todo.avgbox > p{ font-size:21px; color:var(--ink); }
+
+/* <dfn> marks the place a word is explained (qa.js C18 looks for it). To a
+   student the word being taught is simply bold. */
+dfn{ font-style:normal; font-weight:700; }
+
 /* the box this push will fill */
 table.data tr.rowon > td:first-child{ box-shadow:inset 5px 0 0 var(--hl-line); }
 table.data td.target{

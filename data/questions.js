@@ -70,7 +70,7 @@ window.VOCAB_Q = [
 window.ANALYSIS_Q = [
   { id:'L06',
     why: d => "Look at your data table. On " + d.farthestA.toLowerCase() + " the cart traveled the farthest, " + d.maxAvgA + " cm. " + d.farthestA + " had the least friction pushing back.", inv:'A',
-    q:'Look at your Investigation A table. Which surface let the cart roll the <b>farthest</b>?',
+    q:'Look at your Test 1 data table. Which surface let the cart roll the <b>farthest</b>?',
     opts:['Ice','Wood','Carpet','Sand'], resolve: d => d.farthestA },
 
   { id:'L07',
@@ -80,7 +80,7 @@ window.ANALYSIS_Q = [
 
   { id:'L08',
     why: "Every push was the same. The only thing that changed was the surface. So the surface made the difference.", inv:'A',
-    q:'In Investigation A you gave the cart the <b>same medium push every single time</b>. So what caused the cart to travel such different distances?',
+    q:'In Test 1 you gave the cart the <b>same medium push every single time</b>. So what caused the cart to travel such different distances?',
     opts:['The surface the cart rolled on','The cart got heavier each time','Someone pushed harder on sand','Nothing &mdash; the cart traveled the same distance every time'], a:0 },
 
   { id:'L09',
@@ -90,7 +90,7 @@ window.ANALYSIS_Q = [
 
   { id:'L10',
     why: "A bigger push gives the cart more energy. More energy means the cart rolls farther before friction stops the cart.", inv:'B',
-    q:'In Investigation B the surface never changed &mdash; only the push did. When the push got <b>bigger</b>, what happened to the distance the cart traveled?',
+    q:'In Test 2 the surface never changed &mdash; only the push did. When the push got <b>bigger</b>, what happened to the distance the cart traveled?',
     opts:['The cart traveled a longer distance','The cart traveled a shorter distance','The cart traveled exactly the same distance','The cart stopped moving'], a:0 },
 
   { id:'L11',
@@ -100,12 +100,12 @@ window.ANALYSIS_Q = [
 
   { id:'L12',
     why: d => "Your table shows " + d.tallestC + " sent the car the farthest. The car started higher, so the car had more energy.", inv:'C',
-    q:'Look at your Investigation C table. Which ramp sent the car the <b>farthest</b>?',
+    q:'Look at your Test 3 data table. Which ramp sent the car the <b>farthest</b>?',
     opts:['1 book','2 books','3 books','All three ramps sent the car the same distance'], resolve: d => d.tallestC },
 
   { id:'L13',
     why: "You did not push, and the car and the wood stayed the same. Only the height of the ramp changed, so that made the difference.", inv:'C',
-    q:'In Investigation C the car and the surface never changed. You did not push the car at all &mdash; you let the car go. So what made the car travel different distances?',
+    q:'In Test 3 the car and the surface never changed. You did not push the car at all &mdash; you let the car go. So what made the car travel different distances?',
     opts:['How tall the ramp was','How hard you pushed','The colour of the car','The surface'], a:0 },
 
   { id:'L14',
@@ -115,7 +115,7 @@ window.ANALYSIS_Q = [
 
   { id:'L15',
     why: d => "Your table shows " + d.fartherD.toLowerCase() + " went farther with the very same push. A lighter thing goes farther with the same push.", inv:'D',
-    q:'Look at your Investigation D table. With the <b>same push</b>, did the car or the truck travel farther?',
+    q:'Look at your Test 4 data table. With the <b>same push</b>, did the car or the truck travel farther?',
     opts:['The car','The truck','The car and the truck went exactly the same','Neither the car nor the truck moved'], resolve: d => d.fartherD },
 
   { id:'L16',
@@ -191,13 +191,13 @@ window.CLAIMS_Q = [
      period and the reading levels in front of him. */
   { id:'L29',
     why: d => "That is your claim: " + d.shortestA.toLowerCase() + " stopped the cart the soonest.", cer:'claim',
-    q:'Time to explain what happened in Investigation A. Start with your <b>claim</b>. ' +
+    q:'Time to explain what happened in Test 1. Start with your <b>claim</b>. A <dfn>claim</dfn> is what you think is true. ' +
       'Which surface stopped the cart the soonest?',
     opts:['Ice','Wood','Carpet','Sand'], resolve: d => d.shortestA },
 
   { id:'L30',
     why: "Those two distances are your evidence. Those two distances show the biggest difference in your whole data table.", cer:'evidence',
-    q:'Now the <b>evidence</b>. Which two distances from <b>your own data table</b> show your claim best?',
+    q:'Now the <b>evidence</b>. <dfn>Evidence</dfn> is the distances that prove your claim. Which two distances from <b>your own data table</b> show your claim best?',
     optsFrom: d => [
       'On ' + d.farthestA.toLowerCase() + ' the cart rolled ' + d.maxAvgA +
         ' cm, but on ' + d.shortestA.toLowerCase() + ' only ' + d.minAvgA + ' cm',
@@ -210,7 +210,7 @@ window.CLAIMS_Q = [
 
   { id:'L31',
     why: "That is your reasoning. The surface with the most friction pushes back the hardest, so that surface stops the cart soonest.", cer:'reasoning',
-    q:'Last part &mdash; the <b>reasoning</b>. WHY did that surface stop the cart soonest?',
+    q:'Last part &mdash; the <b>reasoning</b>. <dfn>Reasoning</dfn> is the reason why. WHY did that surface stop the cart soonest?',
     optsFrom: d => [
       'That surface has the most friction, and friction slows a moving object down',
       'That surface got a smaller push than the other surfaces',
@@ -313,7 +313,7 @@ window.EXIT_Q = [
    full bank comes back for the take-anywhere tail: WIN block, home,
    a sub day.
 
-   Session 1   vocab + Investigation A   -> L01 L02 L06 L09   (8 runs)
+   Session 1   vocab + Test 1   -> L01 L02 L06 L09   (8 runs)
    Session 2   Investigations B, C, D    -> L10 L14 L16 L18
                                             L20 L21 W01 L26 L28  (8 runs)
 ═══════════════════════════════════════════════════════ */

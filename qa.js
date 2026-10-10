@@ -31,7 +31,8 @@
      C16 on a guided page a heading is read with its step, with no speaker
          of its own
      C17 student text names the thing and does not say "it"
-     C18 every science word a student meets is explained somewhere
+     C18 every watched word is explained (<dfn>), in the lesson's own flow, at
+         or before the first screen that uses it — the help panel does not count
      C19 student text says what was measured, not "your number"
      C20 a label is read with the line under it, on every screen
      C21 after every Listen the next thing to press is on screen, clear of
@@ -211,7 +212,7 @@
       gateBad.length === 0, gateBad.slice(0, 6).join(' | '));
 
   const phaseBad = [], uncovered = [], noSpeaker = [], noLight = [], words = [], tiny = {};
-  const cover = {}, lockedInPreview = [], apart = [], loose = [];
+  const cover = {}, lockedInPreview = [], apart = [], loose = [], flow = [];
   /* C17 — name the thing. Marcos 10/10, on "Which one lets it go farthest?":
      "don't say it, say what you are talking about". A struggling reader
      cannot carry "it" back to the noun, so student text says the noun again.
@@ -316,6 +317,23 @@
     });
 
     blocks.forEach(b => lintIt(b.text, stops[i].label));
+    /* C18 — this stop's words, and which words it EXPLAINS (<dfn>). A push
+       stop also carries every "New this time" card of its test, since the
+       preview shows only the first push. */
+    {
+      let used = blocks.map(b => b.text).join(' ');
+      const taught = [...sec.querySelectorAll('dfn')].filter(shown).map(d => d.textContent);
+      const mRun = /^run([ABCD])$/.exec(stops[i].phase);
+      if (mRun) invOf(mRun[1]).runs.forEach((r, n) => {
+        const nw = newInRun(mRun[1], n);
+        let html = nw.fresh.map(b => b.name + ' ' + b.full).join(' ') + ' ' + setupBits(r).map(b => b.name + ' ' + b.short).join(' ');
+        if (nw.whyTwice) html += ' ' + (window.WHY_REPEAT || '');
+        if (nw.average) html += ' The <dfn>average</dfn> is the distance in the middle.';
+        (html.match(/<dfn>(.*?)<\/dfn>/g) || []).forEach(x => taught.push(x.replace(/<[^>]+>/g, '')));
+        used += ' ' + html.replace(/<[^>]+>/g, ' ').replace(/&\w+;/g, ' ');
+      });
+      flow.push({ label: stops[i].label, used, taught: taught.map(t => t.toLowerCase().trim()) });
+    }
     [...sec.querySelectorAll('button')].filter(shown).forEach(bt => lintIt(bt.textContent, stops[i].label + ' (button)'));
 
     blocks.forEach(b => {
@@ -406,26 +424,37 @@
   rec('C19', 'Student text says what was measured, not "your number"', bareList.length === 0,
       bareList.length + ' found. ' + bareList.slice(0, 6).map(k => '"' + k + '" (' + bareNumber[k] + ')').join(' | '));
 
-  /* C18 — a science word is explained before a student is asked to use it.
-     Marcos 10/10: "was mass really discussed? It shows in the experiments yet
-     it was not mentioned in the lead up." It was not: "mass" was the right
-     answer to a scored question and nothing defined it. Every word below
-     that appears anywhere in student text must be one of the six words, or
-     in the Stuck? panel's word list. */
-  const WATCH = { mass:/\bmass\b/i, vehicle:/\bvehicles?\b/i, object:/\bobjects?\b/i,
-    centimeter:/\bcentimeters?\b|\bcm\b/i, meter:/\bmeters?\b|\b\d+ m\b/i, gravity:/\bgravity\b/i,
-    friction:/\bfriction\b/i, force:/\bforces?\b/i, energy:/\benergy\b/i, motion:/\bmotion\b/i,
-    surface:/\bsurfaces?\b/i, distance:/\bdistances?\b/i, average:/\baverages?\b/i,
-    investigation:/\binvestigations?\b/i, predict:/\bpredict\w*/i, evidence:/\bevidence\b/i,
-    claim:/\bclaims?\b/i, reasoning:/\breasoning\b/i, trial:/\btrials?\b/i, setup:/\bsetups?\b/i,
-    ramp:/\bramps?\b/i, track:/\btrack\b/i, cart:/\bcarts?\b/i, data:/\bdata\b/i,
-    unbalanced:/\bunbalanced\b/i, magnetism:/\bmagnetism\b/i, 'from rest':/\bfrom rest\b/i };
-  const taught = LESSON.vocab.map(v => v.word).concat(Object.keys(window.THING_WORDS || {}), Object.keys(window.METHOD_WORDS || {}))
-    .map(w => w.toLowerCase());
-  const isTaught = w => taught.some(k => k === w || k.split(' ').indexOf(w) !== -1 || k.indexOf(w) === 0 || w.indexOf(k) === 0);
-  const untaught = Object.keys(WATCH).filter(w => WATCH[w].test(corpus) && !isTaught(w));
-  rec('C18', 'Every science word a student meets is explained somewhere', untaught.length === 0,
-      'used but never explained: ' + untaught.join(', '));
+  /* C18 — a word is explained, in a step the student has to hear, at or before
+     the first place the word appears. Marcos 10/10: "was mass really
+     discussed? It shows in the experiments yet it was not mentioned in the
+     lead up." and, when "average" turned out the same: "we can never assume
+     understanding."
+
+     The first version of this check asked only whether a word was defined
+     SOMEWHERE. "Average" passed it: a definition sat in the optional Stuck?
+     panel that no student has to open. Now the lesson is walked in order.
+     For every word below, the first screen that uses the word must be the
+     screen, or come after the screen, where the word is marked <dfn> (the
+     HTML tag for "this is where the term is defined"). The help panel does
+     not count. Add each new lesson's words to this list. */
+  const WATCH = { mass:'mass', average:'averages?', trial:'trials?', prediction:'predict\\w*', 'data table':'data table',
+    data:'data', surface:'surfaces?', friction:'friction', force:'forces?', energy:'energy', motion:'motion',
+    gravity:'gravity', distance:'distances?', centimeter:'centimeters?|cm', claim:'claims?', evidence:'evidence',
+    reasoning:'reasoning', explanation:'explanations?', ramp:'ramps?', tags:'tags', bar:'bars?', cart:'carts?',
+    object:'objects?', track:'track', scientist:'scientists?', test:'tests?', investigation:'investigations?',
+    setup:'setups?', vehicle:'vehicles?', 'from rest':'from rest', unbalanced:'unbalanced', magnetism:'magnetism' };
+  const untaught = [];
+  Object.keys(WATCH).forEach(w => {
+    const use = new RegExp('\\b(?:' + WATCH[w] + ')\\b', 'i');
+    const isDef = t => new RegExp('^(?:' + WATCH[w] + ')$', 'i').test(t);
+    const fu = flow.findIndex(f => use.test(f.used));
+    if (fu === -1) return;
+    const ft = flow.findIndex(f => f.taught.some(isDef));
+    if (ft === -1) untaught.push(w + ' (never explained; first on "' + flow[fu].label + '")');
+    else if (ft > fu) untaught.push(w + ' (used on "' + flow[fu].label + '" before it is explained on "' + flow[ft].label + '")');
+  });
+  rec('C18', 'Every word is explained at or before the first place a student meets it', untaught.length === 0,
+      untaught.length + ' not. ' + untaught.slice(0, 8).join(' | '));
 
   rec('C12', 'Every question has its own feedback (' + bank.length + ' questions)',
       !empty.length && !dupes.length, (empty.length ? 'none: ' + empty.join(' ') + '. ' : '') + (dupes.length ? 'same as another: ' + dupes.join(' ') : ''));

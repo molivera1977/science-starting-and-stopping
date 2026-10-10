@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232E7D6B'/%3E%3Ccircle cx='11' cy='21' r='3' fill='%23fff'/%3E%3Ccircle cx='22' cy='21' r='3' fill='%23fff'/%3E%3Crect x='7' y='11' width='18' height='7' rx='2' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="style.css?v=scroll1">
+<link rel="stylesheet" href="style.css?v=teach1">
 </head>
 <body>
 <div class="wrap">
@@ -70,9 +70,21 @@
       <p id="cv-driving"></p>
     </div>
 
+    <!-- Every word in the big question and in "you will be the scientist" is
+         explained here, one step at a time. Marcos 10/10: "we can never
+         assume understanding." -->
     <div class="cv-you" data-step>
-      <p><b>You will be the scientist.</b> You will run tests and measure how far things travel
-      before the things stop. Then the distances you measure will tell you the answer.</p>
+      <p>An <dfn>object</dfn> is a thing. A ball is an object. A car is an object. A book is an object.</p>
+    </div>
+    <div class="cv-you" data-step>
+      <p><b>You will be the scientist.</b> A <dfn>scientist</dfn> is a person who asks a question,
+      then tests to find the answer.</p>
+    </div>
+    <div class="cv-you" data-step>
+      <p>You will run tests. A <dfn>test</dfn> is a way to try something and see what happens.
+      In each test you will measure how far a thing travels before the thing stops. How far a
+      thing travels is called the <dfn>distance</dfn>. The distances you measure will tell you
+      the answer.</p>
     </div>
 
     <div class="btnrow" data-gafter>
@@ -131,9 +143,11 @@
 
   <!-- ══════════════ 1 · START ══════════════ -->
   <section id="start-screen" class="card hidden">
-    <div class="eyebrow">Unit 1 &middot; Motion: Car Crashes &middot; NGSS 4-PS3-1 &amp; 4-PS3-3</div>
+    <!-- The unit title and standard codes are for the teacher (they are in the
+         footer). A student met the word "Motion" here before it was taught. -->
+    <div class="eyebrow">Grade 4 Science &middot; Lesson 1.1</div>
     <h2>Starting and Stopping</h2>
-    <p class="lead" id="st-lead">Today you are a motion scientist. You will push a cart and roll a car down
+    <p class="lead" id="st-lead">Today you are a scientist who studies how things move. You will push a cart and roll a car down
     a ramp. Every time, you will measure how far the cart or the car travels. Then you will use the distances you measured to figure out
     what makes a moving object stop.</p>
 
@@ -223,7 +237,7 @@
 
       <!-- page 3 · your prediction -->
       <div data-gpage>
-        <p class="counter" data-step>A prediction is not graded right or wrong. Scientists write a prediction down <i>before</i> the test. After the test, scientists check the prediction.</p>
+        <p class="counter" data-step>A <dfn>prediction</dfn> is your best guess before the test. A prediction is not graded right or wrong. Scientists write a prediction down <i>before</i> the test. After the test, scientists check the prediction.</p>
         <div data-gafter>
           <p class="qtext" id="pr-predict"></p>
           <div class="opts" id="pr-opts"></div>
@@ -279,6 +293,8 @@
            should be a forced review and spoken." What the bars are, then one
            bar at a time, then what the bars say about the prediction. -->
       <p class="lead" id="gr-lead" data-step></p>
+      <!-- what an average is, with this student's own two distances -->
+      <div class="box todo avgbox" id="gr-average" data-step></div>
       <div class="graph" id="graph-rows"></div>
       <div id="gr-predict-check" class="note" data-step></div>
       <div class="btnrow" data-gafter>
@@ -308,10 +324,10 @@
         You are finding out whether a taller ramp sends the car farther.</li>
 
         <li data-step><b>The truck test.</b> You push a car, then you push a truck, with the exact same
-        push on the exact same wood. The truck is heavier than the car. Scientists say the truck has more <b>mass</b>. Twice each, so
+        push on the exact same wood. The truck is heavier than the car. Scientists say the truck has more <dfn>mass</dfn>. Mass is how much stuff a thing is made of. Twice each, so
         <b>4 pushes</b>. You are finding out whether the heavy truck goes as far as the light car.</li>
 
-        <li data-step><b>Then you explain what you found.</b> You will not have to write a paragraph.
+        <li data-step><b>Then you explain what you found.</b> An <dfn>explanation</dfn> tells what happened and why. You will not have to write a paragraph.
         You pick your answer three times: <b>what you think is true</b>, then <b>the distances from
         your own data table that prove your answer</b>, then <b>the reason why</b>. The site puts your three
         picks together into one explanation and shows you the explanation.</li>
@@ -417,14 +433,14 @@
   </p>
 </div>
 
-<script src="data/art.js?v=scroll1"></script>
-<script src="data/lesson.js?v=scroll1"></script>
-<script src="data/questions.js?v=scroll1"></script>
-<script src="guide.js?v=scroll1"></script>
-<script src="script.js?v=scroll1"></script>
-<script src="preview.js?v=scroll1"></script>
+<script src="data/art.js?v=teach1"></script>
+<script src="data/lesson.js?v=teach1"></script>
+<script src="data/questions.js?v=teach1"></script>
+<script src="guide.js?v=teach1"></script>
+<script src="script.js?v=teach1"></script>
+<script src="preview.js?v=teach1"></script>
 <!-- The pre-push check. Runs only when the address has ?qa in it. -->
-<script>if (/[?&]qa\b/.test(location.search)) { var q = document.createElement('script'); q.src = 'qa.js?v=scroll1'; document.body.appendChild(q); }</script>
+<script>if (/[?&]qa\b/.test(location.search)) { var q = document.createElement('script'); q.src = 'qa.js?v=teach1'; document.body.appendChild(q); }</script>
 
 <!-- ══════════════ WORD HELP — on every working screen ══════════════
      Marcos 10/9: "add reminders of those definitions. Don't expect them to

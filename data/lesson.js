@@ -31,12 +31,12 @@ window.RECAP = {
     lead: 'Mr. O just showed you three things. Here are the three things again, so ' +
           'you can look back while you work.',
     items: [
-      { t: 'A <b>force</b> is a push or a pull.',
+      { t: 'A <dfn>force</dfn> is a push or a pull.',
         d: 'Remember the chair &mdash; pushing the chair and pulling the chair are both forces.' },
-      { t: '<b>Friction</b> pushes back on anything that moves.',
-        d: 'Remember rubbing your hands together and feeling them get warm. That is friction.' },
+      { t: '<dfn>Friction</dfn> pushes back on anything that moves.',
+        d: 'Remember rubbing your hands together and feeling your hands get warm. That rubbing is friction.' },
       { t: 'A rougher surface has more friction, so a rougher surface stops things sooner.',
-        d: 'Remember sliding your hand on the desk, then on your sleeve. One was harder.' }
+        d: 'A <dfn>surface</dfn> is the top of a thing, like the top of your desk. Remember sliding your hand on the desk, then on your sleeve. Your sleeve was harder to slide on.' }
     ],
     now: 'Next, you get to <b>test these ideas yourself</b>.'
   },
@@ -44,12 +44,12 @@ window.RECAP = {
     lead: 'Mr. O just showed you two new tests and one new word. Here are all three again.',
     items: [
       { t: 'The <b>ramp</b> test &mdash; you change how tall the ramp is.',
-        d: 'You do NOT push the car. You let the car go at the top and gravity pulls the car down the ramp.' },
+        d: 'A <dfn>ramp</dfn> is a slope, like a slide at the park. You do NOT push the car. You let the car go at the top and gravity pulls the car down the ramp.' },
       { t: 'The <b>truck</b> test &mdash; you change what you push: a car, then a truck.',
         d: 'The truck is heavier than the car. The car and the truck get the very same push.' },
       /* 'mass' is the correct answer to the truck question and was taught
          nowhere. Marcos 10/10: "was mass really discussed?" It was not. */
-      { t: 'The new word is <b>mass</b>. Mass is how much stuff a thing is made of.',
+      { t: 'The new word is <dfn>mass</dfn>. Mass is how much stuff a thing is made of.',
         d: 'Think of an empty backpack and a full backpack. The full backpack has more mass. The truck has more mass than the car.' }
     ],
     now: 'Every test still changes <b>one thing only</b>. That is what makes the test fair.'
@@ -66,11 +66,10 @@ window.THING_WORDS = {
      word the whole lesson is organised around. "data table" 25 times,
      "distance" 10, "setup" 6. Marcos 10/9: "These Science lessons must be
      SUPER explicit and perhaps over explain." */
-  investigation:
-          { def: 'one test, where you change one thing and keep everything else the same',
-            ex: 'Investigation A is the surface test. You change what the cart rolls on, ' +
-                'and you keep the push exactly the same. That is one investigation. ' +
-                'This lesson has four of them.' },
+  test:   { def: 'a way to try something and see what happens. In each test you change one thing and keep everything else the same',
+            ex: 'Test 1 is the surface test. You change what the cart rolls on, ' +
+                'and you keep the push exactly the same. That is one test. ' +
+                'This lesson has four tests.' },
   'data table':
           { def: 'the boxes where you write down how far the cart traveled',
             ex: 'Like a chart with rows and columns. Every time the cart stops, you write ' +
@@ -81,10 +80,10 @@ window.THING_WORDS = {
             ex: 'From where the cart started to where the cart stopped. You measure distance in ' +
                 'centimeters. 500 cm is about as long as three desks in a row. ' +
                 '50 cm is about the length of your arm.' },
-  setup:  { def: 'how everything is arranged before you push',
+  tags:   { def: 'the little labels above the track that say what this push uses',
             ex: 'The tags above the track, like Ice and Medium push. ' +
                 'The tags tell you which surface and which push this try uses. ' +
-                'The site picks the setup for you. You just read the tags and press the button.' },
+                'The site picks the surface and the push for you. You just read the tags and press the button.' },
   cart:   { def: 'a little box on wheels that rolls',
             ex: 'Think of a toy car. Or a skateboard. Or the wagon you pull behind you. ' +
                 'On your screen the cart is the small box with two wheels.' },
@@ -108,9 +107,9 @@ window.THING_WORDS = {
 /* The one question a child doing try 2 of 2 is actually asking. It sits on
    the lesson, not on one investigation, because all four repeat. */
 window.WHY_REPEAT =
-  'You do every setup <b>twice</b>. Why? Because one try can go wrong &mdash; maybe your hand ' +
-  'slipped, or you pushed a little harder without meaning to. Doing each setup twice lets you catch a mistake, ' +
-  'and the middle of the two distances is closer to the truth. Scientists never trust one try.';
+  'You do every push <b>two times</b>. Why? Because one push can go wrong &mdash; maybe your hand ' +
+  'slipped, or you pushed a little harder without meaning to. Doing each push two times lets you catch a mistake, ' +
+  'and the middle of the two distances is closer to the truth. That middle distance is called the <dfn>average</dfn>. Scientists never trust one push.';
 
 /* ══════════════════════════════════════════════════════
    THE PLAN — what used to be one eight-sentence paragraph
@@ -129,13 +128,13 @@ window.INTRO_PLAN = {
         d: 'Give the cart a small push, a medium push and a big push. Does a bigger push send the cart farther?' } ] },
     { label: 'Next time', tests: [
       { inv: 'C', t: 'Test 3 &mdash; the ramp',
-        d: 'Let a car roll down a ramp. Does a taller ramp send the car farther?' },
+        d: 'A <dfn>ramp</dfn> is a slope, like a slide at the park. Let a car roll down a ramp. Does a taller ramp send the car farther?' },
       { inv: 'D', t: 'Test 4 &mdash; the truck',
         d: 'Push a car and a heavy truck the same way. Does the car or the truck go farther?' } ] }
   ],
   every: [
     { art: 'distance',      t: 'Measure the distance the cart traveled', d: 'See how far the cart traveled from START, in centimeters.' },
-    { art: 'data table',    t: 'Write the distance in your data table', d: 'Put the distance the cart traveled in a box in your data table.' },
+    { art: 'data table',    t: 'Write the distance in your data table', d: 'A <dfn>data table</dfn> is a set of boxes for writing down what you measure. What you write down is called your <dfn>data</dfn>. Put the distance the cart traveled in a box in your data table.' },
     { art: 'investigation', t: 'Explain why the cart stopped', d: 'Use the distances in your own data table to say why the cart stopped.' }
   ],
   calm: 'Take your time. This takes two days. Good scientists test more than once.'
@@ -156,7 +155,7 @@ window.CARE = [
     d: 'A heavy car or bus needs a long way to stop. That is why you wait for the crossing guard and look both ways.' },
   { art: 'icy', test: 'You will test this idea in Test 1',
     t: 'Sand on an icy sidewalk',
-    d: 'In winter, people throw sand on ice. The sand adds friction, so your feet can stop and you do not slip.' },
+    d: 'In winter, people throw sand on ice. The sand adds <dfn>friction</dfn>. Friction is a rubbing that slows things down. So your feet can stop and you do not slip.' },
   { art: 'sneaker', test: 'You will test this idea in Test 1',
     t: 'The bumps on your sneakers',
     d: 'The bumps grab the gym floor on purpose. That is how you stop fast without falling.' }
@@ -183,21 +182,21 @@ window.CART_PAGES = [
   { scene: 'start',
     tiles: [
       { art: 'cart',   t: 'This is a cart',
-        d: 'A cart is a little box on wheels. A cart rolls. A toy car is like a cart. A skateboard is like a cart.' },
+        d: 'A <dfn>cart</dfn> is a little box on wheels. A cart rolls. A toy car is like a cart. A skateboard is like a cart.' },
       { art: 'screen', t: 'The cart is on your screen',
-        d: 'You do not push a real cart. You press a button. Then the cart on your screen gets a push and rolls.' } ] },
+        d: 'You do not push a real cart. You press a button. Then the cart on your screen gets a push and rolls along a track. A <dfn>track</dfn> is a long straight path, like a hallway.' } ] },
   { head: 'Why we use a cart', scene: 'surfaces',
     tiles: [
       { art: 'why',      t: 'We have a question to answer',
         d: 'What makes a moving thing stop? To find the answer, we need a thing that moves. The cart is the thing that moves.' },
       { art: 'surfaces', t: 'We change one thing at a time',
-        d: 'First we change the surface. The surface is what the cart rolls on: ice, wood, carpet or sand. After that, we change how hard the push is. A push is a force.' },
+        d: 'First we change the surface. The <dfn>surface</dfn> is what the cart rolls on: ice, wood, carpet or sand. After that, we change how hard the push is. A push is a force.' },
       { art: 'watch',    t: 'We watch what the cart does',
         d: 'After every push, we watch the cart. Does the cart roll a long way? Or does the cart stop soon?' } ] },
   { head: 'How the cart gives us the answer', scene: 'distance',
     tiles: [
       { art: 'distance',  t: 'We measure the distance the cart travels',
-        d: 'The distance is how far the cart travels. We measure from START to the spot where the cart stops. We measure in centimeters. A centimeter is small. Your fingernail is about 1 centimeter wide.' },
+        d: 'The <dfn>distance</dfn> is how far the cart travels. We measure from START to the spot where the cart stops. We measure in centimeters. A <dfn>centimeter</dfn> is small. Your fingernail is about 1 centimeter wide.' },
       { art: 'longshort', t: 'What the distance tells us',
         d: 'A long distance means not much slowed the cart down. A short distance means something stopped the cart fast.' },
       { art: 'clue',      t: 'The distance is our clue',
@@ -206,13 +205,20 @@ window.CART_PAGES = [
 
 window.METHOD_WORDS = {
   predict:  'A <b>prediction</b> is your best guess <i>before</i> you test. A prediction is never marked wrong.',
-  trial:    'A <b>trial</b> is one push.<br><br>In Investigation A you push <b>twice</b> on every ' +
+  trial:    'A <b>trial</b> is one push.<br><br>In Test 1 you push <b>twice</b> on every ' +
             'surface. Here is why. One push can go wrong &mdash; maybe your hand slipped, or you ' +
             'pushed a tiny bit harder without meaning to. If you only pushed once you would never ' +
             'know. Pushing twice lets you catch a mistake. Real scientists never trust one try either.',
-  average:  'The <b>average</b> is the middle of your two trials. Add the two distances together, ' +
-            'then cut that total in half.<br><br>The average is fairer than picking one distance. If one push sent the cart a ' +
-            'bit far and one push sent the cart a bit short, the middle is closer to the truth than either distance.',
+  /* Rewritten 10/10. Marcos: "we need to explain what an average is for their
+     level." The old one said "add the two distances, then cut that total in
+     half" — a division most of this class cannot yet do. For two amounts the
+     average IS the amount in the middle, which a child can see. */
+  average:  'The <b>average</b> is the amount in the middle of two amounts.<br><br>' +
+            'Think of reading. On Monday you read 10 pages. On Tuesday you read 20 pages. ' +
+            'The amount in the middle is 15 pages. So 15 pages is the average.<br><br>' +
+            'In this lab the average is the distance in the middle of your two trials. ' +
+            'Say the cart traveled 480 cm, then 500 cm. The distance in the middle is 490 cm. ' +
+            'So the average is 490 cm. The site finds the average for you.',
   claim:    'A <b>claim</b> is what you think is true.',
   evidence: '<b>Evidence</b> is the distances from your data table that show your claim is true.',
   reasoning:'<b>Reasoning</b> is the reason why your claim is true.'
@@ -298,12 +304,12 @@ window.LAB = {
               note: 'a hard shove, as hard as you can' }
   },
 
-  /* Investigation A — same push every time, four different surfaces.
+  /* Test 1 — same push every time, four different surfaces.
      Objective: "Construct explanations of how the forces acting on
      objects cause them to change their motion." (friction) */
   invA: {
     id: 'A',
-    label: 'Investigation A',
+    label: 'Test 1',
     heading: 'Same push, different surfaces',
     headingPlain: 'That means you push the same way every time. The only thing that changes is what the cart rolls on.',
     question: 'If the push stays exactly the same, does the surface change how far the cart rolls?',
@@ -317,9 +323,9 @@ window.LAB = {
     /* Said out loud on the screen before they start. Nothing here is a hint
        about the answer — it is only what their hands have to do. */
     doCount: '8 pushes',
-    doWhy:   'That is 4 surfaces. You push 2 times on each surface.',
+    doWhy:   'That is 4 surfaces. You push 2 times on each surface. Each push is called a <dfn>trial</dfn>.',
     doSteps: [
-      'The site sets up each push for you. Read the tags above the track.',
+      'The site gets each push ready for you. Above the track you will see little <dfn>tags</dfn>, like Ice and Medium push. The tags tell you what this push uses. Read the tags.',
       'Press <b>Push the cart</b>.',
       'Watch where the cart stops.',
       'Press the <b>Write in my table</b> button. The distance the cart traveled drops into the glowing box.',
@@ -337,7 +343,7 @@ window.LAB = {
     ]
   },
 
-  /* Ramp heights for Investigation C. A car released from rest at height h
+  /* Ramp heights for Test 3. A car released from rest at height h
      reaches the flat with v² = 2gh, then friction stops it:
          d = v² / (2µg) = h / µ
      so the distance on the flat is just the ramp height divided by the
@@ -349,7 +355,7 @@ window.LAB = {
     high: { name: '3 books', cm: 30, blocks: 3, note: 'the tallest ramp' }
   },
 
-  /* Vehicles for Investigation D. Same push means the same WORK done on the
+  /* Vehicles for Test 4. Same push means the same WORK done on the
      object, so both leave with the same energy; friction then takes that
      energy away faster from the heavier one:
          d = W / (µ m g)   — twice the mass, half the distance.
@@ -362,12 +368,12 @@ window.LAB = {
                  'The full backpack has more mass, so the full backpack is harder to push.' }
   },
 
-  /* Investigation B — same surface every time, three different pushes.
+  /* Test 2 — same surface every time, three different pushes.
      Objective: "Analyze and interpret data to describe how different
      amounts of force cause an object to move different distances." */
   invB: {
     id: 'B',
-    label: 'Investigation B',
+    label: 'Test 2',
     heading: 'Same surface, different pushes',
     headingPlain: 'That means the cart always rolls on wood. The only thing that changes is how hard you push.',
     question: 'If the surface stays exactly the same, does the size of the push change how far the cart rolls?',
@@ -379,7 +385,7 @@ window.LAB = {
     doCount: '6 pushes',
     doWhy:   'Three sizes of push. You do each size twice, so you can check how far the cart traveled.',
     doSteps: [
-      'The site sets up each push for you. Read the tags above the track.',
+      'The site gets each push ready for you. Above the track you will see little <dfn>tags</dfn>, like Ice and Medium push. The tags tell you what this push uses. Read the tags.',
       'Press <b>Push the cart</b>.',
       'Watch where the cart stops.',
       'Press the <b>Write in my table</b> button. The distance the cart traveled drops into the glowing box.',
@@ -399,12 +405,12 @@ window.LAB = {
     ]
   },
 
-  /* Investigation C — same car, same surface, three ramp heights.
+  /* Test 3 — same car, same surface, three ramp heights.
      This is the district's "angle of the ramp" question, which their
      Intellectual Prep names as the most rigorous SBAC question for the unit. */
   invC: {
     id: 'C',
-    label: 'Investigation C',
+    label: 'Test 3',
     heading: 'Same car, different ramp heights',
     headingPlain: 'That means the same car on the same wood every time. The only thing that changes is how tall the ramp is.',
     question: 'If nobody pushes the car, does a taller ramp send the car farther?',
@@ -421,7 +427,7 @@ window.LAB = {
        they pushed every time and the habit carries over. */
     doSteps: [
       '<b>You do not push the car this time.</b> You let the car go at the top.',
-      'The site sets up each ramp for you. Read the tags above the track.',
+      'The site gets each ramp ready for you. Above the track you will see little <dfn>tags</dfn>, like Ramp of 1 book. The tags tell you what this run uses. Read the tags.',
       'Press <b>Let the car go</b>.',
       'Watch where the car stops.',
       'Press the <b>Write in my table</b> button. The distance the car traveled drops into the glowing box.',
@@ -439,11 +445,11 @@ window.LAB = {
     ]
   },
 
-  /* Investigation D — same push, same surface, two different masses.
+  /* Test 4 — same push, same surface, two different masses.
      This is the district's own Day 5 comparison: car vs. truck. */
   invD: {
     id: 'D',
-    label: 'Investigation D',
+    label: 'Test 4',
     heading: 'Same push, car against truck',
     headingPlain: 'That means the same push on the same wood every time. The only thing that changes is whether you push the car or the truck. The truck has more mass than the car. Mass is how much stuff a thing is made of.',
     question: 'If the push is exactly the same, does the heavy truck travel as far as the light car?',
@@ -455,7 +461,7 @@ window.LAB = {
     doCount: '4 pushes',
     doWhy:   'The car twice, then the truck twice. Every push is the same size.',
     doSteps: [
-      'The site sets up each push for you. Read the tags above the track.',
+      'The site gets each push ready for you. Above the track you will see little <dfn>tags</dfn>, like Ice and Medium push. The tags tell you what this push uses. Read the tags.',
       'Press <b>Push the car</b> or <b>Push the truck</b>.',
       'Watch where the car or the truck stops.',
       'Press the <b>Write in my table</b> button. The distance the car or the truck traveled drops into the glowing box.',

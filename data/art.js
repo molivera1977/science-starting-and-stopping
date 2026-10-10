@@ -340,3 +340,7 @@ window.COVER_ART =
   '<path d="M110 124v7M180 124v7M250 124v7M320 124v7M380 124v7" stroke="var(--sci-dark)" ' +
     'stroke-width="2.5" stroke-linecap="round" opacity=".45"/>' +
   '</svg>';
+
+/* the help panel's word list is keyed by word; these two share a picture */
+window.THING_ART.test = window.THING_ART.investigation;
+window.THING_ART.tags = window.THING_ART.setup;

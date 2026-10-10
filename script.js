@@ -3,8 +3,8 @@
    NGSS 4-PS3-1 · 4-PS3-3
 
    Flow:  read-aloud → vocabulary → vocabulary check
-          → Investigation A (predict · 8 runs · graph)
-          → Investigation B (predict · 6 runs · graph)
+          → Test 1 (predict · 8 runs · graph)
+          → Test 2 (predict · 6 runs · graph)
           → data analysis (8 items, answered from the student's own table)
           → written explanation (CER, 2 prompts)
           → exit ticket (6 items)
@@ -520,7 +520,7 @@ function attachSpeakers(root) {
    A small capitals label says nothing on its own, so it gets no speaker of
    its own. Whatever is right under it — a heading or a sentence — speaks
    for both: "Question 1 of 2. Word check. What is a force?" and
-   "Investigation A results. What my data looks like."
+   "Test 1 results. What my data looks like."
 
    Nothing is listed by class. A label is any block the page styles in
    capitals; "right under" is measured on the screen. So a label added later
@@ -701,7 +701,7 @@ const PHASES = ['cover','why','care','summary','cart','plan','start','vocab','vq
                 'predictC','runC','graphC',
                 'predictD','runD','graphD','analysis','claims','write','exit','end'];
 
-/* Session 1 is the words and Investigation A — the only investigation that
+/* Session 1 is the words and Test 1 — the only investigation that
    runs two trials, because averaging only needs teaching once. Session 2 is
    the other three at one push each, plus all of the thinking. Thirty minutes
    a session is the entire budget; see the lesson plan for where it goes.
@@ -763,7 +763,7 @@ const app = {
       predictB:'Push predict',     runB:'Push runs',     graphB:'Push graph',
       predictC:'Ramp predict',     runC:'Ramp runs',     graphC:'Ramp graph',
       predictD:'Truck predict',    runD:'Truck runs',    graphD:'Truck graph',
-      analysis:'Analyze data', claims:'Claim and evidence', write:'Explain',
+      analysis:'Analyze data', claims:'Build the explanation', write:'Explain',
       daygate:'End of Day 1', exit:'Exit ticket', end:'Done' };
     return m[this.phase] || this.phase;
   },
@@ -1133,7 +1133,7 @@ function renderVocab() {
     '<div class="vpage" data-gpage>' +
     '<div class="vcard" data-step>' + art(WORD_ART[v.word], 'wordart') +
     '<div class="vn">Word ' + (i + 1) + ' of ' + n + '</div>' +
-    '<div class="w">' + v.word + '</div>' +
+    '<div class="w"><dfn>' + v.word + '</dfn></div>' +
     /* data-noread: textOf() strips these before speaking, so the Spanish
        stays on screen for the reader who wants it and the English voice
        never tries to pronounce it. */
@@ -1187,8 +1187,8 @@ function correctIndex(q) {
    what they said. If all four held, it asks why the least obvious one worked.
    The order of the choices is fixed per student, not reshuffled, so leaving and
    coming back shows the same question. */
-const INV_NAME = { A:'Investigation A (the surfaces)', B:'Investigation B (how hard the push)',
-                   C:'Investigation C (how tall the ramp)', D:'Investigation D (car against truck)' };
+const INV_NAME = { A:'Test 1 (the surfaces)', B:'Test 2 (how hard the push)',
+                   C:'Test 3 (how tall the ramp)', D:'Test 4 (car against truck)' };
 
 function adaptiveTarget() {
   const miss = missedPredictions();
@@ -1217,7 +1217,7 @@ function adaptiveOpts() {
 }
 
 const PHASE_TITLE = { vq:'Word check', analysis:'What does my data say?',
-                      claims:'Claim and evidence', exit:'Exit ticket' };
+                      claims:'Build the explanation', exit:'Exit ticket' };
 
 function renderQ() {
   const bank = bankFor(app.phase), ans = answersFor(app.phase);
@@ -1244,7 +1244,7 @@ function renderQ() {
     const which = ['A','B','C','D'].includes(q.inv) ? q.inv : null;
     dataBox.className = '';
     dataBox.innerHTML = '<div class="qdata"><div class="qdata-h">' +
-      (which ? 'My Investigation ' + which + ' data' : 'My data') + '</div>' +
+      (which ? 'My Test ' + ({ A:1, B:2, C:3, D:4 }[which] || which) + ' data table' : 'My data table') + '</div>' +
       '<div class="tablewrap">' + (which ? '<table class="data">' + tableHTML(which) + '</table>'
                                           : allTablesHTML()) + '</div></div>';
   } else {
@@ -1363,8 +1363,8 @@ const CM_PX = run => (TRACK.w - originX(run) - 40) / LAB.trackCm;
 
 /* One run's distance, in whole centimetres.
      pushed  : d = v0² / (2µg)              — Investigations A and B
-     ramp    : d = h / µ                     — Investigation C (v² = 2gh at the bottom)
-     mass    : d = v0² / (2µg) ÷ m           — Investigation D (same work, more mass)
+     ramp    : d = h / µ                     — Test 3 (v² = 2gh at the bottom)
+     mass    : d = v0² / (2µg) ÷ m           — Test 4 (same work, more mass)
    Every run carries about ±4%, so two trials of the same setup never match
    exactly and the average is worth taking. */
 function distanceCm(run, vary) {
@@ -1518,7 +1518,7 @@ function renderPredict(inv) {
      and the exact buttons to press. A student who cannot infer the routine
      from the interface should not have to. */
   document.getElementById('pr-docount').textContent = inv.doCount || '';
-  document.getElementById('pr-dowhy').textContent   = inv.doWhy || '';
+  document.getElementById('pr-dowhy').innerHTML     = inv.doWhy || '';   /* carries <dfn> */
   const steps = document.getElementById('pr-dosteps');
   steps.innerHTML = '';
   (inv.doSteps || []).forEach(t => {
@@ -1618,23 +1618,81 @@ function setupBits(run) {
 const bitKeys = run => [run.surface && 'surface:' + run.surface, run.ramp && 'ramp:' + run.ramp,
   run.vehicle && 'vehicle:' + run.vehicle, run.push && !run.ramp && 'push:' + run.push].filter(Boolean);
 
+/* WHAT AN AVERAGE IS, at their level, from THEIR numbers.
+   Marcos 10/10: "we need to explain what an average is for their level."
+   The page said "the bar is the average of your two trials" and nothing ever
+   said what that meant. For two trials the average is the distance in the
+   middle, halfway between the two — something a child can see on a line.
+   No adding and halving: most of this class cannot do that division yet.
+
+   how: 'first'  the full explanation, in two parts (the push screen, the
+                 first time the Average box fills)
+        'page'   one box (the first results page)
+        'short'  a reminder (later results pages)                          */
+function averageParts(invKey, g, how) {
+  const run = g, c = cellsFor(invKey, g);
+  if (c.t1 == null || c.t2 == null || c.avg == null) return [];
+  const who = moverOf(run);
+  const twice = run.vehicle ? 'You pushed ' + who + ' two times.'
+              : run.ramp    ? 'You let the car go from the ramp of ' + LAB.ramps[run.ramp].name + ' two times.'
+              : invKey === 'B' ? 'You gave the cart the ' + stripTags(LAB.pushes[run.push].name).toLowerCase() + ' two times.'
+              : 'You pushed the cart on ' + stripTags(LAB.surfaces[run.surface].name).toLowerCase() + ' two times.';
+  const lo = Math.min(c.t1, c.t2), hi = Math.max(c.t1, c.t2);
+  const trials = 'On trial 1 ' + who + ' traveled <b>' + c.t1 + ' cm</b>. On trial 2 ' + who + ' traveled <b>' + c.t2 + ' cm</b>.';
+  const middle = lo === hi
+    ? 'Both distances are the same, so the average is the same distance: <b>' + c.avg + ' cm</b>.'
+    : 'The <dfn>average</dfn> is the distance in the middle. The average sits halfway between ' + lo + ' cm and ' + hi +
+      ' cm. Your average is <b>' + c.avg + ' cm</b>.';
+  /* the picture: the two trials as dots on a line, the average between them */
+  const pic = '<div class="avgline" data-noread>' +
+    '<svg viewBox="0 0 320 78" aria-hidden="true" focusable="false">' +
+    '<path d="M24 30h272" stroke="var(--sci-dark)" stroke-width="4" stroke-linecap="round"/>' +
+    (lo === hi
+      ? '<circle cx="160" cy="30" r="9" fill="var(--accent)"/>' +
+        '<text x="160" y="62" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">both trials and the average: ' + c.avg + ' cm</text>'
+      : '<circle cx="46" cy="30" r="8" fill="var(--sci)"/><circle cx="274" cy="30" r="8" fill="var(--sci)"/>' +
+        '<path d="M160 16l11 14-11 14-11-14z" fill="var(--accent)"/>' +
+        '<text x="46" y="60" text-anchor="middle" font-size="13" fill="var(--ink)">' + lo + ' cm</text>' +
+        '<text x="274" y="60" text-anchor="middle" font-size="13" fill="var(--ink)">' + hi + ' cm</text>' +
+        '<text x="160" y="60" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">average</text>' +
+        '<text x="160" y="75" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">' + c.avg + ' cm</text>') +
+    '</svg></div>';
+  const reading = 'Think of reading. On Monday you read 10 pages. On Tuesday you read 20 pages. ' +
+    'The amount in the middle is 15 pages. So 15 pages is the average.';
+  const why = 'One trial can be a little off. The average of two trials is closer to the truth. The site finds the average for you.';
+  if (how === 'short')
+    return ['<span class="lbl">Remember the average</span><p>' + twice + ' ' + trials + '</p><p>' + middle + '</p>' + pic];
+  if (how === 'page')
+    return ['<span class="lbl">What is an average?</span><p>' + twice + ' ' + trials + '</p><p>' + middle + '</p>' + pic +
+            '<p>' + why + '</p>'];
+  return ['<span class="lbl">New this time: the average</span>' +
+            '<p>Look at your data table. A new distance is in the box called <b>Average</b>.</p>' +
+            '<p>' + twice + ' ' + trials + '</p><p>' + middle + '</p>' + pic,
+          '<span class="lbl">The average, with an example</span><p>' + reading + '</p><p>' + why + '</p>'];
+}
+
 /* What is NEW in this push: any piece that no earlier push in the whole
    lesson has used, and the first second-try. Worked out from where the push
    sits in the lesson, so it needs no memory and is the same after a resume.
    Ice is explained when ice first appears, not on all eight pushes. */
 function newInRun(invKey, i) {
-  const seen = new Set(); let seenTwice = false;
+  const seen = new Set(); let seenTwice = false, avgDue = false, avgShown = false;
   for (const k of ['A', 'B', 'C', 'D']) {
     const runs = invOf(k).runs;
     for (let j = 0; j < runs.length; j++) {
+      /* the average: explained on the push right after the first Average box
+         fills, when there is a real average of their own to point at */
+      const average = avgDue && !avgShown && j > 0;
       if (k === invKey && j === i)
         return { fresh:setupBits(runs[j]).filter(b => !seen.has(b.key)),
-                 whyTwice:runs[j].trial === 2 && !seenTwice };
+                 whyTwice:runs[j].trial === 2 && !seenTwice,
+                 average:average ? runs[j - 1] : null };
+      if (average) avgShown = true;
       bitKeys(runs[j]).forEach(x => seen.add(x));
-      if (runs[j].trial === 2) seenTwice = true;
+      if (runs[j].trial === 2) { seenTwice = true; avgDue = true; }
     }
   }
-  return { fresh:[], whyTwice:false };
+  return { fresh:[], whyTwice:false, average:null };
 }
 
 /* Put the push in front of the student: the strip, the cart, the button and
@@ -1659,14 +1717,14 @@ function paintRun(invKey) {
   const done = i >= total;
   const card = document.getElementById('run-card');
 
-  /* Investigation C is released, not pushed — the counter has to agree with
+  /* Test 3 is released, not pushed — the counter has to agree with
      the button and the steps, or the screen contradicts itself. */
   const unit = inv.runNoun || 'Push';
   document.getElementById('run-progress').textContent =
     unit + ' ' + Math.min(i + 1, total) + ' of ' + total;
 
   const runBtn = document.getElementById('run-btn');
-  /* Investigation C releases the car from a ramp — nobody pushes it. The
+  /* Test 3 releases the car from a ramp — nobody pushes it. The
      button has to say so, because the screen told them it would. */
   runBtn.innerHTML = inv.runVerb || '&#128072; Push the cart';
   const recBtn = document.getElementById('run-record');
@@ -1723,7 +1781,12 @@ function paintRun(invKey) {
      then it folds away so the push screen stays the cart, the button and the
      table. The same words stay one tap away under "Stuck? Tap here". */
   const nw = newInRun(invKey, i);
-  fresh.innerHTML = nw.fresh.map(b =>
+  fresh.innerHTML =
+    /* the first average comes FIRST: it is about the box that just filled,
+       before the page moves on to the next surface */
+    (nw.average ? averageParts(invKey, Object.assign({ key:runKey(nw.average) }, nw.average), 'first')
+      .map(h => '<div class="newcard" data-step>' + h + '</div>').join('') : '') +
+    nw.fresh.map(b =>
       '<div class="newcard" data-step><span class="lbl">New this time</span>' +
       '<p>' + b.pic + '<b>' + b.name + '</b> &mdash; ' + b.full + '</p></div>').join('') +
     (nw.whyTwice ? '<div class="newcard" data-step><span class="lbl">Why twice?</span>' +
@@ -1857,7 +1920,7 @@ function groupsFor(invKey) {
   });
   return out;
 }
-/* Investigation A runs two trials so averaging gets taught; B, C and D run one
+/* Test 1 runs two trials so averaging gets taught; B, C and D run one
    each, because repeating the lesson cost minutes the period does not have. */
 function trialsFor(invKey) {
   return invOf(invKey).runs.reduce((m, r) => Math.max(m, r.trial), 1);
@@ -1900,11 +1963,11 @@ function tableHTML(invKey, marks) {
   });
   return h + '</tbody>';
 }
-const INV_TITLE = { A:'A — surfaces', B:'B — how hard the push',
-                    C:'C — how tall the ramp', D:'D — car against truck' };
+const INV_TITLE = { A:'1 — surfaces', B:'2 — how hard the push',
+                    C:'3 — how tall the ramp', D:'4 — car against truck' };
 function allTablesHTML() {
   return ['A','B','C','D'].map((k, i) =>
-    '<div class="qdata-h"' + (i ? ' style="margin-top:.7rem"' : '') + '>Investigation ' + INV_TITLE[k] + '</div>' +
+    '<div class="qdata-h"' + (i ? ' style="margin-top:.7rem"' : '') + '>Test ' + INV_TITLE[k] + '</div>' +
     '<table class="data">' + tableHTML(k) + '</table>').join('');
 }
 
@@ -1952,12 +2015,15 @@ function renderGraph(invKey) {
   document.getElementById('gr-eyebrow').innerHTML = inv.label + ' results';
   document.getElementById('gr-head').innerHTML = 'What my data looks like';
   const LEAD = {
-    A: 'Each bar shows how far the cart traveled on that surface. The bar is the average of your two trials. The push was the same every time.',
-    B: 'Each bar shows how far the cart traveled with that push. The bar is the average of your two trials. The surface was wood every time.',
-    C: 'Each bar shows how far the car traveled from that ramp. The bar is the average of your two trials. You never pushed the car — you let the car go.',
-    D: 'Each bar shows how far the car or the truck traveled. The bar is the average of your two trials. The car and the truck got the very same push, on wood.'
+    A: 'Each <dfn>bar</dfn> shows how far the cart traveled on that surface. A longer bar means the cart traveled farther. The bar is the average of your two trials. The push was the same every time.',
+    B: 'Each <dfn>bar</dfn> shows how far the cart traveled with that push. A longer bar means the cart traveled farther. The bar is the average of your two trials. The surface was wood every time.',
+    C: 'Each <dfn>bar</dfn> shows how far the car traveled from that ramp. A longer bar means the car traveled farther. The bar is the average of your two trials. You never pushed the car — you let the car go.',
+    D: 'Each <dfn>bar</dfn> shows how far the car or the truck traveled. A longer bar means a longer distance. The bar is the average of your two trials. The car and the truck got the very same push, on wood.'
   };
   document.getElementById('gr-lead').innerHTML = LEAD[invKey];
+  const avgBox = document.getElementById('gr-average');
+  avgBox.innerHTML = averageParts(invKey, groupsFor(invKey)[0], invKey === 'A' ? 'page' : 'short').join('');
+  avgBox.classList.toggle('hidden', !avgBox.innerHTML);
 
   const col = INV_COLUMNS[invKey];
   const groups = groupsFor(invKey).map(g => {
@@ -2020,11 +2086,11 @@ function renderGraph(invKey) {
   guide.run(document.getElementById('graph-card'), { id: 'graph' + invKey });
 
   document.getElementById('gr-next').onclick = () => app.next();
-  /* What the button leads to, by name. After Investigation B comes the end of
-     Day 1, not Investigation C — the label still said C from before the day
+  /* What the button leads to, by name. After Test 2 comes the end of
+     Day 1, not Test 3 — the label still said C from before the day
      split moved. */
-  const NEXT = { A:'Start Investigation B →', B:'Go to the end of Day 1 →',
-                 C:'Start Investigation D →', D:'Answer questions about my data →' };
+  const NEXT = { A:'Start Test 2 →', B:'Go to the end of Day 1 →',
+                 C:'Start Test 4 →', D:'Answer questions about my data →' };
   document.getElementById('gr-next').textContent = NEXT[invKey];
 }
 
@@ -2042,20 +2108,20 @@ function missedPredictions() {
   const grew = k => { const v = groupsFor(k).map(g => cellsFor(k, g).avg || 0);
                       return v.length >= 2 && v[v.length - 1] > v[0]; };
   if (app.data.A.length && say('A').toLowerCase() !== d.farthestA.toLowerCase())
-    out.push({ inv:'A', name:'Investigation A (the surfaces)', said:say('A'), got:'the cart traveled the farthest on ' + d.farthestA.toLowerCase() });
+    out.push({ inv:'A', name:'Test 1 (the surfaces)', said:say('A'), got:'the cart traveled the farthest on ' + d.farthestA.toLowerCase() });
   if (app.data.B.length && say('B') && !/farther/i.test(say('B')) && grew('B'))
-    out.push({ inv:'B', name:'Investigation B (how hard the push)', said:say('B'), got:'a bigger push sent the cart farther' });
+    out.push({ inv:'B', name:'Test 2 (how hard the push)', said:say('B'), got:'a bigger push sent the cart farther' });
   if (app.data.C.length && say('C') && !/farther/i.test(say('C')) && grew('C'))
-    out.push({ inv:'C', name:'Investigation C (how tall the ramp)', said:say('C'), got:'a taller ramp sent the car farther' });
+    out.push({ inv:'C', name:'Test 3 (how tall the ramp)', said:say('C'), got:'a taller ramp sent the car farther' });
   if (app.data.D.length && say('D').toLowerCase() !== d.fartherD.toLowerCase())
-    out.push({ inv:'D', name:'Investigation D (car against truck)', said:say('D'), got:lowerFirst(d.fartherD) + ' traveled farther' });
+    out.push({ inv:'D', name:'Test 4 (car against truck)', said:say('D'), got:lowerFirst(d.fartherD) + ' traveled farther' });
   return out;
 }
 
 /* ══════════════════════════════════════════════════════
    END OF DAY 1 — a real stop, not a scroll-past
 
-   Day 1 is the words and Investigation A. Without a gate a fast student
+   Day 1 is the words and Test 1. Without a gate a fast student
    runs straight into the ramp and the truck, which are Day 2's lesson and
    have not been briefed yet. This asks them out loud, tells them what they
    already did, and lets them stop with everything saved.
@@ -2218,7 +2284,7 @@ function finish() {
     ['' + app.score + '/' + total, 'Questions right'],
     [pct + '%', 'Score'],
     [clock(app.timerSeconds), 'Time on task'],
-    [clock(app.labSeconds()), 'On the investigation']
+    [clock(app.labSeconds()), 'On the four tests']
   ].map(x => '<div class="sb"><div class="n tnum">' + x[0] + '</div><div class="l">' + x[1] + '</div></div>').join('');
 
   /* The three picks become one explanation, in the order a scientist writes
