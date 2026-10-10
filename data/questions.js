@@ -50,12 +50,12 @@ window.VOCAB_Q = [
     opts:['A push or a pull on an object','A kind of metal','How heavy something is','The color of an object'], a:0 },
   { id:'L02',
     why: "Friction pushes back on anything that is moving. That is why a ball rolling on grass slows down and stops.", q:'What is <b>friction</b>?',
-    opts:['A force that pushes back on a moving object and slows it down','A force that speeds objects up','The weight of an object','A machine with wheels'], a:0 },
+    opts:['A force that pushes back on a moving object and slows the object down','A force that speeds objects up','The weight of an object','A machine with wheels'], a:0 },
   { id:'L03',
-    why: "Motion means something changed where it is. A rolling ball is in a new spot every second.", q:'An object is in <b>motion</b> when it &hellip;',
-    opts:['changes its position','stays in one place','gets heavier','makes a sound'], a:0 },
+    why: "Motion means something moved to a new place. A rolling ball is in a new spot every second.", q:'An object is in <b>motion</b> when the object &hellip;',
+    opts:['changes position','stays in one place','gets heavier','makes a sound'], a:0 },
   { id:'L04',
-    why: "Things need energy to move. Your body gets energy from food. A toy car gets it from a battery or a push.", q:'What does an object need in order to move or do work?',
+    why: "Things need energy to move. Your body gets energy from food. A toy car gets energy from a battery or a push.", q:'What does an object need in order to move or do work?',
     opts:['Energy','Color','A name','Friction'], a:0 },
   { id:'L05',
     why: "Gravity pulls things down toward Earth. That is why a dropped pencil falls down, not up.", q:'What is <b>gravity</b>?',
@@ -69,12 +69,12 @@ window.VOCAB_Q = [
    Questions with a fixed answer use `a` like any other item. */
 window.ANALYSIS_Q = [
   { id:'L06',
-    why: d => "Look at your table. " + d.farthestA + " went the farthest, " + d.maxAvgA + " cm. It had the least friction pushing back.", inv:'A',
+    why: d => "Look at your table. " + d.farthestA + " went the farthest, " + d.maxAvgA + " cm. " + d.farthestA + " had the least friction pushing back.", inv:'A',
     q:'Look at your Investigation A table. Which surface let the cart roll the <b>farthest</b>?',
     opts:['Ice','Wood','Carpet','Sand'], resolve: d => d.farthestA },
 
   { id:'L07',
-    why: d => "Look at your table. " + d.shortestA + " stopped the soonest, after only " + d.minAvgA + " cm. It had the most friction.", inv:'A',
+    why: d => "Look at your table. " + d.shortestA + " stopped the soonest, after only " + d.minAvgA + " cm. " + d.shortestA + " had the most friction.", inv:'A',
     q:'Which surface stopped the cart the <b>soonest</b>?',
     opts:['Ice','Wood','Carpet','Sand'], resolve: d => d.shortestA },
 
@@ -84,28 +84,28 @@ window.ANALYSIS_Q = [
     opts:['The surface the cart rolled on','The cart got heavier each time','Someone pushed harder on sand','Nothing &mdash; the distances were all the same'], a:0 },
 
   { id:'L09',
-    why: d => d.shortestA + " stopped the cart the soonest, after only " + d.minAvgA + " cm. It pushed back the hardest, so it had the most friction.", inv:'A',
+    why: d => d.shortestA + " stopped the cart the soonest, after only " + d.minAvgA + " cm. " + d.shortestA + " pushed back the hardest, so " + d.shortestA.toLowerCase() + " had the most friction.", inv:'A',
     q:'Friction is the force that pushes back on the rolling cart. On which surface was friction the <b>strongest</b>?',
     opts:['Ice','Wood','Carpet','Sand'], resolve: d => d.shortestA },
 
   { id:'L10',
-    why: "A bigger push gives the cart more energy. More energy means it rolls farther before friction stops it.", inv:'B',
+    why: "A bigger push gives the cart more energy. More energy means the cart rolls farther before friction stops the cart.", inv:'B',
     q:'In Investigation B the surface never changed &mdash; only the push did. When the push got <b>bigger</b>, what happened to the distance?',
-    opts:['It got longer','It got shorter','It stayed exactly the same','The cart stopped moving'], a:0 },
+    opts:['The distance got longer','The distance got shorter','The distance stayed exactly the same','The cart stopped moving'], a:0 },
 
   { id:'L11',
-    why: "The big push gave the cart the most energy, so it went the farthest.", inv:'B',
+    why: "The big push gave the cart the most energy, so the cart went the farthest.", inv:'B',
     q:'Which push sent the cart the farthest on wood?',
-    opts:['Small push','Medium push','Big push','They were all the same'], a:2 },
+    opts:['Small push','Medium push','Big push','All three pushes went the same distance'], a:2 },
 
   { id:'L12',
-    why: d => "Your table shows " + d.tallestC + " sent the car the farthest. The car started higher, so it had more energy.", inv:'C',
+    why: d => "Your table shows " + d.tallestC + " sent the car the farthest. The car started higher, so the car had more energy.", inv:'C',
     q:'Look at your Investigation C table. Which ramp sent the car the <b>farthest</b>?',
-    opts:['1 book','2 books','3 books','They all went the same'], resolve: d => d.tallestC },
+    opts:['1 book','2 books','3 books','All three ramps sent the car the same distance'], resolve: d => d.tallestC },
 
   { id:'L13',
     why: "You did not push, and the car and the wood stayed the same. Only the height of the ramp changed, so that made the difference.", inv:'C',
-    q:'In Investigation C the car and the surface never changed. You did not push it at all &mdash; you let it go. So what made the distances different?',
+    q:'In Investigation C the car and the surface never changed. You did not push the car at all &mdash; you let the car go. So what made the distances different?',
     opts:['How tall the ramp was','How hard you pushed','The colour of the car','The surface'], a:0 },
 
   { id:'L14',
@@ -115,28 +115,28 @@ window.ANALYSIS_Q = [
 
   { id:'L15',
     why: d => "Your table shows " + d.fartherD.toLowerCase() + " went farther with the very same push. A lighter thing goes farther with the same push.", inv:'D',
-    q:'Look at your Investigation D table. With the <b>same push</b>, which one travelled farther?',
-    opts:['The car','The truck','They went exactly the same','Neither one moved'], resolve: d => d.fartherD },
+    q:'Look at your Investigation D table. With the <b>same push</b>, did the car or the truck travel farther?',
+    opts:['The car','The truck','The car and the truck went exactly the same','Neither the car nor the truck moved'], resolve: d => d.fartherD },
 
   { id:'L16',
-    why: "The truck is heavier. It has more mass. The same push cannot move something heavy as far. Think of pushing an empty shopping cart, then a full one.", inv:'D',
+    why: "The truck is heavier. The truck has more mass. The same push cannot move something heavy as far. Think of pushing an empty shopping cart, then a full one.", inv:'D',
     q:'The car and the truck got the exact same push. Why did the <b>truck</b> stop sooner?',
     opts:['The truck has more mass','The truck was on a rougher surface','The truck got a smaller push','The truck has no friction'], a:0 },
 
   { id:'L17',
-    why: "A heavy truck needs a bigger push to go as far. A bigger push gives it more energy.", inv:'D',
+    why: "A heavy truck needs a bigger push to go as far. A bigger push gives the truck more energy.", inv:'D',
     q:'What could you do to make the <b>truck</b> travel as far as the car?',
     opts:['Push the truck harder','Push the truck more softly','Use a rougher surface','Nothing would work'], a:0 },
 
   { id:'L18',
-    why: "With almost no friction, nothing slows the cart down, so it keeps moving for a long time. That is the big idea of this lesson.", inv:'&mdash;',
-    q:'A cart is rolling across smooth ice. Nothing is in its way and almost no friction is pushing back. What will the cart do?',
-    opts:['Keep moving for a long time','Stop right away all by itself','Turn around and come back','Speed up on its own'], a:0 },
+    why: "With almost no friction, nothing slows the cart down, so the cart keeps moving for a long time. That is the big idea of this lesson.", inv:'&mdash;',
+    q:'A cart is rolling across smooth ice. Nothing is in the way of the cart and almost no friction is pushing back. What will the cart do?',
+    opts:['Keep moving for a long time','Stop right away','Turn around and come back','Speed up with no push'], a:0 },
 
   { id:'L19',
-    why: "Carpet is rough and fuzzy, so it grabs the cart. Ice is smooth. Rough surfaces have more friction.", inv:'&mdash;',
-    q:'Two carts get the exact same push. One rolls on carpet and one rolls on ice. Which cart has <b>more friction</b> working against it?',
-    opts:['The cart on carpet','The cart on ice','They have the same friction','Neither one has friction'], a:0 }
+    why: "Carpet is rough and fuzzy, so carpet grabs the cart. Ice is smooth. Rough surfaces have more friction.", inv:'&mdash;',
+    q:'Two carts get the exact same push. One rolls on carpet and one rolls on ice. Which cart has <b>more friction</b> pushing back?',
+    opts:['The cart on carpet','The cart on ice','Both carts have the same friction','Neither cart has friction'], a:0 }
 ];
 
 /* ── CLAIM AND EVIDENCE ────────────────────────────────
@@ -153,26 +153,26 @@ window.ANALYSIS_Q = [
    question and the choices are made out of their data, not a fixed key. */
 window.CLAIMS_Q = [
   { id:'L20',
-    why: "Moving things keep moving until a force stops them. On Earth friction is almost always there, so things do stop. But only because a force stopped them.", part:'A',
-    q:'A friend tells you, &ldquo;Once something is moving it will just keep moving forever.&rdquo; ' +
+    why: "A moving thing keeps moving until a force stops that thing. On Earth friction is almost always there, so moving things do stop. A force is always what stops a moving thing.", part:'A',
+    q:'A friend tells you, &ldquo;Once something is moving, that thing will just keep moving forever.&rdquo; ' +
       'Is your friend right?',
     opts:[
-      'Partly right &mdash; it keeps moving until a force stops it',
+      'Partly right &mdash; a moving thing keeps moving until a force stops that thing',
       'Completely right &mdash; moving things never stop on their own',
       'Completely wrong &mdash; moving things always stop by themselves',
-      'It depends on how heavy the object is'
+      'The answer depends on how heavy the object is'
     ], a:0 },
 
   { id:'L21',
-    why: d => "That is your strongest evidence. Even on " + d.farthestA.toLowerCase() + ", where it went " + d.maxAvgA + " cm, the cart still stopped. Something stopped it: friction.", part:'B',
-    q:'Now show it. Which piece of <b>your own data</b> best backs up the answer you just picked?',
+    why: d => "That is your strongest evidence. Even on " + d.farthestA.toLowerCase() + ", where the cart went " + d.maxAvgA + " cm, the cart still stopped. Something stopped the cart: friction.", part:'B',
+    q:'Now show your proof. Which piece of <b>your own data</b> best backs up the answer you just picked?',
     optsFrom: d => [
-      'On ' + d.farthestA.toLowerCase() + ' the cart rolled about ' + d.maxAvgA + ' cm, and it still stopped',
+      'On ' + d.farthestA.toLowerCase() + ' the cart rolled about ' + d.maxAvgA + ' cm, and the cart still stopped',
       'On ' + d.shortestA.toLowerCase() + ' the cart stopped after only ' + d.minAvgA + ' cm',
       'The big push went farther than the small push',
       'The truck did not go as far as the car'
     ],
-    resolve: d => 'On ' + d.farthestA.toLowerCase() + ' the cart rolled about ' + d.maxAvgA + ' cm, and it still stopped' },
+    resolve: d => 'On ' + d.farthestA.toLowerCase() + ' the cart rolled about ' + d.maxAvgA + ' cm, and the cart still stopped' },
 
   { id:'L22', adaptive:true, q:'', opts:[] },
 
@@ -197,42 +197,42 @@ window.CLAIMS_Q = [
 
   { id:'L30',
     why: "Those two numbers are your evidence. They show the biggest difference in your whole table.", cer:'evidence',
-    q:'Now the <b>evidence</b>. Which two numbers from <b>your own table</b> show it best?',
+    q:'Now the <b>evidence</b>. Which two numbers from <b>your own table</b> show your claim best?',
     optsFrom: d => [
-      'On ' + d.farthestA.toLowerCase() + ' it rolled ' + d.maxAvgA +
+      'On ' + d.farthestA.toLowerCase() + ' the cart rolled ' + d.maxAvgA +
         ' cm, but on ' + d.shortestA.toLowerCase() + ' only ' + d.minAvgA + ' cm',
-      'On ' + d.farthestA.toLowerCase() + ' it rolled ' + d.maxAvgA + ' cm',
+      'On ' + d.farthestA.toLowerCase() + ' the cart rolled ' + d.maxAvgA + ' cm',
       'Every surface gave about the same number',
       'The truck did not go as far as the car'
     ],
-    resolve: d => 'On ' + d.farthestA.toLowerCase() + ' it rolled ' + d.maxAvgA +
+    resolve: d => 'On ' + d.farthestA.toLowerCase() + ' the cart rolled ' + d.maxAvgA +
       ' cm, but on ' + d.shortestA.toLowerCase() + ' only ' + d.minAvgA + ' cm' },
 
   { id:'L31',
-    why: "That is your reasoning. The surface with the most friction pushes back the hardest, so it stops the cart soonest.", cer:'reasoning',
+    why: "That is your reasoning. The surface with the most friction pushes back the hardest, so that surface stops the cart soonest.", cer:'reasoning',
     q:'Last part &mdash; the <b>reasoning</b>. WHY did that surface stop the cart soonest?',
     optsFrom: d => [
-      'It has the most friction, and friction slows a moving object down',
-      'It got a smaller push than the other surfaces',
+      'That surface has the most friction, and friction slows a moving object down',
+      'That surface got a smaller push than the other surfaces',
       'The cart was heavier on that surface',
-      'There is no reason &mdash; it just happened that way'
+      'There is no reason &mdash; the cart just stopped there'
     ],
-    resolve: d => 'It has the most friction, and friction slows a moving object down' }
+    resolve: d => 'That surface has the most friction, and friction slows a moving object down' }
 ];
 
 /* The explanation that fits each investigation, plus three wrong turns that
    sound reasonable to a fourth grader. The last distractor is deliberate: it
    is the "science is just random" belief, and it is worth catching. */
 window.WHY_BANK = {
-  A: 'A rougher surface has MORE friction, so it stops the cart sooner &mdash; not farther',
-  B: 'A bigger push gives the cart more energy, so it travels farther',
-  C: 'Starting higher up gives the car more energy, so a taller ramp sends it farther',
+  A: 'A rougher surface has MORE friction, so a rougher surface stops the cart sooner &mdash; not farther',
+  B: 'A bigger push gives the cart more energy, so the cart travels farther',
+  C: 'Starting higher up gives the car more energy, so a taller ramp sends the car farther',
   D: 'Both got the same push, but friction slows the heavier truck down sooner'
 };
 window.WHY_DISTRACTORS = [
   'The measuring went wrong, so the numbers in my table cannot be trusted',
-  'It was luck. If I ran it again the other one would probably win',
-  'Nothing explains it. Sometimes science just does not make sense'
+  'The result was luck. If I ran the test again the other answer would probably win',
+  'Nothing explains the result. Sometimes science just does not make sense'
 ];
 
 /* ── WRITTEN RESPONSE ──────────────────────────────────
@@ -255,14 +255,14 @@ window.WRITTEN_Q = [
        undone by backspacing like any other typing. */
     starters:[
       'The cart stopped sooner on',
-      'On ice it rolled',
-      'On sand it rolled only',
+      'On ice the cart rolled',
+      'On sand the cart rolled only',
       'This happened because',
       'There is more friction on'
     ],
     /* The words this task needs that a Level-1 speller will stall on. */
     wordbank:['friction', 'sand', 'ice', 'centimeters', 'surface', 'distance'],
-    q:'Explain why the cart stopped much sooner on <b>sand</b> than on <b>ice</b>, even though you gave it the same push every time.',
+    q:'Explain why the cart stopped much sooner on <b>sand</b> than on <b>ice</b>, even though you gave the cart the same push every time.',
     hints:['<b>Claim</b> &mdash; say which surface stopped the cart sooner.',
            '<b>Evidence</b> &mdash; use two real numbers from your data table.',
            '<b>Reasoning</b> &mdash; use the word <i>friction</i> to explain why.'] }
@@ -274,23 +274,23 @@ window.WRITTEN_Q = [
    unbalanced force acts on it. */
 window.EXIT_Q = [
   { id:'L23',
-    why: "Pulling a wagon is a force, because it is a pull. Color, name and age are not pushes or pulls.", q:'Which of these is a <b>force</b>?',
+    why: "Pulling a wagon is a force, because a pull is a force. Color, name and age are not pushes or pulls.", q:'Which of these is a <b>force</b>?',
     opts:['Pulling a wagon','The color of a wagon','The name of a wagon','How old a wagon is'], a:0 },
   { id:'L24',
-    why: "Friction between the ball and the grass slowed it down and stopped it.", q:'A soccer ball rolls across the grass. It slows down and stops. Which force slowed it down?',
+    why: "Friction between the ball and the grass slowed the ball down and stopped the ball.", q:'A soccer ball rolls across the grass. The ball slows down and stops. Which force slowed the ball down?',
     opts:['Friction','Sound','Light','Magnetism'], a:0 },
   { id:'L25',
-    why: "Cart B got more force. More force gives it more energy, so it goes farther.", q:'Two carts roll on the same wooden floor. Cart A gets a small push. Cart B gets a big push. Which cart travels farther?',
-    opts:['Cart B, because it got more force','Cart A, because it got less force','They go exactly the same distance','Neither cart moves'], a:0 },
+    why: "Cart B got more force. More force gives Cart B more energy, so Cart B goes farther.", q:'Two carts roll on the same wooden floor. Cart A gets a small push. Cart B gets a big push. Which cart travels farther?',
+    opts:['Cart B, because Cart B got more force','Cart A, because Cart A got less force','Both carts go exactly the same distance','Neither cart moves'], a:0 },
   { id:'L26',
-    why: "Snow is smoother than grass, so it has less friction. Less friction means the sled slides farther.", q:'Why does a sled go farther on snow than on grass?',
+    why: "Snow is smoother than grass, so snow has less friction. Less friction means the sled slides farther.", q:'Why does a sled go farther on snow than on grass?',
     opts:['There is less friction on snow','Snow is colder than grass','The sled is heavier on snow','Gravity is stronger on snow'], a:0 },
   { id:'L27',
-    why: "A moving thing keeps moving until a force acts on it, like friction, a wall, or a hand.", q:'An object that is moving will keep moving unless &hellip;',
-    opts:['an unbalanced force acts on it','someone looks at it','it gets tired','the sun goes down'], a:0 },
+    why: "A moving thing keeps moving until a force acts on that thing, like friction, a wall, or a hand.", q:'An object that is moving will keep moving unless &hellip;',
+    opts:['an unbalanced force acts on the object','someone looks at the object','the object gets tired','the sun goes down'], a:0 },
   { id:'L28',
     why: "The hard push gave that cart more energy of motion. More push, more energy.", q:'Two carts are the same size. One is pushed hard and one is pushed softly. Which cart has <b>more energy of motion</b>?',
-    opts:['The cart pushed hard','The cart pushed softly','They have the same energy','Neither cart has energy'], a:0 }
+    opts:['The cart pushed hard','The cart pushed softly','Both carts have the same energy','Neither cart has energy'], a:0 }
 ];
 
 /* ═══════════════════════════════════════════════════════

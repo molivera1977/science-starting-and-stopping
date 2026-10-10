@@ -138,9 +138,9 @@
     }
 
     function label(s, k) {
-      if (k < heard) return '\u{1F50A} Hear it again';
+      if (k < heard) return '\u{1F50A} Listen again';
       if (playing === k) return '\u{1F50A} Listening…';
-      if (s.manual) return Date.now() >= s.readyAt ? 'I read it ✓' : 'Read this part first…';
+      if (s.manual) return Date.now() >= s.readyAt ? 'I read this part ✓' : 'Read this part first…';
       return s.tried ? '\u{1F50A} Listen again, all the way to the end' : '\u{1F50A} Listen';
     }
 

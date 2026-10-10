@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232E7D6B'/%3E%3Ccircle cx='11' cy='21' r='3' fill='%23fff'/%3E%3Ccircle cx='22' cy='21' r='3' fill='%23fff'/%3E%3Crect x='7' y='11' width='18' height='7' rx='2' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="style.css?v=lead1">
+<link rel="stylesheet" href="style.css?v=name1">
 </head>
 <body>
 <div class="wrap">
@@ -86,7 +86,7 @@
   <section id="care-screen" class="card hidden">
     <div class="cv-care">
       <span class="lbl">Why should you care?</span>
-      <p class="cv-care-lead" data-step>Stopping is everywhere in your life. Sometimes it is what keeps you safe.</p>
+      <p class="cv-care-lead" data-step>Stopping is everywhere in your life. Sometimes stopping is what keeps you safe.</p>
       <div class="care-grid" id="cv-care"></div>
     </div>
     <div class="btnrow" data-gafter>
@@ -126,7 +126,7 @@
     <h2>Here is the plan</h2>
     <div id="ra-text"></div>
     <div class="btnrow" data-gafter>
-      <button class="btn" id="ra-next" type="button">Got it &mdash; let me start &rarr;</button>
+      <button class="btn" id="ra-next" type="button">I am ready &mdash; let me start &rarr;</button>
     </div>
   </section>
 
@@ -134,8 +134,8 @@
   <section id="start-screen" class="card hidden">
     <div class="eyebrow">Unit 1 &middot; Motion: Car Crashes &middot; NGSS 4-PS3-1 &amp; 4-PS3-3</div>
     <h2>Starting and Stopping</h2>
-    <p class="lead" id="st-lead">Today you are a motion scientist. You will push a cart, roll it down
-    a ramp, and measure how far it goes every time. Then you will use your own numbers to figure out
+    <p class="lead" id="st-lead">Today you are a motion scientist. You will push a cart and roll a car down
+    a ramp. Every time, you will measure how far the cart or the car goes. Then you will use your own numbers to figure out
     what makes a moving object stop.</p>
 
     <div class="dq">
@@ -165,7 +165,7 @@
       <button class="btn ghost small hidden" id="resume-btn" type="button">Pick up where I left off</button>
       <button class="btn ghost small" id="teacher-btn" type="button">Teacher</button>
     </div>
-    <p class="counter">This lesson takes two days. You will not finish it all today, and that is the plan.</p>
+    <p class="counter">This lesson takes two days. You will not finish the whole lesson today, and that is the plan.</p>
   </section>
 
   <!-- ══════════════ 2 · READ ALOUD ══════════════ -->
@@ -223,7 +223,7 @@
 
       <!-- page 3 · your prediction -->
       <div data-gpage>
-        <p class="counter" data-step>A prediction is not graded right or wrong. Scientists write it down <i>before</i> they test, then check it after.</p>
+        <p class="counter" data-step>A prediction is not graded right or wrong. Scientists write a prediction down <i>before</i> the test. After the test, scientists check the prediction.</p>
         <div data-gafter>
           <p class="qtext" id="pr-predict"></p>
           <div class="opts" id="pr-opts"></div>
@@ -256,7 +256,7 @@
         aria-label="Track with the cart at the start."></canvas></div>
       <div class="actrow" data-gafter>
         <button class="btn big" id="run-btn" type="button">&#128072; Push the cart</button>
-        <button class="btn big hidden" id="run-record" type="button">Write it in my table</button>
+        <button class="btn big hidden" id="run-record" type="button">Write in my table</button>
         <span class="readout" id="run-readout" aria-live="polite">Distance: &mdash;</span>
       </div>
 
@@ -300,19 +300,19 @@
     <div class="box todo" data-parts>
       <span class="lbl">Next time you will do two more tests</span>
       <ol>
-        <li data-step><b>The ramp test.</b> You put a car at the top of a ramp and let it go.
-        <b>You do not push it at all</b> &mdash; gravity pulls it down on its own. You try three
+        <li data-step><b>The ramp test.</b> You put a car at the top of a ramp and let the car go.
+        <b>You do not push the car at all</b> &mdash; gravity pulls the car down. You try three
         ramp heights: 1 book high, then 2 books, then 3 books. Twice each, so <b>6 runs</b>.
         You are finding out whether a taller ramp sends the car farther.</li>
 
         <li data-step><b>The truck test.</b> You push a car, then you push a truck, with the exact same
-        push on the exact same wood. The truck is the heavier one. Twice each, so
-        <b>4 pushes</b>. You are finding out whether the heavy one goes as far as the light one.</li>
+        push on the exact same wood. The truck is heavier than the car. Twice each, so
+        <b>4 pushes</b>. You are finding out whether the heavy truck goes as far as the light car.</li>
 
         <li data-step><b>Then you explain what you found.</b> You will not have to write a paragraph.
         You pick your answer three times: <b>what you think is true</b>, then <b>the numbers from
-        your own table that show it</b>, then <b>why it happened</b>. The site puts your three
-        picks together into one explanation and shows it to you.</li>
+        your own table that prove your answer</b>, then <b>the reason why</b>. The site puts your three
+        picks together into one explanation and shows you the explanation.</li>
       </ol>
       <p data-step>That is <b>10 runs</b> altogether &mdash; fewer than today.</p>
     </div>
@@ -349,14 +349,14 @@
 
   <!-- ══════════════ 6 · WRITTEN ══════════════ -->
   <section id="write-screen" class="card hidden">
-    <div class="eyebrow">Step 4 &middot; Explain it like a scientist</div>
+    <div class="eyebrow">Step 4 &middot; Explain like a scientist</div>
     <h2 id="w-head">Claim, Evidence, Reasoning</h2>
     <p class="qtext" id="w-text"></p>
     <h3 style="font-size:20px; margin-top:16px">Put all three in your answer</h3>
     <ul class="hintlist" id="w-hints"></ul>
     <div class="box todo" data-parts style="margin-top:12px">
       <span class="lbl">How long &mdash; <span style="color:var(--accent)">about 3 sentences</span></span>
-      <p>Write it in your own words. The buttons under the box put words straight into your writing
+      <p>Write your explanation in your own words. The buttons under the box put words straight into your writing
       &mdash; tap one and keep going from there. The <b>Turn in</b> button turns green when your
       answer is long enough. Nothing is lost if you stop and come back.</p>
     </div>
@@ -415,14 +415,14 @@
   </p>
 </div>
 
-<script src="data/art.js?v=lead1"></script>
-<script src="data/lesson.js?v=lead1"></script>
-<script src="data/questions.js?v=lead1"></script>
-<script src="guide.js?v=lead1"></script>
-<script src="script.js?v=lead1"></script>
-<script src="preview.js?v=lead1"></script>
+<script src="data/art.js?v=name1"></script>
+<script src="data/lesson.js?v=name1"></script>
+<script src="data/questions.js?v=name1"></script>
+<script src="guide.js?v=name1"></script>
+<script src="script.js?v=name1"></script>
+<script src="preview.js?v=name1"></script>
 <!-- The pre-push check. Runs only when the address has ?qa in it. -->
-<script>if (/[?&]qa\b/.test(location.search)) { var q = document.createElement('script'); q.src = 'qa.js?v=lead1'; document.body.appendChild(q); }</script>
+<script>if (/[?&]qa\b/.test(location.search)) { var q = document.createElement('script'); q.src = 'qa.js?v=name1'; document.body.appendChild(q); }</script>
 
 <!-- ══════════════ WORD HELP — on every working screen ══════════════
      Marcos 10/9: "add reminders of those definitions. Don't expect them to

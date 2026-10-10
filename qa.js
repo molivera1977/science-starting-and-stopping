@@ -30,6 +30,7 @@
      C15 the teacher preview reaches every page of every guided screen
      C16 on a guided page a heading is read with its step, with no speaker
          of its own
+     C17 student text names the thing and does not say "it"
    It also lists how many words each screen asks a student to take in, and
    how many words each guided screen makes them listen to.
 
@@ -189,6 +190,31 @@
 
   const phaseBad = [], uncovered = [], noSpeaker = [], noLight = [], words = [], tiny = {};
   const cover = {}, lockedInPreview = [], apart = [];
+  /* C17 — name the thing. Marcos 10/10, on "Which one lets it go farthest?":
+     "don't say it, say what you are talking about". A struggling reader
+     cannot carry "it" back to the noun, so student text says the noun again.
+     Two phrases use "it" with nothing to point back to and are allowed. */
+  const IT_OK = [/it is hard to run on sand/gi, /what it means to need energy/gi];
+  const vague = {};
+  const lintIt = (text, where) => {
+    let t = String(text || '').replace(/<[^>]+>/g, ' ').replace(/&\w+;/g, ' ');
+    IT_OK.forEach(rx => { t = t.replace(rx, ''); });
+    const m = /(?:\S+\s+){0,4}\b[Ii]t(?:'s)?\b(?:\s+\S+){0,3}/.exec(t);
+    if (m) vague[m[0].trim().slice(0, 60)] = where;
+  };
+  /* every sentence the lesson keeps as data, whether or not a preview stop
+     happens to show it */
+  (function walk(v, where) {
+    if (typeof v === 'string') lintIt(v, where);
+    else if (Array.isArray(v)) v.forEach(x => walk(x, where));
+    else if (v && typeof v === 'object') Object.keys(v).forEach(k => walk(v[k], where));
+  })([window.LESSON.vocab, window.LESSON.icanKid, window.LESSON.driving, window.RECAP, window.INTRO_PLAN,
+      window.CARE, window.CART_INTRO, window.METHOD_WORDS, window.THING_WORDS, window.WHY_REPEAT,
+      window.WHY_BANK, window.WHY_DISTRACTORS, window.LAB.surfaces, window.LAB.pushes, window.LAB.ramps,
+      window.LAB.vehicles,
+      ['A', 'B', 'C', 'D'].map(k => { const v = invOf(k); return [v.heading, v.headingPlain, v.question,
+        v.sameLabel, v.sameValue, v.changeLabel, v.changeValue, v.predictQ, v.predictOpts, v.doCount, v.doWhy, v.doSteps]; })],
+     'lesson text');
   for (let i = 0; i < stops.length; i++) {
     await jump(i);
     await wait(650);
@@ -244,6 +270,9 @@
       const fs = parseFloat(getComputedStyle(el).fontSize);
       if (fs < MIN_FS) tiny[fs + 'px "' + own.slice(0, 30) + '"'] = stops[i].label;
     });
+
+    blocks.forEach(b => lintIt(b.text, stops[i].label));
+    [...sec.querySelectorAll('button')].filter(shown).forEach(bt => lintIt(bt.textContent, stops[i].label + ' (button)'));
 
     blocks.forEach(b => {
       const el = b.el;
@@ -320,6 +349,10 @@
   const empty = fb.filter(f => !f.t).map(f => f.id);
   const seenT = {}, dupes = [];
   fb.forEach(f => { if (f.t) { if (seenT[f.t]) dupes.push(f.id + '=' + seenT[f.t]); else seenT[f.t] = f.id; } });
+  fb.forEach(f => lintIt(f.t, f.id + ' feedback'));
+  const vagueList = Object.keys(vague);
+  rec('C17', 'Student text names the thing and does not say "it"', vagueList.length === 0,
+      vagueList.length + ' found. ' + vagueList.slice(0, 6).map(k => '"' + k + '" (' + vague[k] + ')').join(' | '));
   rec('C12', 'Every question has its own feedback (' + bank.length + ' questions)',
       !empty.length && !dupes.length, (empty.length ? 'none: ' + empty.join(' ') + '. ' : '') + (dupes.length ? 'same as another: ' + dupes.join(' ') : ''));
 

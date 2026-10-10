@@ -575,7 +575,7 @@ function buildWordHelp() {
    student who lost the routine had nowhere to look. Marcos 10/9: "frequent
    and constant reminding of what to do and how to do it." */
 const DO_STEPS = {
-  vq:       ['Read the question. Tap the speaker if you want it read to you.',
+  vq:       ['Read the question. Tap the speaker to hear the question read to you.',
              'Tap the answer you think is right.',
              'Press <b>Check my answer</b>.'],
   analysis: ['Look at <b>your own table</b> on this screen. The numbers are yours.',
@@ -584,9 +584,9 @@ const DO_STEPS = {
   claims:   ['You are building one explanation out of three picks.',
              'First the <b>claim</b> — what you think is true.',
              'Then the <b>evidence</b> — the numbers from your table.',
-             'Then the <b>reasoning</b> — why it happened.'],
+             'Then the <b>reasoning</b> — the reason why.'],
   exit:     ['Last few questions. Nothing new &mdash; same as before.',
-             'Read it, tap your answer, press <b>Check my answer</b>.']
+             'Read the question, tap your answer, press <b>Check my answer</b>.']
 };
 function doStepsFor(phase) {
   const m = /^(predict|run|graph)([ABCD])$/.exec(phase);
@@ -596,8 +596,8 @@ function doStepsFor(phase) {
       return ['Read what this test changes.', 'Make your guess. A guess is never marked wrong.',
               'Press <b>Lock in my prediction</b>.'];
     if (m[1] === 'run') return (inv && inv.doSteps) || null;
-    return ['Look at the bars. Taller bar means it went farther.',
-            'Read what it says about your guess.', 'Press <b>Next</b> to keep going.'];
+    return ['Look at the bars. A longer bar means a longer distance.',
+            'Read what the page says about your guess.', 'Press <b>Next</b> to keep going.'];
   }
   return DO_STEPS[phase] || null;
 }
@@ -670,18 +670,9 @@ const RAIL = [
   { key:'exit',  n:'Day 2', l:'Exit',    phases:['exit','end'] }
 ];
 
-/* Kept in step with the sessions: Day 1 is Investigation A on its own,
-   Day 2 is the other three. It used to say "two today, two next time",
-   which stopped being true when the lesson was cut to fit the period. */
-const INTRO_TEXT =
-  'A force is a push or a pull. When you push a cart, it starts to move. ' +
-  'But it does not keep going forever. Something slows it down and stops it. ' +
-  'Today you will run two investigations. First you change the surface the cart ' +
-  'rolls on. Then you change how hard you push. Next time you will run two more: ' +
-  'how tall a ramp is, and how heavy the vehicle is. ' +
-  'Every push gets measured in centimeters and written in your data table. ' +
-  'Then you will use your own numbers to explain what makes a moving object stop. ' +
-  'Take your time. This takes two days. Good scientists test more than once.';
+/* (The old one-paragraph intro text lived here. Nothing has read it since
+   the plan became tiles; removed so stale wording cannot be mistaken for
+   something a student sees.) */
 
 /* ══════════════════════════════════════════════════════
    APP
@@ -1156,7 +1147,7 @@ function adaptiveStem() {
   }
   return 'All four of your predictions matched your data &mdash; good scientific thinking. ' +
          'Take <b>' + INV_NAME.D + '</b>: your data showed that <b>' + t.got +
-         '</b>. Why did it turn out that way?';
+         '</b>. Why did the test turn out that way?';
 }
 function adaptiveOpts() {
   const t = adaptiveTarget();
@@ -1280,7 +1271,7 @@ function answerQ(q, picked, bank, ans) {
   fb.innerHTML = earned
     ? '<b>Correct.</b> ' + whyRight(q)
     : ok
-      ? '<b>That is it — on your second try.</b> ' + whyRight(q)
+      ? '<b>That is right — on your second try.</b> ' + whyRight(q)
       : '<b>Not quite.</b> The answer is <b>' + stripTags(choices[right]) + '</b>. ' + whyRight(q);
 
   logEvent('answer', { id:q.id, ok:earned, t:firstTry ? 1 : 2 });
@@ -1539,8 +1530,8 @@ function setupBits(run) {
     name:stripTags(sf.name), short:sf.note, full:sf.note + (sf.ex ? ' &mdash; ' + sf.ex : '') });
   if (run.ramp) { const r = LAB.ramps[run.ramp];
     bits.push({ key:'ramp:' + run.ramp, kind:'ramp', pic:art((window.THING_ART || {}).ramp, 'swatch'),
-      name:'Ramp of ' + r.name, short:'let it go, no push',
-      full:(r.note || '') + '. You let the car go. You do not push it.' }); }
+      name:'Ramp of ' + r.name, short:'let the car go, no push',
+      full:(r.note || '') + '. You let the car go. You do not push the car.' }); }
   if (run.vehicle) { const v = LAB.vehicles[run.vehicle];
     bits.push({ key:'vehicle:' + run.vehicle, kind:'vehicle', pic:art(INV_ART.D, 'swatch'),
       name:stripTags(v.name), short:v.note || '', full:v.note || '' }); }
@@ -1619,7 +1610,7 @@ function paintRun(invKey) {
     renderTable(invKey, [just]);
     strip.innerHTML = ''; fresh.innerHTML = '';
     tnote.innerHTML = '<b>Your table is full.</b> All ' + total + ' ' +
-      (inv.runNoun ? inv.runNoun.toLowerCase() + 's' : 'pushes') + ' are in it. Now look at what your numbers say.';
+      (inv.runNoun ? inv.runNoun.toLowerCase() + 's' : 'pushes') + ' are in your table. Now look at what your numbers say.';
     read.textContent = 'Table complete';
     runBtn.classList.add('hidden'); recBtn.classList.add('hidden');
     doneBtn.classList.remove('hidden');
@@ -1635,6 +1626,9 @@ function paintRun(invKey) {
 
   doneBtn.classList.add('hidden');
   const run = inv.runs[i];
+  /* Name the thing being pushed. Test 4 pushes a car and then a truck, and
+     the button said "Push the cart" for both. */
+  if (run.vehicle) runBtn.innerHTML = '&#128072; Push the ' + stripTags(LAB.vehicles[run.vehicle].name).toLowerCase();
   const bits = setupBits(run);
   const nTrials = trialsFor(invKey);
   const noun = inv.runNoun || 'Push';
@@ -1677,7 +1671,7 @@ function paintRun(invKey) {
     /* Say what just happened, in a sentence, and say what to do next. The
        number is on the button and the box it will land in is glowing. */
     tnote.innerHTML = '<b>' + noun + ' ' + (i + 1) + ' went ' + cm + ' cm.</b> ' +
-      'It is not in your table yet. Press the button and ' + cm + ' drops into the <b>glowing box</b>.';
+      'That number is not in your table yet. Press the button and ' + cm + ' drops into the <b>glowing box</b>.';
     runBtn.classList.add('hidden');
     recBtn.innerHTML = '&#11015; Write ' + cm + ' in my table';
     recBtn.classList.remove('hidden');
@@ -1884,9 +1878,9 @@ function renderGraph(invKey) {
   document.getElementById('gr-head').innerHTML = 'What my data looks like';
   const LEAD = {
     A: 'Each bar is the average of your two trials on that surface. The push was the same every time.',
-    B: 'Each bar is your one push at that strength. The surface was wood every time.',
-    C: 'Each bar is your one run from that ramp. You never pushed the car — you let it go.',
-    D: 'Each bar is your one push for that vehicle. Both got the very same push, on wood.'
+    B: 'Each bar is the average of your two pushes at that strength. The surface was wood every time.',
+    C: 'Each bar is the average of your two runs from that ramp. You never pushed the car — you let the car go.',
+    D: 'Each bar is the average of your two pushes for that vehicle. The car and the truck got the very same push, on wood.'
   };
   document.getElementById('gr-lead').innerHTML = LEAD[invKey];
 
@@ -1925,7 +1919,7 @@ function renderGraph(invKey) {
   } else if (invKey === 'C') {
     box.innerHTML = said + 'Your data goes from <b>' + vals[0] + ' cm</b> off the shortest ramp to <b>' +
       vals[vals.length - 1] + ' cm</b> off the tallest — so a taller ramp ' +
-      (rose ? 'sent the car farther. Starting higher up gave it more energy.'
+      (rose ? 'sent the car farther. Starting higher up gave the car more energy.'
             : 'did not send the car farther, which is worth telling Mr. O about.');
   } else {
     const win = labSummary().fartherD;
@@ -1995,7 +1989,7 @@ function renderDayGate() {
     'You learned <b>' + LESSON.vocab.length + ' words</b>. You did <b>' +
     plural(pushes, 'push', 'pushes') + '</b> and filled <b>two data tables</b> &mdash; ' +
     'one for ' + (surfaces === 1 ? 'the surface' : surfaces + ' different surfaces') +
-    ', one for the size of the push. All of it is saved.';
+    ', one for the size of the push. All of your work is saved.';
   /* The teacher's answer is logged either way, so Mr. O can see on the
      dashboard who went on and who was told to wait. */
   document.getElementById('dg-next').onclick = () => {
@@ -2034,7 +2028,7 @@ function renderWrite() {
   app.show('write-screen');
   document.getElementById('w-head').textContent = WRITTEN_Q.length > 1
     ? 'Explanation ' + (wIdx + 1) + ' of ' + WRITTEN_Q.length
-    : 'Explain it like a scientist';
+    : 'Explain like a scientist';
   const wt = document.getElementById('w-text');
   wt.innerHTML = wrapWords(w.q);
   document.getElementById('w-hints').innerHTML = w.hints.map(h => '<li>' + h + '</li>').join('');
@@ -2128,7 +2122,7 @@ function finish() {
 
   document.getElementById('end-lead').innerHTML =
     'You ran <b>' + (app.data.A.length + app.data.B.length) + ' pushes</b>, filled two data tables, ' +
-    'and used your own numbers to explain what stops a moving object. Mr. O can see all of it.';
+    'and used your own numbers to explain what stops a moving object. Mr. O can see all of your work.';
 
   document.getElementById('end-scores').innerHTML = [
     ['' + app.score + '/' + total, 'Questions right'],

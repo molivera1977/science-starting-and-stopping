@@ -858,6 +858,9 @@ body.tp-on{ padding-top:58px; }
    the button would start a second column beside the tile. */
 .rcard.gstep, .plan-day .ptile.gstep{ flex-wrap:wrap; }
 .rcard.gstep > .gbar, .plan-day .ptile.gstep > .gbar{ flex:1 1 100%; }
+/* ...and the words stay BESIDE the picture or number. Without this a long
+   sentence was too wide for the line and dropped underneath it. */
+.plan-day .ptile.gstep > div:not(.gbar), .rcard.gstep > .rbody{ flex:1 1 0; min-width:0; }
 /* inside a step the Listen button IS the speaker: one thing to press */
 .gstep .mini-spk{ display:none; }
 /* a heading above a step is read by that step's Listen button, with it */
