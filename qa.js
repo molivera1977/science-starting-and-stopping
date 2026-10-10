@@ -21,6 +21,9 @@
      C8  no uncaught errors anywhere
      C9  no rows sent to the sheet
      C10 storage is unchanged at the end
+     C11 nothing mentions the cart before the Meet your cart page
+     C12 every question has its own feedback
+     C13 no text a student reads is under 16px
    It also lists how many words each screen asks a student to take in.
 ═══════════════════════════════════════════════════════ */
 (async function () {
@@ -49,7 +52,10 @@
   const kept = JSON.parse(localStorage.getItem(KEY) || 'null');
   rec('C1', 'Closing on the cover keeps a saved lesson', !!kept && kept.studentName === 'QA STUDENT' &&
       kept.data.A.length === 8, kept ? (kept.studentName || '(no name)') + ', ' + kept.data.A.length + ' pushes' : 'save gone');
-  localStorage.removeItem(KEY);
+  /* Put back what was there. Removing the key outright made C10 fail on any
+     browser that already held a saved lesson — the check blamed the lesson
+     for a change this test made itself. */
+  if (KEY in original) localStorage.setItem(KEY, original[KEY]); else localStorage.removeItem(KEY);
 
   /* C2, C3 */
   const path = [app.phase], talked = [];
@@ -77,8 +83,9 @@
   document.getElementById('pin-ok').click(); await wait(500);
   const stops = window.__previewStops();
   const SPK_ATTR = ['background-color', 'box-shadow'];
+  const MIN_FS = 16;   /* px — labels. Sentences are 18 and up. */
 
-  const phaseBad = [], uncovered = [], noSpeaker = [], noLight = [], words = [];
+  const phaseBad = [], uncovered = [], noSpeaker = [], noLight = [], words = [], tiny = {};
   for (let i = 0; i < stops.length; i++) {
     if (i > 0) { document.getElementById('tp-next').click(); }
     await wait(1000);
@@ -99,6 +106,18 @@
       let p = el.parentElement, ok = false;
       while (p && p !== sec) { if (set.has(p)) { ok = true; break; } p = p.parentElement; }
       if (!ok) uncovered.push(stops[i].label + ': "' + own.slice(0, 40) + '"');
+    });
+
+    /* C13 — nothing a student reads is small. Marcos 10/9: "the writing seems
+       very small... It needs to be more kid friendly." Text inside a drawing
+       scales with the drawing, so it is skipped. */
+    sec.querySelectorAll('*').forEach(el => {
+      if (el.offsetParent === null || el.closest('svg,[data-noread]')) return;
+      const own = [...el.childNodes].filter(n => n.nodeType === 3 && /[A-Za-z]{2}/.test(n.textContent))
+        .map(n => n.textContent.trim()).join(' ');
+      if (!own) return;
+      const fs = parseFloat(getComputedStyle(el).fontSize);
+      if (fs < MIN_FS) tiny[fs + 'px "' + own.slice(0, 30) + '"'] = stops[i].label;
     });
 
     blocks.forEach(b => {
@@ -127,6 +146,9 @@
       noSpeaker.length + ' missing. ' + noSpeaker.slice(0, 6).join(' | '));
   rec('C7', 'Every readable block lights up while read', noLight.length === 0,
       noLight.length + ' dark. ' + noLight.slice(0, 6).join(' | '));
+  const tinyList = Object.keys(tiny);
+  rec('C13', 'No text a student reads is under ' + MIN_FS + 'px', tinyList.length === 0,
+      tinyList.length + ' small. ' + tinyList.slice(0, 6).map(k => k + ' on ' + tiny[k]).join(' | '));
   /* C12 — every question carries its own feedback. On 10/9 the feedback
      table was found keyed to the OLD question numbers: the truck question
      explained push size and the newest questions had none. This catches a

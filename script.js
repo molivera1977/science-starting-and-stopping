@@ -1936,7 +1936,7 @@ function finish() {
   const cerBox = document.getElementById('end-cer');
   if (claim && ev && why) {
     cerBox.innerHTML =
-      '<hr class="hr"><h3 style="font-size:17px">The explanation you built</h3>' +
+      '<hr class="hr"><h3 style="font-size:21px">The explanation you built</h3>' +
       '<div class="box cer" data-parts>' +
       '<p><span class="cerlbl">Claim</span>The cart stopped soonest on ' +
         stripTags(claim).toLowerCase() + '.</p>' +
@@ -1950,16 +1950,16 @@ function finish() {
 
   const miss = app.missedQuestions;
   document.getElementById('end-miss').innerHTML = miss.length
-    ? '<hr class="hr"><h3 style="font-size:17px">Look at these again with Mr. O</h3><ul class="misslist">' +
+    ? '<hr class="hr"><h3 style="font-size:21px">Look at these again with Mr. O</h3><ul class="misslist">' +
       miss.map(x => '<li><b>' + (x.skill || '') + '</b> — ' + x.q +
         ' <i>(you picked: ' + x.yourAnswer + '; answer: ' + x.correct + ')</i></li>').join('') + '</ul>'
     : '<hr class="hr"><p class="lead">You got every question right. Nothing to go back over.</p>';
 
   document.getElementById('end-answer-back').innerHTML =
-    '<hr class="hr"><h3 style="font-size:17px">My finished data</h3>' +
+    '<hr class="hr"><h3 style="font-size:21px">My finished data</h3>' +
     '<div class="tablewrap">' + allTablesHTML() + '</div>' +
     (WRITTEN_Q.length
-      ? '<h3 style="font-size:17px; margin-top:16px">My explanations</h3>' +
+      ? '<h3 style="font-size:21px; margin-top:16px">My explanations</h3>' +
         WRITTEN_Q.map(w => '<p class="lead"><b>' + stripTags(w.q) + '</b><br>' +
           (app.written[w.id] ? app.written[w.id].replace(/</g, '&lt;') : '(blank)') + '</p>').join('')
       : '');
