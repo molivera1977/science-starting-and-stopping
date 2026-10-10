@@ -28,6 +28,8 @@
      C14 guided screens: Next does not exist until every step was heard to
          the end, in order; stopping the voice early does not count
      C15 the teacher preview reaches every page of every guided screen
+     C16 on a guided page a heading is read with its step, with no speaker
+         of its own
    It also lists how many words each screen asks a student to take in, and
    how many words each guided screen makes them listen to.
 
@@ -89,8 +91,12 @@
     const steps = () => [...sec.querySelectorAll('.gstep')];
     const done = () => steps().filter(e => e.classList.contains('g-done')).length;
     if (!steps().length) { gateBad.push(name + ': no steps at all'); return; }
-    listen.push({ screen: name, steps: steps().length,
-      words: steps().reduce((n, e) => n + wordsIn(speech.textOf(e)), 0) });
+    const tally = { screen: name, steps: steps().length, words: 0 };
+    listen.push(tally);
+    /* what one press of Listen makes them hear: the step and its headings */
+    const heardWith = step => wordsIn(speech.textOf(step)) +
+      [...sec.querySelectorAll('.glead')].filter(l => l._gstep === step && shown(l))
+        .reduce((n, l) => n + wordsIn(speech.textOf(l)), 0);
 
     if (shown(after)) gateBad.push(name + ': Next is reachable before anything was heard');
     const open = steps().filter(shown);
@@ -109,6 +115,7 @@
       if (live) {
         const before = done();
         if (shown(after)) { gateBad.push(name + ': Next appeared with a step still unheard'); break; }
+        tally.words += heardWith(live);
         await press(live.querySelector('.gbtn'));
         if (done() !== before + 1) { gateBad.push(name + ': a step did not unlock after it was heard'); break; }
         continue;
@@ -181,7 +188,7 @@
       gateBad.length === 0, gateBad.slice(0, 6).join(' | '));
 
   const phaseBad = [], uncovered = [], noSpeaker = [], noLight = [], words = [], tiny = {};
-  const cover = {}, lockedInPreview = [];
+  const cover = {}, lockedInPreview = [], apart = [];
   for (let i = 0; i < stops.length; i++) {
     await jump(i);
     await wait(650);
@@ -199,6 +206,20 @@
       (cover[g.id] = cover[g.id] || { n: g.pageCount, seen: new Set() }).seen.add(g.page);
       if ([...sec.querySelectorAll('.gstep')].some(e => shown(e) && !e.classList.contains('g-done')))
         lockedInPreview.push(stops[i].label);
+    }
+
+    /* C16 — on a guided page, nothing above a step has a speaker of its own.
+       Marcos 10/9: "these two should be read combined." Every block that
+       comes before the last step showing, and is not itself in a step, has
+       to be one of that page's headings (read by a step's Listen button). */
+    if (g && g.leads && shown(g.root) && (g.root === sec || sec.contains(g.root))) {
+      const stepsOn = [...g.root.querySelectorAll('.gstep')].filter(shown);
+      const lastStep = stepsOn[stepsOn.length - 1];
+      if (lastStep) blocks.forEach(b => {
+        if (!g.root.contains(b.el) || b.el.closest('.gstep,[data-gafter],.gnav')) return;
+        if (!(b.el.compareDocumentPosition(lastStep) & Node.DOCUMENT_POSITION_FOLLOWING)) return;
+        if (!b.el.classList.contains('glead')) apart.push(stops[i].label + ': "' + b.text.slice(0, 36) + '"');
+      });
     }
 
     /* C5 — no visible text outside a readable block */
@@ -231,8 +252,10 @@
          itself, not by this test. */
       const mine = el.querySelector(el.classList.contains('opt') ? '.mini-spk' : ':scope > .mini-spk');
       const step = el.closest('.gstep');
+      const lead = el.closest('.glead');       /* a heading read with its step */
       const heardBy = (mine && getComputedStyle(mine).display !== 'none') ||
-                      (step && shown(step.querySelector('.gbtn')));
+                      (step && shown(step.querySelector('.gbtn'))) ||
+                      (lead && lead._gstep && lead._gstep.querySelector('.gbtn'));
       if (!heardBy) noSpeaker.push(stops[i].label + ': "' + b.text.slice(0, 40) + '"');
       /* C7 — the WORD being read lights up (Marcos 10/9: "word for word
          highlighting instead of the entire box lit up"). The block is split
@@ -283,6 +306,9 @@
       (missed.length ? 'pages missed: ' + missed.join(', ') + '. ' : '') +
       (lockedInPreview.length ? 'locked in preview: ' + lockedInPreview.slice(0, 4).join(', ') + '. ' : '') +
       (gotPaged !== expectPaged ? gotPaged + ' paged screens seen, ' + expectPaged + ' expected' : ''));
+
+  rec('C16', 'On guided pages a heading is read with its step, not by a separate speaker',
+      apart.length === 0, apart.length + ' apart. ' + apart.slice(0, 6).join(' | '));
 
   /* C12 — every question carries its own feedback. On 10/9 the feedback
      table was found keyed to the OLD question numbers: the truck question

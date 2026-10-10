@@ -860,6 +860,8 @@ body.tp-on{ padding-top:58px; }
 .rcard.gstep > .gbar, .plan-day .ptile.gstep > .gbar{ flex:1 1 100%; }
 /* inside a step the Listen button IS the speaker: one thing to press */
 .gstep .mini-spk{ display:none; }
+/* a heading above a step is read by that step's Listen button, with it */
+.glead > .mini-spk, .glead .mini-spk{ display:none; }
 
 .gstep.g-locked{
   color:transparent !important; background:var(--surface-2) !important;

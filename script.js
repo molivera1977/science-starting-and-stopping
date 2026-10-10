@@ -815,7 +815,10 @@ const app = {
     syncWordHelp(phase);
     this.save();
 
-    if (phase === 'vocab')    { this.startTimer(); renderVocab(); this.show('vocab-screen'); attachSpeakers(document.getElementById('vocab-screen')); }
+    /* guide.run AFTER the screen is showing: it works out which headings
+       belong to which step from what is visible. */
+    if (phase === 'vocab')    { this.startTimer(); renderVocab(); this.show('vocab-screen'); attachSpeakers(document.getElementById('vocab-screen'));
+                                guide.run(document.getElementById('vocab-screen'), { id: 'vocab' }); }
     else if (phase === 'vq')       { this.qIndex = firstUnanswered(VOCAB_Q, this.vocabAns); renderQ(); }
     else if (phase === 'analysis') { this.qIndex = firstUnanswered(ANALYSIS_Q, this.analysisAns); renderQ(); }
     else if (phase === 'claims')   { this.qIndex = firstUnanswered(CLAIMS_Q, this.claimsAns); renderQ(); }
@@ -1092,7 +1095,6 @@ function renderVocab() {
     (v.ex ? '<div class="vex" data-step><span class="exlbl">For example</span>' + v.ex + '</div>' : '') +
     '</div>').join('');
   document.getElementById('vocab-next').onclick = () => app.go('vq');
-  guide.run(document.getElementById('vocab-screen'), { id: 'vocab' });
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1625,7 +1627,7 @@ function paintRun(invKey) {
     const last = app.data[invKey][app.data[invKey].length - 1];
     if (last) drawTrack(last, last.cm, last.cm);
     attachSpeakers(card);
-    guide.run(card, { id:'run' + invKey + 'end' });
+    guide.run(card, { id:'run' + invKey + 'end', leads:false });
     renderDoSteps(app.phase);
     focusRun();
     return;
@@ -1711,7 +1713,9 @@ function paintRun(invKey) {
   }
 
   attachSpeakers(card);
-  guide.run(card, { id:'run' + invKey + i, onDone:focusRun });
+  /* leads:false — the push screen's title and counter are not part of a
+     "new this time" card, which comes and goes. They keep their speakers. */
+  guide.run(card, { id:'run' + invKey + i, onDone:focusRun, leads:false });
   renderDoSteps(app.phase);
   focusRun();
 }

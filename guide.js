@@ -24,6 +24,13 @@
      [data-step]    one thing to hear. Steps unlock in document order.
      [data-gpage]   optional. A group of steps shown on its own page, with
                     Back / Next. Without any, the whole screen is one page.
+   HEADINGS ARE READ WITH THEIR STEP. Marcos 10/9, on a label sitting above a
+   sentence with a speaker of its own: "these two should be read combined."
+   So on a guided screen any heading, label or line that comes before a step
+   is read by that step's Listen button, as one piece, and has no speaker of
+   its own. Nothing to mark: it is worked out from what is on the page.
+   (A screen that wants its headings left alone passes leads:false.)
+
      [data-gafter]  shown only when every step on its page has been heard:
                     the real Next button, a question, the answer choices.
                     Outside every page (a screen's own button row), it
@@ -53,6 +60,8 @@
     root.querySelectorAll('.gstep').forEach(n => n.classList.remove('gstep', 'g-live', 'g-done', 'g-locked', 'g-play'));
     root.querySelectorAll('.ghide').forEach(n => n.classList.remove('ghide'));
     root.classList.remove('g-alldone');
+    root.querySelectorAll('.glead').forEach(n => { n.classList.remove('glead'); n._gstep = null; });
+    const useLeads = opts.leads !== false;
 
     let pageEls = [...root.querySelectorAll('[data-gpage]')];
     const paged = pageEls.length > 0;
@@ -135,7 +144,31 @@
       return s.tried ? '\u{1F50A} Listen again, all the way to the end' : '\u{1F50A} Listen';
     }
 
+    /* Which headings belong to which step. A block before a step, outside
+       every step, is read with the first step after it on the page showing.
+       A screen's title sits above ALL its pages, so it is read once, with
+       the first step of the first page, and not again on every page. Needs
+       the screen to be visible, so it runs again once it is. */
+    function markLeads() {
+      if (!useLeads || root.offsetParent === null) return;
+      steps.forEach(s => { s.leads = []; });
+      root.querySelectorAll('.glead').forEach(n => { n.classList.remove('glead'); n._gstep = null; });
+      const mine = steps.filter(s => s.page === page);
+      speech.readable(root).forEach(({ el }) => {
+        if (el.closest('.gstep,[data-gafter],.gnav')) return;
+        if (steps.some(s => el.contains(s.el))) return;
+        const titled = paged && !pageEls.some(pg => pg.contains(el));
+        const pool = titled ? steps.filter(s => s.page === 0) : mine;
+        const next = pool.find(s => el.compareDocumentPosition(s.el) & Node.DOCUMENT_POSITION_FOLLOWING);
+        if (!next) return;
+        el.classList.add('glead');
+        el._gstep = next.el;
+        if (!titled || page === 0) next.leads.push(el);
+      });
+    }
+
     function paint() {
+      markLeads();
       pages.forEach((pg, p) => {
         if (paged) pg.el.classList.toggle('ghide', p !== page);
         const done = pageDone(p);
@@ -210,14 +243,16 @@
 
     function play(k) {
       const s = steps[k];
-      const text = speech.textOf(s.el);
+      /* its headings first, then the step, as one reading */
+      const parts = (s.leads || []).concat([s.el]).map(el => ({ el, text: speech.textOf(el) }));
+      const text = parts.map(x => x.text).join(' ');
       let settled = false, started = false, startTimer = null, watchdog = null;
       const settle = () => { settled = true; clearTimeout(startTimer); clearTimeout(watchdog); if (playing === k) playing = -1; };
       const finish = ok => { if (settled) return; settle(); if (ok) mark(k); else { s.tried = true; paint(); } };
       const silent = () => { if (settled) return; settle(); noVoice = true; if (k === heard && gate) arm(s); paint(); };
 
       playing = k; paint();
-      speech.sayParts([{ el: s.el, text }], READ_RATE,
+      speech.sayParts(parts, READ_RATE,
         (ok, why) => { if (why === 'unavailable' || why === 'error') silent(); else finish(ok); },
         () => { started = true; });
       if (settled) return;
@@ -239,11 +274,12 @@
     /* A screen scrolls itself to the top when it opens. Wait for that, then
        make sure the open step and its Listen button are actually on screen:
        on a Chromebook two screens opened with the button just out of sight. */
-    function later(fn) { setTimeout(() => { if (guide.current === ctrl) fn(); }, 450); }
+    function later(fn) { setTimeout(() => { if (guide.current === ctrl) { markLeads(); fn(); } }, 450); }
 
     paint();
     const ctrl = {
       id, root, total,
+      leads: useLeads,
       pageCount: pages.length,
       get page() { return page; },
       get heard() { return heard; },
