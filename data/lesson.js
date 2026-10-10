@@ -171,15 +171,37 @@ window.CARE = [
    screen, not why a scientist would use one. Now nothing mentions the cart
    until this page has introduced it, with a picture for every point.
 ═══════════════════════════════════════════════════════ */
-window.CART_INTRO = [
-  { art: 'cart',     t: 'This is a cart',
-    d: 'A little box on wheels that rolls. Like a toy car, or a skateboard.' },
-  { art: 'screen',   t: 'The cart is on your screen',
-    d: 'You do not push a real cart. You press a button, and the cart on your screen gets pushed.' },
-  { art: 'why',      t: 'Why use a cart?',
-    d: 'A cart rolls easily. So you can see exactly what slows the cart down and stops the cart.' },
-  { art: 'distance', t: 'Watch where the cart stops',
-    d: 'Every time, a number shows the distance the cart traveled. That distance is in centimeters.' }
+/* THREE PAGES, each one idea (rewritten 10/10). Marcos: "we should be clear
+   why we are using a cart in the first place. We are using a cart to help
+   measure the effect of different surfaces and forces on motion. The
+   distance the cart travels is what we are using to measure that. Be super
+   clear and detailed and explicit with 4th graders. No ambiguity should be
+   allowed." The old page said a cart "rolls easily" and stopped there. This
+   one walks the whole chain: what a cart is, why we need a thing that moves,
+   what we change, what we measure, and what that measurement tells us. */
+window.CART_PAGES = [
+  { scene: 'start',
+    tiles: [
+      { art: 'cart',   t: 'This is a cart',
+        d: 'A cart is a little box on wheels. A cart rolls. A toy car is like a cart. A skateboard is like a cart.' },
+      { art: 'screen', t: 'The cart is on your screen',
+        d: 'You do not push a real cart. You press a button. Then the cart on your screen gets a push and rolls.' } ] },
+  { head: 'Why we use a cart', scene: 'surfaces',
+    tiles: [
+      { art: 'why',      t: 'We have a question to answer',
+        d: 'What makes a moving thing stop? To find the answer, we need a thing that moves. The cart is the thing that moves.' },
+      { art: 'surfaces', t: 'We change one thing at a time',
+        d: 'First we change the surface. The surface is what the cart rolls on: ice, wood, carpet or sand. After that, we change how hard the push is. A push is a force.' },
+      { art: 'watch',    t: 'We watch what the cart does',
+        d: 'After every push, we watch the cart. Does the cart roll a long way? Or does the cart stop soon?' } ] },
+  { head: 'How the cart gives us the answer', scene: 'distance',
+    tiles: [
+      { art: 'distance',  t: 'We measure the distance the cart travels',
+        d: 'The distance is how far the cart travels. We measure from START to the spot where the cart stops. We measure in centimeters. A centimeter is small. Your fingernail is about 1 centimeter wide.' },
+      { art: 'longshort', t: 'What the distance tells us',
+        d: 'A long distance means not much slowed the cart down. A short distance means something stopped the cart fast.' },
+      { art: 'clue',      t: 'The distance is our clue',
+        d: 'The distance the cart travels shows what the surface did to the cart. The distance also shows what the push did to the cart. That is how the cart helps us answer the big question.' } ] }
 ];
 
 window.METHOD_WORDS = {
@@ -285,6 +307,7 @@ window.LAB = {
     heading: 'Same push, different surfaces',
     headingPlain: 'That means you push the same way every time. The only thing that changes is what the cart rolls on.',
     question: 'If the push stays exactly the same, does the surface change how far the cart rolls?',
+    measure: 'How we find out: we measure how far the cart travels on each surface. The distance the cart travels shows what that surface does to a moving cart.',
     sameLabel: 'Push stays the same:',
     sameValue: 'Medium push',
     changeLabel: 'What we change:',
@@ -348,6 +371,7 @@ window.LAB = {
     heading: 'Same surface, different pushes',
     headingPlain: 'That means the cart always rolls on wood. The only thing that changes is how hard you push.',
     question: 'If the surface stays exactly the same, does the size of the push change how far the cart rolls?',
+    measure: 'How we find out: we measure how far the cart travels after each push. The distance the cart travels shows what a bigger push does to the cart.',
     sameLabel: 'Surface stays the same:',
     sameValue: 'Wood',
     changeLabel: 'What we change:',
@@ -384,6 +408,7 @@ window.LAB = {
     heading: 'Same car, different ramp heights',
     headingPlain: 'That means the same car on the same wood every time. The only thing that changes is how tall the ramp is.',
     question: 'If nobody pushes the car, does a taller ramp send the car farther?',
+    measure: 'How we find out: we measure how far the car travels after each ramp. The distance the car travels shows what a taller ramp does to the car.',
     sameLabel: 'Car and surface stay the same:',
     sameValue: 'The same car, on wood',
     changeLabel: 'What we change:',
@@ -422,6 +447,7 @@ window.LAB = {
     heading: 'Same push, car against truck',
     headingPlain: 'That means the same push on the same wood every time. The only thing that changes is whether you push the car or the truck. The truck has more mass than the car. Mass is how much stuff a thing is made of.',
     question: 'If the push is exactly the same, does the heavy truck travel as far as the light car?',
+    measure: 'How we find out: we measure how far the car travels and how far the truck travels. The two distances show what more mass does.',
     sameLabel: 'Push and surface stay the same:',
     sameValue: 'Medium push, on wood',
     changeLabel: 'What we change:',

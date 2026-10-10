@@ -175,7 +175,7 @@
      has something new to hear before the button exists) */
   const toGate = [...new Set(stops.filter(s => s.gp != null || /^run[ABCD]$/.test(s.phase)).map(s => s.phase))];
   for (const ph of toGate) {
-    if (ph === 'plan') continue;                       /* walked above, as a student */
+    if (ph === 'plan' || ph === 'cart') continue;      /* walked above, as a student */
     guide.testHeard = {};
     await jump(stops.findIndex(s => s.phase === ph));
     const [rootId, afterId] = GATED(ph);
@@ -218,11 +218,11 @@
     else if (Array.isArray(v)) v.forEach(x => walk(x, where));
     else if (v && typeof v === 'object') Object.keys(v).forEach(k => walk(v[k], where));
   })([window.LESSON.vocab, window.LESSON.icanKid, window.LESSON.driving, window.RECAP, window.INTRO_PLAN,
-      window.CARE, window.CART_INTRO, window.METHOD_WORDS, window.THING_WORDS, window.WHY_REPEAT,
+      window.CARE, window.CART_PAGES, window.METHOD_WORDS, window.THING_WORDS, window.WHY_REPEAT,
       window.WHY_BANK, window.WHY_DISTRACTORS, window.LAB.surfaces, window.LAB.pushes, window.LAB.ramps,
       window.LAB.vehicles,
       ['A', 'B', 'C', 'D'].map(k => { const v = invOf(k); return [v.heading, v.headingPlain, v.question,
-        v.sameLabel, v.sameValue, v.changeLabel, v.changeValue, v.predictQ, v.predictOpts, v.doCount, v.doWhy, v.doSteps]; })],
+        v.sameLabel, v.sameValue, v.changeLabel, v.changeValue, v.predictQ, v.predictOpts, v.doCount, v.doWhy, v.doSteps, v.measure]; })],
      'lesson text');
   for (let i = 0; i < stops.length; i++) {
     await jump(i);

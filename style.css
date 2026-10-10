@@ -830,8 +830,21 @@ body.tp-on{ padding-top:58px; }
 /* Meet your cart: the scene, then four pictured cards in a 2×2 grid. */
 #cart-screen:not(.hidden){ display:flex; flex-direction:column; min-height:calc(100vh - 150px); }
 #cart-screen > .btnrow{ margin-top:auto; padding-top:22px; }
-#cart-scene{ line-height:0; border-radius:14px; overflow:hidden; margin:12px 0 16px; }
-#cart-scene svg{ display:block; width:100%; height:auto; }
+.cscene{ line-height:0; border-radius:14px; overflow:hidden; margin:10px 0 14px; background:var(--sci-soft); }
+.cscene svg{ display:block; width:100%; height:auto; max-height:26vh; }
+.cart-h{ margin:6px 0 2px; font-size:26px; color:var(--sci-dark); }
+/* the points of a page, one under the other: the order is the reading order */
+.cart-list{ display:flex; flex-direction:column; gap:14px; padding-top:4px; }
+.ptile.crow{
+  align-items:center; gap:16px; border-top:0;
+  background:var(--sci-soft); border:1px solid var(--sci-line); border-radius:13px; padding:14px 16px;
+}
+.ptile.crow .art.ptart{ width:64px; height:64px; }
+.ptile.crow .pt{ font-size:22px; }
+.ptile.crow .pd{ font-size:20px; margin-top:4px; }
+.ptile.crow.gstep{ flex-wrap:wrap; }
+.ptile.crow.gstep > .gbar{ flex:1 1 100%; }
+.ptile.crow.gstep > div:not(.gbar){ flex:1 1 0; min-width:0; }
 .cart-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 @media (max-width:760px){ .cart-grid{ grid-template-columns:1fr; } }
 

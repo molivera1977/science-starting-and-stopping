@@ -186,6 +186,12 @@ window.CART_ART = {
     '<path d="M11 26h26" stroke="var(--ink-faint)" stroke-width="1.8" stroke-linecap="round"/>' +
     '<rect x="15" y="17" width="12" height="7" rx="1.5" fill="var(--sci)"/>' +
     '<circle cx="18" cy="25" r="2" fill="var(--sci-dark)"/><circle cx="24" cy="25" r="2" fill="var(--sci-dark)"/>'),
+  /* a long arrow over a short arrow: a long distance and a short distance */
+  longshort: svg(
+    '<path d="M6 16h34" stroke="var(--sci)" stroke-width="4" stroke-linecap="round"/>' +
+    '<path d="M33 9l8 7-8 7" fill="none" stroke="var(--sci)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<path d="M6 34h12" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>' +
+    '<path d="M13 27l8 7-8 7" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>'),
   /* a question mark beside a rolling cart */
   why: svg(
     '<rect x="4" y="24" width="20" height="11" rx="2.5" fill="var(--sci)"/>' +
@@ -210,8 +216,52 @@ window.MEET_CART_SCENE =
   '<path d="M80 102v8M160 102v8M240 102v8M320 102v8" stroke="var(--sci-dark)" stroke-width="2.5" ' +
     'stroke-linecap="round" opacity=".5"/>' +
   '<g font-size="10" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">' +
-    '<text x="76" y="118">0</text><text x="148" y="118">1 m</text><text x="228" y="118">2 m</text>' +
-    '<text x="308" y="118">3 m</text></g>' +
+    '<text x="76" y="118">0</text><text x="140" y="118">100 cm</text><text x="220" y="118">200 cm</text>' +
+    '<text x="300" y="118">300 cm</text></g>' +
+  '</svg>';
+
+/* Page 2 of Meet your cart: the same cart, waiting at START on each of the
+   four surfaces. Every cart is at START on purpose — which surface lets the
+   cart travel farthest is what the student is about to find out. */
+window.CART_SCENE_SURFACES = (function () {
+  const s = [['Ice', '#8FD3E8'], ['Wood', '#C98B4B'], ['Carpet', '#9B7FB8'], ['Sand', '#E0C27C']];
+  return '<svg viewBox="0 0 400 112" aria-hidden="true" focusable="false" class="coverscene">' +
+    '<rect width="400" height="112" fill="var(--sci-soft)"/>' +
+    s.map(function (p, i) {
+      const x = 10 + i * 97;
+      return '<rect x="' + x + '" y="64" width="88" height="16" rx="3" fill="' + p[1] + '"/>' +
+        '<rect x="' + (x + 8) + '" y="41" width="32" height="16" rx="3" fill="var(--sci)"/>' +
+        '<circle cx="' + (x + 16) + '" cy="60" r="5" fill="var(--sci-dark)"/>' +
+        '<circle cx="' + (x + 32) + '" cy="60" r="5" fill="var(--sci-dark)"/>' +
+        '<text x="' + (x + 44) + '" y="100" text-anchor="middle" font-size="13" font-weight="700" ' +
+          'fill="var(--ink)" font-family="Public Sans, sans-serif">' + p[0] + '</text>';
+    }).join('') + '</svg>';
+})();
+
+/* Page 3: what "the distance the cart travels" IS. A faint cart at START,
+   the same cart where it stopped, and one arrow between the two. */
+window.CART_SCENE_DISTANCE =
+  '<svg viewBox="0 0 400 120" aria-hidden="true" focusable="false" class="coverscene">' +
+  '<rect width="400" height="120" fill="var(--sci-soft)"/>' +
+  '<path d="M14 92h372" stroke="var(--sci-dark)" stroke-width="5" stroke-linecap="round"/>' +
+  '<path d="M80 92V30" stroke="var(--accent)" stroke-width="3" stroke-dasharray="4 4"/>' +
+  '<text x="20" y="24" font-size="12" font-weight="700" fill="var(--accent)" ' +
+    'font-family="IBM Plex Mono, monospace">START</text>' +
+  '<g opacity=".28"><rect x="84" y="62" width="44" height="22" rx="4" fill="var(--sci)"/>' +
+    '<circle cx="96" cy="87" r="6" fill="var(--sci-dark)"/><circle cx="116" cy="87" r="6" fill="var(--sci-dark)"/></g>' +
+  '<rect x="250" y="62" width="44" height="22" rx="4" fill="var(--sci)"/>' +
+  '<circle cx="262" cy="87" r="6" fill="var(--sci-dark)"/><circle cx="282" cy="87" r="6" fill="var(--sci-dark)"/>' +
+  '<path d="M250 92V30" stroke="var(--sci-dark)" stroke-width="2" stroke-dasharray="3 4"/>' +
+  '<path d="M88 44h154" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>' +
+  '<path d="M96 37l-9 7 9 7M234 37l9 7-9 7" fill="none" stroke="var(--accent)" stroke-width="4" ' +
+    'stroke-linecap="round" stroke-linejoin="round"/>' +
+  '<text x="165" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)" ' +
+    'font-family="Public Sans, sans-serif">the distance: 212 cm</text>' +
+  '<path d="M80 102v8M160 102v8M240 102v8M320 102v8" stroke="var(--sci-dark)" stroke-width="2.5" ' +
+    'stroke-linecap="round" opacity=".5"/>' +
+  '<g font-size="10" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">' +
+    '<text x="76" y="118">0</text><text x="140" y="118">100 cm</text><text x="220" y="118">200 cm</text>' +
+    '<text x="300" y="118">300 cm</text></g>' +
   '</svg>';
 
 /* ── surface swatches ───────────────────────────────────

@@ -297,6 +297,7 @@
     if (/^predict[ABCD]$/.test(phase)) return count('#predict-card');
     if (phase === 'daygate') return count('#daygate-screen');
     if (phase === 'vocab') return LESSON.vocab.length;
+    if (phase === 'cart') return (window.CART_PAGES || []).length;
     if (phase === 'plan') return (planHTML().match(/data-gpage/g) || []).length;
     return 0;
   }

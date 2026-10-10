@@ -1041,12 +1041,19 @@ function showSummary() {
    Every point has a picture as well as words. */
 function showCart() {
   app.phase = 'cart'; drawRail();
-  const scene = document.getElementById('cart-scene');
-  if (scene) scene.innerHTML = window.MEET_CART_SCENE || '';
-  const pics = Object.assign({}, window.THING_ART || {}, window.CART_ART || {});
-  document.getElementById('cart-tiles').innerHTML = (window.CART_INTRO || []).map(c =>
-    '<div class="ptile step3" data-step>' + art(pics[c.art], 'ptart') +
-    '<div><b class="pt">' + c.t + '</b><span class="pd">' + c.d + '</span></div></div>').join('');
+  /* Three pages: what the cart is, why we use a cart, and how the distance the
+     cart travels gives the answer. One picture at the top of each page, then
+     the points one under the other so the order is never in doubt. */
+  const pics = Object.assign({}, window.THING_ART || {}, window.CART_ART || {},
+    { surfaces: INV_ART.A, watch: (window.THING_ART || {}).investigation, clue: (window.THING_ART || {}).investigation });
+  const scenes = { start: window.MEET_CART_SCENE, surfaces: window.CART_SCENE_SURFACES, distance: window.CART_SCENE_DISTANCE };
+  document.getElementById('cart-pages').innerHTML = (window.CART_PAGES || []).map(pg =>
+    '<div data-gpage>' + (pg.head ? '<h3 class="cart-h">' + pg.head + '</h3>' : '') +
+    '<div class="cscene" data-noread>' + (scenes[pg.scene] || '') + '</div>' +
+    '<div class="cart-list">' + pg.tiles.map(c =>
+      '<div class="ptile crow" data-step>' + art(pics[c.art], 'ptart') +
+      '<div><b class="pt">' + c.t + '</b><span class="pd">' + c.d + '</span></div></div>').join('') +
+    '</div></div>').join('');
   app.show('cart-screen');
   guide.run(document.getElementById('cart-screen'), { id: 'cart' });
   document.getElementById('cart-next').onclick = () => { speech.stop(); showPlan(); };
@@ -1451,6 +1458,8 @@ function renderPredict(inv) {
   document.getElementById('pr-head').innerHTML = art(INV_ART[inv.id], 'invart') + inv.heading;
   document.getElementById('pr-plain').innerHTML = inv.headingPlain || '';
   document.getElementById('pr-question').innerHTML = inv.question;
+  /* what gets measured in this test, and what that measurement shows */
+  document.getElementById('pr-measure').innerHTML = inv.measure || '';
   document.getElementById('pr-same-lb').innerHTML = inv.sameLabel;
   document.getElementById('pr-same-v').innerHTML = inv.sameValue;
   document.getElementById('pr-chg-lb').innerHTML = inv.changeLabel;
