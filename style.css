@@ -240,9 +240,10 @@ table.data td.pending{color:var(--ink-faint)}
 .tablewrap{overflow-x:auto}
 
 .graph{display:grid; gap:7px; margin-top:12px}
-.grow{display:grid; grid-template-columns:96px 1fr 88px; gap:9px; align-items:center}
+.grow{display:block; padding:10px 12px; border-radius:12px}
+.grow .gsay{margin:0 0 7px; font-size:21px; line-height:1.4; color:var(--ink)}
 .grow .gl{font-size:18px; font-weight:600}
-.grow .gt{height:26px; background:var(--surface-2); border-radius:6px; overflow:hidden}
+.grow .gt{display:block; height:30px; background:var(--surface-2); border-radius:6px; overflow:hidden}
 .grow .gt i{display:block; height:100%; border-radius:6px; transition:width .6s}
 .grow .gv{
   font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;
@@ -280,7 +281,6 @@ table.data td.pending{color:var(--ink-faint)}
   .card h2{font-size:28px}
   .qtext{font-size:24px}
   .varbox{grid-template-columns:1fr}
-  .grow{grid-template-columns:76px 1fr 76px}
   /* The header and progress row are signposts, not reading. On a phone they
      stay compact so the lesson text below can be big. */
   .brandtext .k{font-size:13px; letter-spacing:.08em}
@@ -878,6 +878,8 @@ body.tp-on{ padding-top:58px; }
 .gstep .mini-spk{ display:none; }
 /* a heading above a step is read by that step's Listen button, with it */
 .glead > .mini-spk, .glead .mini-spk{ display:none; }
+/* a label is read by the speaker of the line right under it (joinLabels) */
+.slead > .mini-spk, .slead .mini-spk{ display:none; }
 
 .gstep.g-locked{
   color:transparent !important; background:var(--surface-2) !important;

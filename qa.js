@@ -33,6 +33,7 @@
      C17 student text names the thing and does not say "it"
      C18 every science word a student meets is explained somewhere
      C19 student text says what was measured, not "your number"
+     C20 a label is read with the line under it, on every screen
    It also lists how many words each screen asks a student to take in, and
    how many words each guided screen makes them listen to.
 
@@ -169,11 +170,12 @@
   /* which part of the screen holds the steps, and what must stay locked */
   const GATED = ph => /^predict/.test(ph) ? ['predict-card', 'pr-opts']
                     : /^run/.test(ph)     ? ['run-card', 'run-btn']
+                    : /^graph/.test(ph)   ? ['graph-card', 'gr-next']
                     : ph === 'vocab'      ? ['vocab-screen', 'vocab-next']
                     :                       ['daygate-screen', 'dg-next'];
   /* every paged screen, plus the four push screens (their first push always
      has something new to hear before the button exists) */
-  const toGate = [...new Set(stops.filter(s => s.gp != null || /^run[ABCD]$/.test(s.phase)).map(s => s.phase))];
+  const toGate = [...new Set(stops.filter(s => s.gp != null || /^(run|graph)[ABCD]$/.test(s.phase)).map(s => s.phase))];
   for (const ph of toGate) {
     if (ph === 'plan' || ph === 'cart') continue;      /* walked above, as a student */
     guide.testHeard = {};
@@ -191,7 +193,7 @@
       gateBad.length === 0, gateBad.slice(0, 6).join(' | '));
 
   const phaseBad = [], uncovered = [], noSpeaker = [], noLight = [], words = [], tiny = {};
-  const cover = {}, lockedInPreview = [], apart = [];
+  const cover = {}, lockedInPreview = [], apart = [], loose = [];
   /* C17 — name the thing. Marcos 10/10, on "Which one lets it go farthest?":
      "don't say it, say what you are talking about". A struggling reader
      cannot carry "it" back to the noun, so student text says the noun again.
@@ -257,6 +259,21 @@
       });
     }
 
+    /* C20 — a label never has a speaker of its own when the line it labels is
+       right under it. Marcos 10/10, on "QUESTION 1 OF 2" above "What is a
+       force?": "should be combined." Any block the page styles in capitals
+       (that is what a label looks like here) with another block right under
+       it must have been joined to that block. */
+    blocks.forEach((b, k) => {
+      const el = b.el, nx = blocks[k + 1] && blocks[k + 1].el;
+      if (!nx || el.closest('.gstep,.glead,table') || nx.closest('table')) return;
+      if (getComputedStyle(el).textTransform !== 'uppercase') return;
+      const ra = el.getBoundingClientRect(), rb = nx.getBoundingClientRect();
+      if (!(rb.top - ra.bottom < 56 && rb.top >= ra.top - 6)) return;
+      const own = el.querySelector(':scope > .mini-spk');
+      if (own && getComputedStyle(own).display !== 'none') loose.push(stops[i].label + ': "' + b.text.slice(0, 30) + '"');
+    });
+
     /* C5 — no visible text outside a readable block */
     sec.querySelectorAll('span,div,p,li,h1,h2,h3,h4,td,th,label,b').forEach(el => {
       if (el.closest('[data-noread]') || el.offsetParent === null) return;
@@ -291,9 +308,11 @@
       const mine = el.querySelector(el.classList.contains('opt') ? '.mini-spk' : ':scope > .mini-spk');
       const step = el.closest('.gstep');
       const lead = el.closest('.glead');       /* a heading read with its step */
+      const joined = el.closest('.slead');     /* a label read with the line under it */
       const heardBy = (mine && getComputedStyle(mine).display !== 'none') ||
                       (step && shown(step.querySelector('.gbtn'))) ||
-                      (lead && lead._gstep && lead._gstep.querySelector('.gbtn'));
+                      (lead && lead._gstep && lead._gstep.querySelector('.gbtn')) ||
+                      (joined && joined._sfor && shown(joined._sfor.querySelector('.mini-spk')));
       if (!heardBy) noSpeaker.push(stops[i].label + ': "' + b.text.slice(0, 40) + '"');
       /* C7 — the WORD being read lights up (Marcos 10/9: "word for word
          highlighting instead of the entire box lit up"). The block is split
@@ -309,7 +328,7 @@
       lit.classList.add('spk');
       const on = SPK_ATTR.map(k => getComputedStyle(lit).getPropertyValue(k)).join('|');
       lit.classList.remove('spk');
-      const said = spans.length ? speech.tokensOf(spans).join(' ') : b.text;
+      const said = spans.length ? speech.joinTokens(speech.tokensOf(spans)) : b.text;
       made.forEach(w => { if (w.parentNode) w.parentNode.replaceChild(document.createTextNode(w.textContent), w); });
       el.normalize();
       if (off === on) noLight.push(stops[i].label + ': "' + b.text.slice(0, 40) + '"');
@@ -347,6 +366,9 @@
 
   rec('C16', 'On guided pages a heading is read with its step, not by a separate speaker',
       apart.length === 0, apart.length + ' apart. ' + apart.slice(0, 6).join(' | '));
+
+  rec('C20', 'A label is read with the line under it, not by a speaker of its own', loose.length === 0,
+      loose.length + ' loose. ' + [...new Set(loose)].slice(0, 6).join(' | '));
 
   /* C12 — every question carries its own feedback. On 10/9 the feedback
      table was found keyed to the OLD question numbers: the truck question

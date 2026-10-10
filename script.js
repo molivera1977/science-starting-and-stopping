@@ -218,8 +218,13 @@ const speech = {
   textOf(el) {
     /* Built from the same word list that gets highlighted (tokensOf), on a
        copy, so what a block SAYS and what LIGHTS UP can never drift apart. */
-    return this.tokensOf(this.split(el.cloneNode(true), [])).join(' ');
+    return this.joinTokens(this.tokensOf(this.split(el.cloneNode(true), [])));
   },
+  /* Words go back together with a space between — except a mark that stands
+     alone ("?" after a bold word, "." after a bold number), which closes up
+     to the word before it: "a force?", not "a force ?". */
+  gap(t, i) { return (i > 0 && !/^[.,!?;:)]+$/.test(t)) ? ' ' : ''; },
+  joinTokens(tokens) { return tokens.map((t, i) => this.gap(t, i) + t).join(''); },
 
   /* ── WORD BY WORD ────────────────────────────────────────
      Marcos 10/9: "is it not possible to have word for word highlighting
@@ -374,7 +379,7 @@ const speech = {
         if (p.el) this.parts.push(p.el);
       }
     });
-    const text = list.map(x => x.t).join(' ');
+    const text = this.joinTokens(list.map(x => x.t));
     if (!text) { this.unwrap(); if (onEnd) onEnd(false, 'unavailable'); return; }
     const job = this.job = { cancelled: false };
     const total = list.length;
@@ -382,7 +387,7 @@ const speech = {
     /* where each word starts in the spoken text, so the voice's "I am at
        letter N" can be turned into "that is word K" */
     const starts = []; let at = 0;
-    list.forEach(x => { starts.push(at); at += x.t.length + 1; });
+    list.forEach((x, i) => { at += this.gap(x.t, i).length; starts.push(at); at += x.t.length; });
     const wordAt = ch => { let k = 0; while (k + 1 < total && starts[k + 1] <= ch) k++; return k; };
 
     let lit = null;
@@ -473,7 +478,8 @@ function wrapWords(htmlStr) {
    answers the question by accident. */
 function attachSpeakers(root) {
   if (!root) return;
-  speech.readable(root).forEach(({ el }) => {
+  const blocks = speech.readable(root).map(b => b.el);
+  blocks.forEach(el => {
     if (el.querySelector(':scope > .mini-spk')) return;
     const b = document.createElement('span');
     b.className = 'mini-spk';
@@ -483,7 +489,7 @@ function attachSpeakers(root) {
     b.setAttribute('aria-label', 'Read this part to me');
     b.title = 'Read this part to me';
     b.textContent = '\u{1F50A}';
-    const fire = e => { e.preventDefault(); e.stopPropagation(); speech.sayOne(el); };
+    const fire = e => { e.preventDefault(); e.stopPropagation(); sayJoined(el); };
     b.addEventListener('click', fire);
     b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') fire(e); });
     /* BEFORE the text, not after. A reader who needs the button should meet it
@@ -502,6 +508,49 @@ function attachSpeakers(root) {
     }
     el.insertBefore(b, anchor);
   });
+  joinLabels(root, blocks);
+}
+
+/* A LABEL IS READ WITH WHAT IT LABELS — on every screen.
+   Marcos 10/10, on "QUESTION 1 OF 2" with one speaker and "What is a force?"
+   with another: "should be combined." (He had said the same of a label on a
+   guided page the day before; guide.js handles those. This is everywhere
+   else.)
+
+   A small capitals label says nothing on its own, so it gets no speaker of
+   its own. Whatever is right under it — a heading or a sentence — speaks
+   for both: "Question 1 of 2. Word check. What is a force?" and
+   "Investigation A results. What my data looks like."
+
+   Nothing is listed by class. A label is any block the page styles in
+   capitals; "right under" is measured on the screen. So a label added later
+   joins up without anyone remembering to. Table boxes and guided steps are
+   left alone. */
+function sayJoined(el) {
+  const leads = (el._sleads || []).filter(l => l.isConnected && l._sfor === el && l.classList.contains('slead'));
+  speech.sayParts(leads.concat([el]).map(x => ({ el: x, text: speech.textOf(x) })));
+}
+function joinLabels(root, els) {
+  root.querySelectorAll('.slead').forEach(n => { n.classList.remove('slead'); n._sfor = null; });
+  els.forEach(el => { el._sleads = null; });
+  const apart = el => !!el.closest('.gstep,.glead,table');
+  const kind = el => (!apart(el) && getComputedStyle(el).textTransform === 'uppercase') ? 'label' : '';
+  /* b is right under a (or beside it on the same line) */
+  const under = (a, b) => { const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+                            return rb.top - ra.bottom < 56 && rb.top >= ra.top - 6; };
+  let i = 0;
+  while (i < els.length) {
+    if (!kind(els[i])) { i++; continue; }
+    let j = i;
+    while (j + 1 < els.length && kind(els[j + 1]) && under(els[j], els[j + 1])) j++;
+    const next = els[j + 1];
+    let target = null, leads = [];
+    if (next && !apart(next) && under(els[j], next)) { target = next; leads = els.slice(i, j + 1); }
+    else if (j > i) { target = els[j]; leads = els.slice(i, j); }   /* nothing under them: the last label speaks for the row */
+    leads.forEach(l => { l.classList.add('slead'); l._sfor = target; });
+    if (target) target._sleads = leads;
+    i = j + (target === next && target ? 2 : 1);
+  }
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1913,17 +1962,28 @@ function renderGraph(invKey) {
   const col = INV_COLUMNS[invKey];
   const groups = groupsFor(invKey).map(g => {
     const c = cellsFor(invKey, g);
+    const cm = c.avg || 0;
+    /* Each bar says, in a sentence, what moved, where, and how far. A bar
+       labelled "Ice" beside "507 cm" left the child to work out the rest. */
+    const say = invKey === 'A' ? 'On ' + stripTags(LAB.surfaces[g.surface].name).toLowerCase() + ' the cart traveled <b>' + cm + ' cm</b>.'
+              : invKey === 'B' ? 'With the ' + stripTags(LAB.pushes[g.push].name).toLowerCase() + ' the cart traveled <b>' + cm + ' cm</b>.'
+              : invKey === 'C' ? 'From the ramp of ' + LAB.ramps[g.ramp].name + ' the car traveled <b>' + cm + ' cm</b>.'
+              :                  'The ' + stripTags(LAB.vehicles[g.vehicle].name).toLowerCase() + ' traveled <b>' + cm + ' cm</b>.';
     return {
       label: col.a(g).replace(' push', ''),
-      cm: c.avg || 0,
+      say: say,
+      cm: cm,
       color: invKey === 'A' ? LAB.surfaces[g.surface].color : '#2E7D6B'
     };
   });
   const max = Math.max(1, ...groups.map(g => g.cm));
+  /* The sentence sits ABOVE its bar and each row is one guided step. (The old
+     row was a three-column grid; the speaker icon became a fourth cell and
+     threw the bar to the far right and the number onto its own line.) */
   document.getElementById('graph-rows').innerHTML = groups.map(g =>
-    '<div class="grow"><span class="gl">' + g.label + '</span>' +
-    '<span class="gt"><i style="width:' + Math.round((g.cm / max) * 100) + '%; background:' + g.color + '"></i></span>' +
-    '<span class="gv">' + g.cm + ' cm</span></div>').join('');
+    '<div class="grow" data-step><p class="gsay">' + g.say + '</p>' +
+    '<span class="gt" data-noread><i style="width:' + Math.max(2, Math.round((g.cm / max) * 100)) + '%; background:' + g.color + '"></i></span>' +
+    '</div>').join('');
 
   /* Did the prediction hold up? Never graded — just checked. */
   const pred = app.predictions[invKey] || '';
@@ -1957,10 +2017,14 @@ function renderGraph(invKey) {
 
 
   attachSpeakers(document.getElementById('graph-card'));
+  guide.run(document.getElementById('graph-card'), { id: 'graph' + invKey });
 
   document.getElementById('gr-next').onclick = () => app.next();
-  const NEXT = { A:'Start Investigation B →', B:'Start Investigation C →',
-                 C:'Start Investigation D →', D:'Use my data →' };
+  /* What the button leads to, by name. After Investigation B comes the end of
+     Day 1, not Investigation C — the label still said C from before the day
+     split moved. */
+  const NEXT = { A:'Start Investigation B →', B:'Go to the end of Day 1 →',
+                 C:'Start Investigation D →', D:'Answer questions about my data →' };
   document.getElementById('gr-next').textContent = NEXT[invKey];
 }
 
