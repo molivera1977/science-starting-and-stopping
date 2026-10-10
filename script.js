@@ -1647,8 +1647,8 @@ function focusRun() {
     const fresh = document.getElementById('run-new');
     const top = (fresh.offsetParent !== null && fresh.childElementCount) ? fresh : document.getElementById('run-strip');
     const tbl = document.getElementById('data-table').getBoundingClientRect();
-    if (tbl.bottom > innerHeight - 70 || top.getBoundingClientRect().top < 0)
-      top.scrollIntoView({ block:'start', behavior:'smooth' });
+    if (tbl.bottom > innerHeight - guide.barHeight() - 12 || top.getBoundingClientRect().top < 0)
+      top.scrollIntoView({ block:'start', behavior: guide.instant ? 'instant' : 'smooth' });
   }, 500);
 }
 

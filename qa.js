@@ -34,6 +34,8 @@
      C18 every science word a student meets is explained somewhere
      C19 student text says what was measured, not "your number"
      C20 a label is read with the line under it, on every screen
+     C21 after every Listen the next thing to press is on screen, clear of
+         the pinned help bar
    It also lists how many words each screen asks a student to take in, and
    how many words each guided screen makes them listen to.
 
@@ -80,7 +82,13 @@
      not press a button is the page talking on its own. */
   const realSay = speech.sayParts;
   let qaTap = false, endOk = true;
-  const selfTalk = [], gateBad = [], listen = [];
+  const selfTalk = [], gateBad = [], listen = [], offScreen = [];
+  guide.instant = true;      /* no scroll animation: positions can be read at once */
+  /* C21 — after every Listen, the next thing to press is on screen, clear of
+     the "Stuck? Tap here" bar. Marcos 10/10: "the page should move up so they
+     see the next button." */
+  const inView = el => { const r = el.getBoundingClientRect();
+    return r.top >= 0 && r.bottom <= innerHeight - guide.barHeight() + 1; };
   speech.sayParts = function (parts, rate, onEnd, onStart) {
     if (!qaTap) selfTalk.push(app.phase);
     if (onStart) onStart();
@@ -122,6 +130,13 @@
         tally.words += heardWith(live);
         await press(live.querySelector('.gbtn'));
         if (done() !== before + 1) { gateBad.push(name + ': a step did not unlock after it was heard'); break; }
+        /* what does the student press now? It has to be where they can see it. */
+        const nextLive = steps().filter(e => e.classList.contains('g-live')).find(shown);
+        const todo = (nextLive && nextLive.querySelector('.gbtn')) || [...sec.querySelectorAll('.gnext')].find(shown) ||
+                     (shown(after) ? after : null);
+        if (todo && !inView(todo)) await wait(700);      /* some screens settle a moment later */
+        if (todo && !inView(todo) && todo.getBoundingClientRect().height < innerHeight - 140)
+          offScreen.push(name + ' after step ' + (before + 1) + ': "' + (todo.textContent || '').trim().slice(0, 24) + '"');
         continue;
       }
       const nx = [...sec.querySelectorAll('.gnext')].find(shown);
@@ -189,6 +204,9 @@
   }
   guide.testGate = false; guide.testHeard = {};
   speech.sayParts = realSay;
+  guide.instant = false;
+  rec('C21', 'After every Listen the next button is on screen, above the help bar', offScreen.length === 0,
+      offScreen.length + ' hidden. ' + offScreen.slice(0, 6).join(' | '));
   rec('C14', 'Guided screens: Next is locked until every step is heard (' + listen.length + ' screens)',
       gateBad.length === 0, gateBad.slice(0, 6).join(' | '));
 

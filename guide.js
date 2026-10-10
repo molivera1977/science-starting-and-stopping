@@ -226,11 +226,7 @@
                  (heard >= total && page === pages.length - 1 && endAfter[0]) || null;
       }
       if (!target || !gate) return;
-      /* Just far enough to show all of it. The help bar is pinned to the
-         bottom of the working screens, so "on screen" stops short of it
-         (the CSS scroll-margin on .gstep and the buttons matches). */
-      const r = target.getBoundingClientRect();
-      if (r.bottom > innerHeight - 76 || r.top < 8) target.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      guide.bringUp(target);
     }
 
     function press(k) {
@@ -268,7 +264,7 @@
       try { speech.stop(); } catch (e) {}
       page = Math.max(0, Math.min(pages.length - 1, p));
       paint();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: guide.instant ? 'instant' : 'smooth' });
       later(reveal);
     }
     /* A screen scrolls itself to the top when it opens. Wait for that, then
@@ -302,5 +298,36 @@
     return 0;
   }
 
-  window.guide = { run, pagesFor, current: null, testGate: false, testHeard: {} };
+  /* How much of the bottom of the screen the pinned "Stuck? Tap here" bar is
+     covering right now. Anything behind it is not on screen. */
+  function barHeight() {
+    const bar = document.getElementById('wordhelp');
+    if (!bar || bar.offsetParent === null) return 0;
+    /* Everything from the bar's top edge down is covered or below the page.
+       (Do not ask whether the bar touches the very bottom: it can sit a few
+       pixels above it, and the first version of this then answered "no bar".) */
+    const r = bar.getBoundingClientRect();
+    return (r.top < innerHeight && r.top > innerHeight * 0.4) ? innerHeight - r.top : 0;
+  }
+  /* Move the page just far enough that ALL of `el` is on screen and clear of
+     the help bar. Marcos 10/10: "the page moved up every time except right
+     here... the page should move up so they see the next button." It did
+     move — it lined the Next button up with the bottom edge of the screen,
+     which is exactly where the help bar sits, so the button was hidden behind
+     it. The browser's own "scroll into view" knows nothing about that bar;
+     this does the sum itself. */
+  function bringUp(el) {
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const floor = innerHeight - barHeight() - 16;
+    let by = 0;
+    if (r.bottom > floor) by = r.bottom - floor;
+    if (r.top - by < 10) by = r.top - 10;        /* never push its top off the top */
+    if (Math.abs(by) < 2) return;
+    window.scrollBy({ top: by, behavior: guide.instant ? 'instant' : 'smooth' });
+  }
+
+  /* guide.instant (set by qa.js): scroll without animation, so a check can
+     read where things ended up straight away. */
+  window.guide = { run, pagesFor, bringUp, barHeight, current: null, testGate: false, testHeard: {}, instant: false };
 })();
