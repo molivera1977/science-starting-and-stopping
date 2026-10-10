@@ -144,8 +144,16 @@ const ROSTER = [
    used — so the rate is what makes the difference:
      0.82 for a screen that speaks itself (Marcos 10/6: "0.92 ran ahead of the
           highlight"), 0.92 for a read the student asks for by button. */
-const READ_RATE  = 0.92;
+/* Slowed on this lesson, Marcos 10/9 after hearing the guided pages: "can we
+   slow the rate of speech?" Every Listen button and speaker icon here now
+   reads at 0.82, the pace he had already approved for screens that speak
+   themselves. The other sites still read on demand at 0.92. */
+const READ_RATE  = 0.82;
 const INTRO_RATE = 0.82;
+/* The 58 ms-a-letter figure that paces the highlight on voices with no word
+   events was measured at 0.92. It is scaled from THAT, not from READ_RATE,
+   or slowing the voice would leave the highlight running ahead of it. */
+const PACE_BASE  = 0.92;
 
 const speech = {
   words: [], parts: [], host: null, timer: null,
@@ -179,7 +187,7 @@ const speech = {
     u.onstart = () => {
       /* Some voices never fire onboundary. Pace the highlight by hand
          if nothing has arrived after a moment. */
-      const per = Math.max(170, (text.length * 58) / Math.max(1, this.words.length) * (READ_RATE / u.rate));
+      const per = Math.max(170, (text.length * 58) / Math.max(1, this.words.length) * (PACE_BASE / u.rate));
       let i = 0;
       this.timer = setInterval(() => {
         if (spoken) { clearInterval(this.timer); this.timer = null; return; }
@@ -332,7 +340,7 @@ const speech = {
     u.onstart = () => {
       if (onStart) onStart();
       /* voices that never report a boundary still get a moving highlight */
-      const per = Math.max(240, (text.length * 58) / Math.max(1, total) * (READ_RATE / u.rate));
+      const per = Math.max(240, (text.length * 58) / Math.max(1, total) * (PACE_BASE / u.rate));
       let i = 0;
       this.timer = setInterval(() => {
         if (spoken) { clearInterval(this.timer); this.timer = null; return; }
