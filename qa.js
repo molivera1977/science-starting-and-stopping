@@ -17,7 +17,8 @@
      C4  every preview stop shows exactly one screen, in the right phase
      C5  every visible piece of text belongs to a block that can be read aloud
      C6  every readable block has its own speaker (or its step's Listen button)
-     C7  every readable block visibly lights up while it is being read
+     C7  the word being read lights up, in every block, and the block is
+         put back exactly as it was afterwards
      C8  no uncaught errors anywhere
      C9  no rows sent to the sheet
      C10 storage is unchanged at the end
@@ -233,12 +234,26 @@
       const heardBy = (mine && getComputedStyle(mine).display !== 'none') ||
                       (step && shown(step.querySelector('.gbtn')));
       if (!heardBy) noSpeaker.push(stops[i].label + ': "' + b.text.slice(0, 40) + '"');
-      /* C7 — visibly lights up */
-      const off = getComputedStyle(el); const a = SPK_ATTR.map(k => off.getPropertyValue(k));
-      el.classList.add('spk');
-      const on = getComputedStyle(el); const c = SPK_ATTR.map(k => on.getPropertyValue(k));
-      el.classList.remove('spk');
-      if (a.join('|') === c.join('|')) noLight.push(stops[i].label + ': "' + b.text.slice(0, 40) + '"');
+      /* C7 — the WORD being read lights up (Marcos 10/9: "word for word
+         highlighting instead of the entire box lit up"). The block is split
+         into words the way speech does it; the first word must change colour
+         when marked, every word must be in the spoken text, and the block
+         must be put back exactly as it was. A block with no words to split
+         falls back to lighting the box, and that has to be visible too. */
+      const htmlBefore = el.innerHTML;
+      const made = [];
+      const spans = speech.split(el, made);
+      const lit = spans[0] || el;
+      const off = SPK_ATTR.map(k => getComputedStyle(lit).getPropertyValue(k)).join('|');
+      lit.classList.add('spk');
+      const on = SPK_ATTR.map(k => getComputedStyle(lit).getPropertyValue(k)).join('|');
+      lit.classList.remove('spk');
+      const said = spans.length ? speech.tokensOf(spans).join(' ') : b.text;
+      made.forEach(w => { if (w.parentNode) w.parentNode.replaceChild(document.createTextNode(w.textContent), w); });
+      el.normalize();
+      if (off === on) noLight.push(stops[i].label + ': "' + b.text.slice(0, 40) + '"');
+      else if (said !== b.text) noLight.push(stops[i].label + ' (says one thing, lights another): "' + b.text.slice(0, 30) + '"');
+      else if (el.innerHTML !== htmlBefore) noLight.push(stops[i].label + ' (not put back): "' + b.text.slice(0, 30) + '"');
     });
     words.push({ screen: stops[i].label.replace(/ · (?:word |page )?\d+ of \d+$/, ''),
       words: blocks.reduce((n, b) => n + (b.text.match(/[A-Za-z]+/g) || []).length, 0) });
@@ -251,7 +266,7 @@
   rec('C5', 'All visible text can be read aloud', uncovered.length === 0, uncovered.slice(0, 6).join(' | '));
   rec('C6', 'Every readable block has its own speaker', noSpeaker.length === 0,
       noSpeaker.length + ' missing. ' + noSpeaker.slice(0, 6).join(' | '));
-  rec('C7', 'Every readable block lights up while read', noLight.length === 0,
+  rec('C7', 'Every block lights up word by word while read', noLight.length === 0,
       noLight.length + ' dark. ' + noLight.slice(0, 6).join(' | '));
   const tinyList = Object.keys(tiny);
   rec('C13', 'No text a student reads is under ' + MIN_FS + 'px', tinyList.length === 0,

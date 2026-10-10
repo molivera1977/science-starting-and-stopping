@@ -216,29 +216,78 @@ const speech = {
      separated from its words — without this, choice A reads as
      "AA push or a pull on an object". */
   textOf(el) {
-    const c = el.cloneNode(true);
-    c.querySelectorAll('[data-noread]').forEach(n => n.remove());
-    const badge = c.querySelector('.ltr');
-    let t;
-    if (badge) {
-      const letter = (badge.textContent || '').trim();
-      badge.remove();
-      t = letter + '. ' + (c.textContent || '');
-    } else {
-      /* textContent runs block children straight together, so a vocabulary
-         card spoke as "surfacethe top of the thing you roll on". Put a full
-         stop between block-level children so the voice pauses where the
-         layout already does. */
-      c.querySelectorAll('div,p,li,h1,h2,h3,h4,td,th,.pt,.pd,.cerlbl,.ctest').forEach(b => {
-        const txt = (b.textContent || '').trim();
-        if (txt && !/[.!?:,]$/.test(txt)) b.appendChild(document.createTextNode('.'));
-        b.appendChild(document.createTextNode(' '));
+    /* Built from the same word list that gets highlighted (tokensOf), on a
+       copy, so what a block SAYS and what LIGHTS UP can never drift apart. */
+    return this.tokensOf(this.split(el.cloneNode(true), [])).join(' ');
+  },
+
+  /* ── WORD BY WORD ────────────────────────────────────────
+     Marcos 10/9: "is it not possible to have word for word highlighting
+     instead of the entire box lit up". A lit box tells a child that
+     something is being read; a lit word tells them WHERE. So when a block is
+     about to be spoken its text is split into one span a word, in place, and
+     put back exactly as it was when the voice stops.
+
+     Left alone: anything [data-noread] (speaker icons, Listen buttons,
+     Spanish), and controls and pictures inside the block. */
+  PAUSE_AFTER: 'div,p,li,h1,h2,h3,h4,td,th,.pt,.pd,.cerlbl,.ctest,.lbl,.exlbl,.ltr',
+  made: [],          /* spans this object added and has to take out again */
+  wrapped: [],       /* the blocks they were added to */
+
+  /* Split root's text into word spans. Spans it creates are noted in `made`
+     (pass an array to keep a throwaway copy's spans out of the live list).
+     Words already in a span (question text) are used as they are. */
+  split(root, made) {
+    const skip = n => n.hasAttribute('data-noread') ||
+      /^(button|svg|canvas|select|textarea|input|script|style)$/i.test(n.tagName);
+    const spans = [];
+    (function walk(node) {
+      [...node.childNodes].forEach(ch => {
+        if (ch.nodeType === 3) {
+          if (!/\S/.test(ch.textContent)) return;
+          const frag = document.createDocumentFragment();
+          ch.textContent.split(/(\s+)/).forEach(part => {
+            if (!part) return;
+            if (!/\S/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+            const w = document.createElement('span');
+            w.className = 'wrd'; w.textContent = part;
+            frag.appendChild(w); spans.push(w); made.push(w);
+          });
+          node.replaceChild(frag, ch);
+        } else if (ch.nodeType === 1 && !skip(ch)) {
+          if (ch.classList.contains('wrd')) spans.push(ch); else walk(ch);
+        }
       });
-      t = c.textContent || '';
-    }
-    t = t.replace(/\s+/g, ' ').trim();
-    if (t && !/[.!?]$/.test(t)) t += '.';
-    return t;
+    })(root);
+    spans.root = root;
+    return spans;
+  },
+
+  /* What each word span should SAY. A word that ends a line of the layout
+     (a heading, a label, a table box, a choice's letter badge) gets a full
+     stop, so the voice pauses where the page already does — without it a
+     vocabulary card spoke as "surfacethe top of the thing you roll on" and a
+     label ran straight into its sentence. */
+  tokensOf(spans) {
+    const root = spans.root;
+    const lineOf = w => { const b = w.parentElement && w.parentElement.closest(this.PAUSE_AFTER);
+                          return (b && b !== root && root.contains(b)) ? b : root; };
+    return spans.map((w, i) => {
+      let t = (w.textContent || '').trim();
+      const ends = i === spans.length - 1 || lineOf(spans[i + 1]) !== lineOf(w);
+      if (ends && t && !/[.!?:,;]$/.test(t)) t += '.';
+      return t;
+    });
+  },
+
+  /* Take the word spans back out, leaving the text exactly as it was. */
+  unwrap() {
+    this.made.forEach(w => {
+      w.classList.remove('spk');
+      if (w.parentNode) w.parentNode.replaceChild(document.createTextNode(w.textContent), w);
+    });
+    this.wrapped.forEach(el => { try { el.normalize(); } catch (e) {} });
+    this.made = []; this.wrapped = [];
   },
 
   readable(root) {
@@ -276,8 +325,12 @@ const speech = {
     root.querySelectorAll('span,div,label,b,strong,em,small').forEach(el => {
       if (el.closest('[data-noread]')) return;
       if (el.closest('button,select,option,textarea,input')) return;
+      if (el.classList.contains('wrd')) return;     /* a word of a block, not a block */
       if (el.offsetParent === null && getComputedStyle(el).position !== 'fixed') return;
-      const own = [...el.childNodes].filter(t => t.nodeType === 3 && t.textContent.trim())
+      /* its own text: loose text, or that same text while it is split into
+         word spans because the block is being read right now */
+      const own = [...el.childNodes].filter(t => (t.nodeType === 3 && t.textContent.trim()) ||
+          (t.nodeType === 1 && t.classList.contains('wrd')))
         .map(t => t.textContent.trim()).join(' ');
       if (!/[A-Za-z]{2}/.test(own)) return;
       if (out.some(prev => prev.contains(el) || el.contains(prev))) return;
@@ -305,27 +358,41 @@ const speech = {
      else. onStart fires when sound actually begins. */
   sayParts(parts, rate, onEnd, onStart) {
     this.stop();
-    this.parts = parts.map(p => p.el).filter(Boolean);
-    this.parts.forEach(el => el.classList.remove('spk'));
+    this.parts = [];
     if (!('speechSynthesis' in window) || !parts.length) { if (onEnd) onEnd(false, 'unavailable'); return; }
 
-    const texts = parts.map(p => String(p.text || '').trim()).filter(Boolean);
-    const text = texts.join(' ');
-    if (!text) { if (onEnd) onEnd(false, 'unavailable'); return; }
-    const job = this.job = { cancelled: false };
-
-    /* where each part starts, counted in words */
-    const bounds = []; let n = 0;
+    /* One entry per spoken word: the span to light, or — for a part with no
+       words of its own to wrap — the part itself, lit as a box as before. */
+    const list = [];
     parts.forEach(p => {
-      const c = String(p.text || '').trim().split(/\s+/).filter(Boolean).length;
-      bounds.push({ el:p.el, from:n, to:n + c });
-      n += c;
+      const spans = p.el ? this.split(p.el, this.made) : [];
+      if (p.el) this.wrapped.push(p.el);
+      if (spans.length) {
+        this.tokensOf(spans).forEach((t, i) => list.push({ t, w: spans[i] }));
+      } else {
+        String(p.text || '').trim().split(/\s+/).filter(Boolean).forEach(t => list.push({ t, box: p.el }));
+        if (p.el) this.parts.push(p.el);
+      }
     });
-    const total = n;
+    const text = list.map(x => x.t).join(' ');
+    if (!text) { this.unwrap(); if (onEnd) onEnd(false, 'unavailable'); return; }
+    const job = this.job = { cancelled: false };
+    const total = list.length;
 
-    const light = wordIdx => {
-      const hit = bounds.find(b => wordIdx >= b.from && wordIdx < b.to);
-      this.parts.forEach(el => el.classList.toggle('spk', !!hit && el === hit.el));
+    /* where each word starts in the spoken text, so the voice's "I am at
+       letter N" can be turned into "that is word K" */
+    const starts = []; let at = 0;
+    list.forEach(x => { starts.push(at); at += x.t.length + 1; });
+    const wordAt = ch => { let k = 0; while (k + 1 < total && starts[k + 1] <= ch) k++; return k; };
+
+    let lit = null;
+    const light = k => {
+      const x = list[Math.max(0, Math.min(total - 1, k))];
+      const el = x && (x.w || x.box);
+      if (el === lit) return;
+      if (lit) lit.classList.remove('spk');
+      if (el) el.classList.add('spk');
+      lit = el;
     };
 
     const u = new SpeechSynthesisUtterance(text);
@@ -335,7 +402,7 @@ const speech = {
     u.onboundary = e => {
       if (e.name && e.name !== 'word') return;
       spoken = true;
-      light(text.slice(0, e.charIndex).split(/\s+/).filter(Boolean).length);
+      light(wordAt(e.charIndex));
     };
     u.onstart = () => {
       if (onStart) onStart();
@@ -348,20 +415,24 @@ const speech = {
         if (i > total) { clearInterval(this.timer); this.timer = null; }
       }, per);
     };
-    u.onend = () => { this.clear(); if (onEnd) onEnd(!job.cancelled, job.cancelled ? 'cancelled' : 'ended'); };
+    /* An utterance that was cut off by the NEXT one reports in late. It must
+       not tidy up — by then the words on screen belong to the new one. */
+    const mine = () => this.job === job;
+    u.onend = () => { if (mine()) this.clear(); if (onEnd) onEnd(!job.cancelled, job.cancelled ? 'cancelled' : 'ended'); };
     u.onerror = e => {
-      this.clear();
+      if (mine()) this.clear();
       const stopped = job.cancelled || /interrupted|cancell?ed/.test((e && e.error) || '');
       if (onEnd) onEnd(false, stopped ? 'cancelled' : 'error');
     };
 
     try { window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }
-    catch (e) { if (onEnd) onEnd(false, 'error'); }
+    catch (e) { this.clear(); if (onEnd) onEnd(false, 'error'); }
   },
   clear() {
     if (this.timer) { clearInterval(this.timer); this.timer = null; }
     this.words.forEach(w => w.classList.remove('spk'));
     (this.parts || []).forEach(el => el.classList.remove('spk'));
+    this.unwrap();
   },
   stop() {
     if (this.job) this.job.cancelled = true;
