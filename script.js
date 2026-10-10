@@ -244,7 +244,7 @@ const speech = {
     const SEL = 'h1,h2,h3,h4,p,li,td,th,' +
       '.vcard,.opt,.grow,.readout,.fb,.g,.sb,.step,.box,' +
       '.runnow,.note,.eyebrow,.qcount,.lbl,.same,.chg,.plain,.say,.counter,.chips-lbl,.qdata-h,' +
-      '.rcard,.rl,.rnow,.wh-def,.wh-ex,.wb-q,.ptile';
+      '.rcard,.rl,.rnow,.wh-def,.wh-ex,.wb-q,.ptile,.schip,.tnote';
     const out = [];
     root.querySelectorAll(SEL).forEach(el => {
       if (el.closest('[data-noread]')) return;
@@ -255,7 +255,9 @@ const speech = {
          sitting through the whole list again. */
       if (el.hasAttribute('data-parts')) return;
       if (out.some(prev => prev.contains(el) && !prev.hasAttribute('data-parts'))) return;
-      if (!this.textOf(el)) return;
+      /* A table box holding only a dash or a ? has nothing to say. Giving it
+         a speaker put an icon in every empty box of the data table. */
+      if (!/[A-Za-z0-9]/.test(this.textOf(el))) return;
       out.push(el);
     });
     /* Anything else that carries visible text becomes its own block. The list
@@ -529,6 +531,12 @@ function renderDoSteps(phase) {
     host.innerHTML = '<ol class="wh-steps">' +
       steps.map(t => '<li>' + t + '</li>').join('') + '</ol>';
   }
+  /* On a push screen: what this push is using, in full, any time they want
+     it again. It is heard once when it is new, and then lives here. */
+  const m = /^run([ABCD])$/.exec(phase);
+  const run = m && invOf(m[1]).runs[app.runIndex[m[1]]];
+  if (run) host.innerHTML += '<p class="wh-def"><b>What you are using for this one</b></p>' +
+    setupBits(run).map(b => '<p class="wh-ex">' + b.pic + '<b>' + b.name + '</b> &mdash; ' + b.full + '</p>').join('');
   attachSpeakers(host);
 }
 
@@ -1216,7 +1224,9 @@ function whyRight(q) {
 /* ══════════════════════════════════════════════════════
    THE LAB
 ══════════════════════════════════════════════════════ */
-const TRACK = { w:900, h:200, x0:28, y:150 };
+/* The canvas is only as tall as the tallest thing drawn on it (the 3-book
+   ramp), so the button and the data table can sit right under the cart. */
+const TRACK = { w:900, h:132, x0:28, y:92 };
 /* The start line sits further right on a ramp run so the ramp has room to the
    left of zero; the scale follows it, so a centimetre is a centimetre either way. */
 const RAMP_ROOM = 150;
@@ -1279,18 +1289,18 @@ function drawTrack(run, cartCm, travelledCm) {
 
   /* meter marks */
   g.strokeStyle = faint; g.fillStyle = faint;
-  g.font = '11px "IBM Plex Mono", monospace'; g.lineWidth = 1;
+  g.font = '600 15px "IBM Plex Mono", monospace'; g.lineWidth = 2;
   for (let m = 0; m <= 9; m++) {
     const x = X0 + m * 100 * CM_PX(run);
-    g.beginPath(); g.moveTo(x, TRACK.y - 8); g.lineTo(x, TRACK.y); g.stroke();
-    g.fillText(m + ' m', x - 8, TRACK.y - 12);
+    g.beginPath(); g.moveTo(x, TRACK.y - 9); g.lineTo(x, TRACK.y); g.stroke();
+    if (m > 0) g.fillText(m + ' m', x - 14, TRACK.y - 14);   /* 0 is the START line */
   }
 
   /* start line */
   g.strokeStyle = ink; g.lineWidth = 2;
-  g.beginPath(); g.moveTo(X0, TRACK.y - 46); g.lineTo(X0, TRACK.y); g.stroke();
-  g.font = '600 11px "IBM Plex Mono", monospace'; g.fillStyle = ink;
-  g.fillText('START', X0 + 4, TRACK.y - 50);
+  g.beginPath(); g.moveTo(X0, TRACK.y - 64); g.lineTo(X0, TRACK.y); g.stroke();
+  g.font = '700 15px "IBM Plex Mono", monospace'; g.fillStyle = ink;
+  g.fillText('START', X0 + 5, TRACK.y - 68);
 
   /* distance trail */
   if (travelledCm > 0) {
@@ -1313,30 +1323,33 @@ function drawTrack(run, cartCm, travelledCm) {
       g.fillStyle = col;
       g.fillRect(bx - 16, TRACK.y - (i + 1) * bookH, 52, bookH - 2);
     });
-    g.fillStyle = faint; g.font = '600 12px "IBM Plex Mono", monospace';
-    g.fillText(LAB.ramps[run.ramp].name, bx - 14, TRACK.y + 20);
+    g.fillStyle = ink; g.font = '700 15px "IBM Plex Mono", monospace';
+    g.fillText(LAB.ramps[run.ramp].name, bx - 14, TRACK.y + 21);
   }
 
-  /* the vehicle */
+  /* the vehicle — drawn a third bigger than it used to be, in its own scaled
+     frame so every measurement below stays as it was */
   const big = run.vehicle === 'truck';
   const W = big ? 54 : 36, H = big ? 24 : 18;
-  const cx = X0 + cartCm * CM_PX(run);
-  const cy = TRACK.y - 2;
+  g.save();
+  g.translate(X0 + cartCm * CM_PX(run), TRACK.y - 2);
+  g.scale(1.35, 1.35);
   g.fillStyle = 'rgba(0,0,0,.18)';
-  g.beginPath(); g.ellipse(cx + W / 2, cy + 3, W * 0.62, 4, 0, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.ellipse(W / 2, 3, W * 0.62, 4, 0, 0, Math.PI * 2); g.fill();
   g.fillStyle = big ? '#37474F' : '#C62828';
-  roundRect(g, cx, cy - 8 - H, W, H, 4); g.fill();
+  roundRect(g, 0, -8 - H, W, H, 4); g.fill();
   g.fillStyle = big ? '#263238' : '#90302A';
-  roundRect(g, cx + 5, cy - 16 - H, big ? 20 : 24, 10, 3); g.fill();
-  const wheels = big ? [cx + 10, cx + 28, cx + 44] : [cx + 9, cx + 27];
+  roundRect(g, 5, -16 - H, big ? 20 : 24, 10, 3); g.fill();
+  const wheels = big ? [10, 28, 44] : [9, 27];
   g.fillStyle = '#2B2B2B';
-  wheels.forEach(wx => { g.beginPath(); g.arc(wx, cy - 6, 6.5, 0, Math.PI * 2); g.fill(); });
+  wheels.forEach(wx => { g.beginPath(); g.arc(wx, -6, 6.5, 0, Math.PI * 2); g.fill(); });
   g.fillStyle = '#9E9E9E';
-  wheels.forEach(wx => { g.beginPath(); g.arc(wx, cy - 6, 2.4, 0, Math.PI * 2); g.fill(); });
+  wheels.forEach(wx => { g.beginPath(); g.arc(wx, -6, 2.4, 0, Math.PI * 2); g.fill(); });
+  g.restore();
 
-  /* surface label */
-  g.fillStyle = ink; g.font = '600 13px "Public Sans", sans-serif';
-  g.fillText(stripTags(s.name) + ' — ' + s.note, 12, TRACK.y + 50);
+  /* The surface's name used to be written under the band, in small type
+     that the canvas edge cut in half. It is on the strip above the track
+     now, where a speaker can read it. */
 
   /* The track is the lesson. Keep a spoken equivalent on it so a student using a
      screen reader gets the same information as one watching the cart. */
@@ -1435,18 +1448,75 @@ function renderRun(invKey) {
   attachSpeakers(document.getElementById('run-card'));
 }
 
+/* Every piece of one push, in a child's words. Used three ways: the strip
+   above the track (short), the "new this time" card (full, heard once), and
+   the Stuck? panel (full, any time). */
+function setupBits(run) {
+  const bits = [];
+  const sf = LAB.surfaces[run.surface];
+  if (sf) bits.push({ key:'surface:' + run.surface, kind:'surface', pic:art(SURFACE_ART[run.surface], 'swatch'),
+    name:stripTags(sf.name), short:sf.note, full:sf.note + (sf.ex ? ' &mdash; ' + sf.ex : '') });
+  if (run.ramp) { const r = LAB.ramps[run.ramp];
+    bits.push({ key:'ramp:' + run.ramp, kind:'ramp', pic:art((window.THING_ART || {}).ramp, 'swatch'),
+      name:'Ramp of ' + r.name, short:'let it go, no push',
+      full:(r.note || '') + '. You let the car go. You do not push it.' }); }
+  if (run.vehicle) { const v = LAB.vehicles[run.vehicle];
+    bits.push({ key:'vehicle:' + run.vehicle, kind:'vehicle', pic:art(INV_ART.D, 'swatch'),
+      name:stripTags(v.name), short:v.note || '', full:v.note || '' }); }
+  if (run.push && !run.ramp) { const pu = LAB.pushes[run.push];
+    bits.push({ key:'push:' + run.push, kind:'push', pic:art(INV_ART.B, 'swatch'),
+      name:stripTags(pu.name), short:'', arrows:pu.arrows, full:pu.note || '' }); }
+  return bits;
+}
+const bitKeys = run => [run.surface && 'surface:' + run.surface, run.ramp && 'ramp:' + run.ramp,
+  run.vehicle && 'vehicle:' + run.vehicle, run.push && !run.ramp && 'push:' + run.push].filter(Boolean);
+
+/* What is NEW in this push: any piece that no earlier push in the whole
+   lesson has used, and the first second-try. Worked out from where the push
+   sits in the lesson, so it needs no memory and is the same after a resume.
+   Ice is explained when ice first appears, not on all eight pushes. */
+function newInRun(invKey, i) {
+  const seen = new Set(); let seenTwice = false;
+  for (const k of ['A', 'B', 'C', 'D']) {
+    const runs = invOf(k).runs;
+    for (let j = 0; j < runs.length; j++) {
+      if (k === invKey && j === i)
+        return { fresh:setupBits(runs[j]).filter(b => !seen.has(b.key)),
+                 whyTwice:runs[j].trial === 2 && !seenTwice };
+      bitKeys(runs[j]).forEach(x => seen.add(x));
+      if (runs[j].trial === 2) seenTwice = true;
+    }
+  }
+  return { fresh:[], whyTwice:false };
+}
+
+/* Put the push in front of the student: the strip, the cart, the button and
+   the table together. While something new is being explained, show that
+   first. Waits for the screen's own scroll-to-top to finish. */
+function focusRun() {
+  setTimeout(() => {
+    const card = document.getElementById('run-card');
+    if (!card || card.offsetParent === null) return;
+    const fresh = document.getElementById('run-new');
+    const top = (fresh.offsetParent !== null && fresh.childElementCount) ? fresh : document.getElementById('run-strip');
+    const tbl = document.getElementById('data-table').getBoundingClientRect();
+    if (tbl.bottom > innerHeight - 70 || top.getBoundingClientRect().top < 0)
+      top.scrollIntoView({ block:'start', behavior:'smooth' });
+  }, 500);
+}
+
 function paintRun(invKey) {
   const inv = invOf(invKey);
   const i = app.runIndex[invKey];
   const total = inv.runs.length;
   const done = i >= total;
+  const card = document.getElementById('run-card');
 
   /* Investigation C is released, not pushed — the counter has to agree with
      the button and the steps, or the screen contradicts itself. */
   const unit = inv.runNoun || 'Push';
   document.getElementById('run-progress').textContent =
     unit + ' ' + Math.min(i + 1, total) + ' of ' + total;
-  renderTable(invKey);
 
   const runBtn = document.getElementById('run-btn');
   /* Investigation C releases the car from a ramp — nobody pushes it. The
@@ -1454,111 +1524,117 @@ function paintRun(invKey) {
   runBtn.innerHTML = inv.runVerb || '&#128072; Push the cart';
   const recBtn = document.getElementById('run-record');
   const doneBtn = document.getElementById('run-done');
-  const now = document.getElementById('run-now');
   const read = document.getElementById('run-readout');
+  const tnote = document.getElementById('table-note');
+  const strip = document.getElementById('run-strip');
+  const fresh = document.getElementById('run-new');
+
+  /* the box that was filled a moment ago flashes once */
+  const just = (app.justFilled && app.justFilled.inv === invKey)
+    ? { key:app.justFilled.key, trial:app.justFilled.trial, cls:'just' } : null;
+  app.justFilled = null;
 
   if (done) {
-    now.innerHTML = '<b>All ' + total + ' ' + (inv.runNoun ? inv.runNoun.toLowerCase() + 's' : 'pushes') + ' are recorded.</b> Now look at what your numbers say.';
+    renderTable(invKey, [just]);
+    strip.innerHTML = ''; fresh.innerHTML = '';
+    tnote.innerHTML = '<b>Your table is full.</b> All ' + total + ' ' +
+      (inv.runNoun ? inv.runNoun.toLowerCase() + 's' : 'pushes') + ' are in it. Now look at what your numbers say.';
     read.textContent = 'Table complete';
     runBtn.classList.add('hidden'); recBtn.classList.add('hidden');
     doneBtn.classList.remove('hidden');
     doneBtn.onclick = () => app.next();
     const last = app.data[invKey][app.data[invKey].length - 1];
     if (last) drawTrack(last, last.cm, last.cm);
+    attachSpeakers(card);
+    guide.run(card, { id:'run' + invKey + 'end' });
+    renderDoSteps(app.phase);
+    focusRun();
     return;
   }
 
   doneBtn.classList.add('hidden');
   const run = inv.runs[i];
-  /* The table note said "two trials for each setup" long after B, C and D
-     dropped to one. Say what this investigation actually does. */
-  const tnote = document.getElementById('table-note');
-  if (tnote) tnote.textContent = trialsFor(invKey) > 1
-    ? 'Every push is recorded. Two trials for each setup, because real scientists repeat a test before they trust it.'
-    : 'Every push is recorded. One push for each setup this time \u2014 you already practised repeating a test in Investigation A.';
-
-  /* Spell out every piece of THIS push. The surface notes only ever existed
-     on the canvas, which a speaker button cannot read; the surface examples
-     I added were never rendered at all; the vehicle notes were never shown
-     anywhere. All three now sit in a readable box above the button, so a
-     student knows what "Ice" and "Medium push" actually mean each time
-     rather than once at the start. */
-  const setupBox = document.getElementById('run-setupwhat');
-  if (setupBox) {
-    const bits = [];
-    const sf = LAB.surfaces[run.surface];
-    if (sf) bits.push([art(SURFACE_ART[run.surface], 'swatch'), 'Surface', stripTags(sf.name),
-      sf.note + (sf.ex ? ' &mdash; ' + sf.ex : '')]);
-    if (run.ramp) { const r = LAB.ramps[run.ramp];
-      bits.push([art((window.THING_ART || {}).ramp, 'swatch'), 'Ramp', r.name,
-        (r.note || '') + '. You let the car go. You do not push it.']); }
-    if (run.vehicle) { const v = LAB.vehicles[run.vehicle];
-      bits.push([art(INV_ART.D, 'swatch'), 'Vehicle', stripTags(v.name), v.note || '']); }
-    if (run.push && !run.ramp) { const pu = LAB.pushes[run.push];
-      bits.push([art(INV_ART.B, 'swatch'), 'Push', stripTags(pu.name), pu.note || '']); }
-    setupBox.innerHTML = '<span class="lbl">What you are using for this one</span>' +
-      bits.map(b => '<p>' + b[0] + '<b>' + b[1] + ': ' + b[2] + '</b> &mdash; ' + b[3] + '</p>').join('');
-    attachSpeakers(setupBox);
-  }
-
-  const whyBox = document.getElementById('run-whyrepeat');
-  if (whyBox) {
-    const show = trialsFor(invKey) > 1;
-    whyBox.innerHTML = show
-      ? '<span class="lbl">Why twice?</span><p>' + (inv.whyRepeat || window.WHY_REPEAT || '') + '</p>' : '';
-    whyBox.classList.toggle('hidden', !show);
-    if (show) attachSpeakers(whyBox);
-  }
+  const bits = setupBits(run);
   const nTrials = trialsFor(invKey);
-  now.innerHTML = 'Setup: ' + setupLine(run) +
-    (nTrials > 1 ? ' &middot; trial ' + run.trial + ' of ' + nTrials : '');
+  const noun = inv.runNoun || 'Push';
+  const landed = !!(app.lastRun && app.lastRun.index === i);
+
+  /* THE STRIP — what this push uses, one glance, right above the cart. It
+     replaces two paragraphs that sat between the cart and its button. */
+  strip.innerHTML = bits.map(b =>
+      '<span class="schip">' + b.pic + '<b>' + b.name + '</b>' + (b.short ? ' &mdash; ' + b.short : '') +
+      (b.arrows ? ' <span data-noread aria-hidden="true">' + b.arrows + '</span>' : '') + '</span>').join('') +
+    (nTrials > 1 ? '<span class="schip try">' + (run.trial === 1
+        ? 'Try 1 of ' + nTrials
+        : 'Try ' + run.trial + ' of ' + nTrials + ' &mdash; the same again, to be sure') + '</span>' : '');
+
+  /* NEW THIS TIME — the full explanation, with its example, the first time a
+     thing appears. It has to be heard (guide.js) before the button exists,
+     then it folds away so the push screen stays the cart, the button and the
+     table. The same words stay one tap away under "Stuck? Tap here". */
+  const nw = newInRun(invKey, i);
+  fresh.innerHTML = nw.fresh.map(b =>
+      '<div class="newcard" data-step><span class="lbl">New this time</span>' +
+      '<p>' + b.pic + '<b>' + b.name + '</b> &mdash; ' + b.full + '</p></div>').join('') +
+    (nw.whyTwice ? '<div class="newcard" data-step><span class="lbl">Why twice?</span>' +
+      '<p>' + (inv.whyRepeat || window.WHY_REPEAT || '') + '</p></div>' : '');
+
+  /* THE TABLE — the box this push fills glows, so the number has somewhere
+     visible to go. Marcos 10/9: "kids won't know where the data table is and
+     its connection to cart moving." */
+  renderTable(invKey, [just, { key:runKey(run), trial:run.trial, cls:'target' }]);
+
   /* A push that has landed but is not recorded yet keeps the cart where it
      stopped — redrawing at zero here used to snap it back to the start line
      while the readout still showed the distance. */
-  const landedCm = (app.lastRun && app.lastRun.index === i) ? app.lastRun.cm : 0;
+  const landedCm = landed ? app.lastRun.cm : 0;
   drawTrack(run, landedCm, landedCm);
 
-  if (app.lastRun && app.lastRun.index === i) {
-    read.textContent = 'Distance: ' + app.lastRun.cm + ' cm';
-    /* Say what just happened, in a sentence, and say what to do next. A chip
-       reading "Distance: 501 cm" is a label; it does not tell a student that
-       their push landed or that the number is not saved yet. The live region
-       means a screen reader announces it too. */
-    const noun = (inv.runNoun || 'Push');
-    now.innerHTML = '<b>' + noun + ' ' + (i + 1) + ' went ' + app.lastRun.cm +
-      ' cm.</b> It is not in your table yet &mdash; press <b>Write it in my table</b>.';
-    now.setAttribute('aria-live', 'polite');
+  if (landed) {
+    const cm = app.lastRun.cm;
+    read.textContent = 'Distance: ' + cm + ' cm';
+    /* Say what just happened, in a sentence, and say what to do next. The
+       number is on the button and the box it will land in is glowing. */
+    tnote.innerHTML = '<b>' + noun + ' ' + (i + 1) + ' went ' + cm + ' cm.</b> ' +
+      'It is not in your table yet. Press the button and ' + cm + ' drops into the <b>glowing box</b>.';
     runBtn.classList.add('hidden');
+    recBtn.innerHTML = '&#11015; Write ' + cm + ' in my table';
     recBtn.classList.remove('hidden');
     recBtn.onclick = () => {
       /* keep every setting of the run, or ramp and vehicle rows never match
          their group and the averages come out empty */
-      app.data[invKey].push(Object.assign({}, run, { cm:app.lastRun.cm }));
+      app.data[invKey].push(Object.assign({}, run, { cm:cm }));
       app.runIndex[invKey] = i + 1;
       app.lastRun = null;
-      logEvent('trial', Object.assign({ inv:invKey, cm:app.data[invKey][app.data[invKey].length - 1].cm },
+      app.justFilled = { inv:invKey, key:runKey(run), trial:run.trial };
+      logEvent('trial', Object.assign({ inv:invKey, cm:cm },
         { s:run.surface, p:run.push || '', r:run.ramp || '', v:run.vehicle || '', t:run.trial }));
       app.save();
       recBtn.classList.add('hidden');
       paintRun(invKey);
     };
-    return;
+  } else {
+    read.textContent = 'Distance: —';
+    tnote.innerHTML = 'The <b>glowing box</b> is where this ' + noun.toLowerCase() + ' goes.';
+    recBtn.classList.add('hidden');
+    runBtn.classList.remove('hidden');
+    runBtn.disabled = false;
+    runBtn.onclick = () => {
+      runBtn.disabled = true;
+      const cm = distanceCm(run, true);
+      animateRun(run, cm, () => {
+        app.lastRun = { index:i, cm:cm };
+        read.textContent = 'Distance: ' + cm + ' cm';
+        runBtn.classList.add('hidden');
+        paintRun(invKey);
+      });
+    };
   }
 
-  read.textContent = 'Distance: —';
-  recBtn.classList.add('hidden');
-  runBtn.classList.remove('hidden');
-  runBtn.disabled = false;
-  runBtn.onclick = () => {
-    runBtn.disabled = true;
-    const cm = distanceCm(run, true);
-    animateRun(run, cm, () => {
-      app.lastRun = { index:i, cm:cm };
-      read.textContent = 'Distance: ' + cm + ' cm';
-      runBtn.classList.add('hidden');
-      paintRun(invKey);
-    });
-  };
+  attachSpeakers(card);
+  guide.run(card, { id:'run' + invKey + i, onDone:focusRun });
+  renderDoSteps(app.phase);
+  focusRun();
 }
 
 function animateRun(run, cm, done) {
@@ -1645,7 +1721,10 @@ function cellsFor(invKey, g) {
   return { t1:t1 ? t1.cm : null, t2:t2 ? t2.cm : null, avg:avg };
 }
 
-function tableHTML(invKey) {
+/* marks: [{ key, trial, cls }] — cells to pick out. 'target' is the box the
+   next push will fill (it glows and shows a ?), 'just' is the box that was
+   filled a moment ago (it flashes). Only the push screen passes any. */
+function tableHTML(invKey, marks) {
   const col = INV_COLUMNS[invKey];
   const two = trialsFor(invKey) > 1;
   let h = '<thead><tr><th>' + col.first + '</th><th>' + col.second + '</th>' +
@@ -1653,13 +1732,19 @@ function tableHTML(invKey) {
          : '<th>Distance (cm)</th>') + '</tr></thead><tbody>';
   groupsFor(invKey).forEach(g => {
     const c = cellsFor(invKey, g);
-    const cell = v => v == null ? '<td class="num pending">—</td>' : '<td class="num">' + v + '</td>';
-    h += '<tr><td>' + (col.aArt ? col.aArt(g) : '') + '<b>' + col.a(g) + '</b></td><td>' + col.b(g) + '</td>' +
-         (two ? cell(c.t1) + cell(c.t2) +
+    const found = t => (marks || []).find(m => m && m.key === g.key && m.trial === t);
+    const hit = t => { const m = found(t); return m ? ' ' + m.cls : ''; };
+    const rowOn = (marks || []).some(m => m && m.key === g.key && m.cls === 'target');
+    const cell = (v, t) => v == null
+      ? '<td class="num pending' + hit(t) + '">' + (/target/.test(hit(t)) ? '?' : '—') + '</td>'
+      : '<td class="num' + hit(t) + '">' + v + '</td>';
+    h += '<tr' + (rowOn ? ' class="rowon"' : '') + '><td>' +
+         (col.aArt ? col.aArt(g) : '') + '<b>' + col.a(g) + '</b></td><td>' + col.b(g) + '</td>' +
+         (two ? cell(c.t1, 1) + cell(c.t2, 2) +
                 (c.avg == null ? '<td class="num pending">—</td>'
                                : '<td class="num"><b>' + c.avg + '</b></td>')
-              : (c.avg == null ? '<td class="num pending">—</td>'
-                               : '<td class="num"><b>' + c.avg + '</b></td>')) + '</tr>';
+              : (c.avg == null ? '<td class="num pending' + hit(1) + '">' + (/target/.test(hit(1)) ? '?' : '—') + '</td>'
+                               : '<td class="num' + hit(1) + '"><b>' + c.avg + '</b></td>')) + '</tr>';
   });
   return h + '</tbody>';
 }
@@ -1671,8 +1756,8 @@ function allTablesHTML() {
     '<table class="data">' + tableHTML(k) + '</table>').join('');
 }
 
-function renderTable(invKey) {
-  document.getElementById('data-table').innerHTML = tableHTML(invKey);
+function renderTable(invKey, marks) {
+  document.getElementById('data-table').innerHTML = tableHTML(invKey, marks);
 }
 
 /* ── SUMMARY used by the data-analysis questions ────── */

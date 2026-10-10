@@ -52,6 +52,7 @@
     root.querySelectorAll('.gbar,.gnav,.gdots').forEach(n => n.remove());
     root.querySelectorAll('.gstep').forEach(n => n.classList.remove('gstep', 'g-live', 'g-done', 'g-locked', 'g-play'));
     root.querySelectorAll('.ghide').forEach(n => n.classList.remove('ghide'));
+    root.classList.remove('g-alldone');
 
     let pageEls = [...root.querySelectorAll('[data-gpage]')];
     const paged = pageEls.length > 0;
@@ -71,8 +72,13 @@
       : [];
 
     const gate = !window.PREVIEW || !!guide.testGate;
-    const store = () => (app.heard || (app.heard = {}));
-    let heard = !gate ? total : guide.testGate ? 0 : Math.min(total, store()[id] || 0);
+    /* Under test the count is kept apart from the student's (and never
+       saved), but it IS kept: a push screen repaints itself after every
+       push, and a lock that forgot what was heard would shut again. */
+    const store = () => guide.testGate
+      ? (guide.testHeard || (guide.testHeard = {}))
+      : (app.heard || (app.heard = {}));
+    let heard = !gate ? total : Math.min(total, store()[id] || 0);
     let playing = -1;
 
     const pageDone = p => heard >= pages[p].first + pages[p].count;
@@ -138,6 +144,10 @@
       });
       const atEnd = heard >= total && page === pages.length - 1;
       endAfter.forEach(a => a.classList.toggle('ghide', !atEnd));
+      /* A student who has heard everything: a screen may fold its steps away
+         (the push screen does). Never in the teacher preview, where the
+         point is to see them. */
+      root.classList.toggle('g-alldone', gate && total > 0 && heard >= total);
       if (dots) [...dots.children].forEach((d, p) => { d.className = p === page ? 'on' : (pageDone(p) ? 'done' : ''); });
       steps.forEach((s, k) => {
         const live = k === heard;
@@ -162,11 +172,12 @@
     function mark(k) {
       if (k + 1 > heard) {
         heard = k + 1;
+        if (gate) store()[id] = heard;
         if (gate && !guide.testGate) {
-          store()[id] = heard;
           try { app.save(); } catch (e) {}
           if (heard === total) logEvent('heard_all', { s: id, n: total });
         }
+        if (heard === total && opts.onDone) { paint(); opts.onDone(); return; }
       }
       paint(); reveal();
     }
@@ -254,5 +265,5 @@
     return 0;
   }
 
-  window.guide = { run, pagesFor, current: null, testGate: false };
+  window.guide = { run, pagesFor, current: null, testGate: false, testHeard: {} };
 })();

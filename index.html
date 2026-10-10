@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232E7D6B'/%3E%3Ccircle cx='11' cy='21' r='3' fill='%23fff'/%3E%3Ccircle cx='22' cy='21' r='3' fill='%23fff'/%3E%3Crect x='7' y='11' width='18' height='7' rx='2' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="style.css?v=guide2">
+<link rel="stylesheet" href="style.css?v=push1">
 </head>
 <body>
 <div class="wrap">
@@ -243,26 +243,31 @@
         <span class="chip" id="run-progress"></span>
       </div>
 
-      <div class="stage"><canvas id="track" width="900" height="200" role="img"
-        aria-label="Track with the cart at the start."></canvas></div>
+      <!-- Anything NEW in this push (a surface, a push size, a ramp, the
+           truck) is explained here first and has to be heard (guide.js)
+           before the button appears. Then it folds away. -->
+      <div id="run-new"></div>
 
-      <div class="runbar">
-        <span class="runnow" id="run-now"></span>
-      </div>
-      <div class="box todo" id="run-setupwhat" data-parts></div>
-      <div class="box todo hidden" id="run-whyrepeat" data-parts></div>
-      <div>
+      <!-- The push, kept together: what this push uses, the cart, and the
+           button right under the cart. Marcos 10/9: "separating the cart and
+           the button doesn't make sense." -->
+      <div class="setupstrip" id="run-strip"></div>
+      <div class="stage"><canvas id="track" width="900" height="132" role="img"
+        aria-label="Track with the cart at the start."></canvas></div>
+      <div class="actrow" data-gafter>
+        <button class="btn big" id="run-btn" type="button">&#128072; Push the cart</button>
+        <button class="btn big hidden" id="run-record" type="button">Write it in my table</button>
         <span class="readout" id="run-readout" aria-live="polite">Distance: &mdash;</span>
       </div>
-      <div class="btnrow">
-        <button class="btn" id="run-btn" type="button">&#128072; Push the cart</button>
-        <button class="btn ghost small hidden" id="run-record" type="button">Write it in my table &rarr;</button>
-      </div>
 
-      <hr class="hr">
-      <h3 id="table-head">My data table</h3>
-      <p class="counter" id="table-note"></p>
-      <div class="tablewrap"><table class="data" id="data-table"></table></div>
+      <!-- The table sits right under the push, and the box this push fills
+           glows. Marcos 10/9: "kids won't know where the data table is and
+           its connection to cart moving." -->
+      <div class="tablezone">
+        <h3 id="table-head">My data table</h3>
+        <p class="tnote" id="table-note" aria-live="polite"></p>
+        <div class="tablewrap"><table class="data" id="data-table"></table></div>
+      </div>
 
       <div class="btnrow"><button class="btn hidden" id="run-done" type="button">My table is full &rarr;</button></div>
     </div>
@@ -410,14 +415,14 @@
   </p>
 </div>
 
-<script src="data/art.js?v=guide2"></script>
-<script src="data/lesson.js?v=guide2"></script>
-<script src="data/questions.js?v=guide2"></script>
-<script src="guide.js?v=guide2"></script>
-<script src="script.js?v=guide2"></script>
-<script src="preview.js?v=guide2"></script>
+<script src="data/art.js?v=push1"></script>
+<script src="data/lesson.js?v=push1"></script>
+<script src="data/questions.js?v=push1"></script>
+<script src="guide.js?v=push1"></script>
+<script src="script.js?v=push1"></script>
+<script src="preview.js?v=push1"></script>
 <!-- The pre-push check. Runs only when the address has ?qa in it. -->
-<script>if (/[?&]qa\b/.test(location.search)) { var q = document.createElement('script'); q.src = 'qa.js?v=guide2'; document.body.appendChild(q); }</script>
+<script>if (/[?&]qa\b/.test(location.search)) { var q = document.createElement('script'); q.src = 'qa.js?v=push1'; document.body.appendChild(q); }</script>
 
 <!-- ══════════════ WORD HELP — on every working screen ══════════════
      Marcos 10/9: "add reminders of those definitions. Don't expect them to

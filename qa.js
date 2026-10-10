@@ -155,18 +155,26 @@
      and the end of Day 1. guide.testGate turns the lock on inside the
      preview, so this needs no student name and sends nothing. */
   guide.testGate = true;
-  const AFTER = { vocab: 'vocab-next', daygate: 'dg-next' };
-  for (const ph of [...new Set(stops.filter(s => s.gp != null).map(s => s.phase))]) {
+  /* which part of the screen holds the steps, and what must stay locked */
+  const GATED = ph => /^predict/.test(ph) ? ['predict-card', 'pr-opts']
+                    : /^run/.test(ph)     ? ['run-card', 'run-btn']
+                    : ph === 'vocab'      ? ['vocab-screen', 'vocab-next']
+                    :                       ['daygate-screen', 'dg-next'];
+  /* every paged screen, plus the four push screens (their first push always
+     has something new to hear before the button exists) */
+  const toGate = [...new Set(stops.filter(s => s.gp != null || /^run[ABCD]$/.test(s.phase)).map(s => s.phase))];
+  for (const ph of toGate) {
     if (ph === 'plan') continue;                       /* walked above, as a student */
+    guide.testHeard = {};
     await jump(stops.findIndex(s => s.phase === ph));
-    const sec = visible()[0];
-    await gateCheck(ph, sec, document.getElementById(AFTER[ph] || 'pr-opts'));
+    const [rootId, afterId] = GATED(ph);
+    await gateCheck(ph, document.getElementById(rootId), document.getElementById(afterId));
     if (ph === 'daygate') {
       document.getElementById('dg-next').click(); await wait(200);
       await gateCheck('day 2 recap', document.getElementById('dg-recap'), document.getElementById('dg-go'));
     }
   }
-  guide.testGate = false;
+  guide.testGate = false; guide.testHeard = {};
   speech.sayParts = realSay;
   rec('C14', 'Guided screens: Next is locked until every step is heard (' + listen.length + ' screens)',
       gateBad.length === 0, gateBad.slice(0, 6).join(' | '));
