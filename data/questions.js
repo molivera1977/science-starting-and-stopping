@@ -69,19 +69,19 @@ window.VOCAB_Q = [
    Questions with a fixed answer use `a` like any other item. */
 window.ANALYSIS_Q = [
   { id:'L06',
-    why: d => "Look at your table. " + d.farthestA + " went the farthest, " + d.maxAvgA + " cm. " + d.farthestA + " had the least friction pushing back.", inv:'A',
+    why: d => "Look at your data table. On " + d.farthestA.toLowerCase() + " the cart traveled the farthest, " + d.maxAvgA + " cm. " + d.farthestA + " had the least friction pushing back.", inv:'A',
     q:'Look at your Investigation A table. Which surface let the cart roll the <b>farthest</b>?',
     opts:['Ice','Wood','Carpet','Sand'], resolve: d => d.farthestA },
 
   { id:'L07',
-    why: d => "Look at your table. " + d.shortestA + " stopped the soonest, after only " + d.minAvgA + " cm. " + d.shortestA + " had the most friction.", inv:'A',
+    why: d => "Look at your data table. On " + d.shortestA.toLowerCase() + " the cart stopped the soonest, after only " + d.minAvgA + " cm. " + d.shortestA + " had the most friction.", inv:'A',
     q:'Which surface stopped the cart the <b>soonest</b>?',
     opts:['Ice','Wood','Carpet','Sand'], resolve: d => d.shortestA },
 
   { id:'L08',
     why: "Every push was the same. The only thing that changed was the surface. So the surface made the difference.", inv:'A',
-    q:'In Investigation A you gave the cart the <b>same medium push every single time</b>. So what caused the distances to be so different?',
-    opts:['The surface the cart rolled on','The cart got heavier each time','Someone pushed harder on sand','Nothing &mdash; the distances were all the same'], a:0 },
+    q:'In Investigation A you gave the cart the <b>same medium push every single time</b>. So what caused the cart to travel such different distances?',
+    opts:['The surface the cart rolled on','The cart got heavier each time','Someone pushed harder on sand','Nothing &mdash; the cart traveled the same distance every time'], a:0 },
 
   { id:'L09',
     why: d => d.shortestA + " stopped the cart the soonest, after only " + d.minAvgA + " cm. " + d.shortestA + " pushed back the hardest, so " + d.shortestA.toLowerCase() + " had the most friction.", inv:'A',
@@ -90,13 +90,13 @@ window.ANALYSIS_Q = [
 
   { id:'L10',
     why: "A bigger push gives the cart more energy. More energy means the cart rolls farther before friction stops the cart.", inv:'B',
-    q:'In Investigation B the surface never changed &mdash; only the push did. When the push got <b>bigger</b>, what happened to the distance?',
-    opts:['The distance got longer','The distance got shorter','The distance stayed exactly the same','The cart stopped moving'], a:0 },
+    q:'In Investigation B the surface never changed &mdash; only the push did. When the push got <b>bigger</b>, what happened to the distance the cart traveled?',
+    opts:['The cart traveled a longer distance','The cart traveled a shorter distance','The cart traveled exactly the same distance','The cart stopped moving'], a:0 },
 
   { id:'L11',
     why: "The big push gave the cart the most energy, so the cart went the farthest.", inv:'B',
     q:'Which push sent the cart the farthest on wood?',
-    opts:['Small push','Medium push','Big push','All three pushes went the same distance'], a:2 },
+    opts:['Small push','Medium push','Big push','All three pushes sent the cart the same distance'], a:2 },
 
   { id:'L12',
     why: d => "Your table shows " + d.tallestC + " sent the car the farthest. The car started higher, so the car had more energy.", inv:'C',
@@ -105,7 +105,7 @@ window.ANALYSIS_Q = [
 
   { id:'L13',
     why: "You did not push, and the car and the wood stayed the same. Only the height of the ramp changed, so that made the difference.", inv:'C',
-    q:'In Investigation C the car and the surface never changed. You did not push the car at all &mdash; you let the car go. So what made the distances different?',
+    q:'In Investigation C the car and the surface never changed. You did not push the car at all &mdash; you let the car go. So what made the car travel different distances?',
     opts:['How tall the ramp was','How hard you pushed','The colour of the car','The surface'], a:0 },
 
   { id:'L14',
@@ -119,7 +119,7 @@ window.ANALYSIS_Q = [
     opts:['The car','The truck','The car and the truck went exactly the same','Neither the car nor the truck moved'], resolve: d => d.fartherD },
 
   { id:'L16',
-    why: "The truck is heavier. The truck has more mass. The same push cannot move something heavy as far. Think of pushing an empty shopping cart, then a full one.", inv:'D',
+    why: "The truck is heavier. The truck has more mass. The same push cannot move something heavy as far. Think of pushing an empty shopping cart, then a full shopping cart.", inv:'D',
     q:'The car and the truck got the exact same push. Why did the <b>truck</b> stop sooner?',
     opts:['The truck has more mass','The truck was on a rougher surface','The truck got a smaller push','The truck has no friction'], a:0 },
 
@@ -169,7 +169,7 @@ window.CLAIMS_Q = [
     optsFrom: d => [
       'On ' + d.farthestA.toLowerCase() + ' the cart rolled about ' + d.maxAvgA + ' cm, and the cart still stopped',
       'On ' + d.shortestA.toLowerCase() + ' the cart stopped after only ' + d.minAvgA + ' cm',
-      'The big push went farther than the small push',
+      'The big push sent the cart farther than the small push',
       'The truck did not go as far as the car'
     ],
     resolve: d => 'On ' + d.farthestA.toLowerCase() + ' the cart rolled about ' + d.maxAvgA + ' cm, and the cart still stopped' },
@@ -191,18 +191,18 @@ window.CLAIMS_Q = [
      period and the reading levels in front of him. */
   { id:'L29',
     why: d => "That is your claim: " + d.shortestA.toLowerCase() + " stopped the cart the soonest.", cer:'claim',
-    q:'Time to explain your Investigation A results. Start with your <b>claim</b>. ' +
+    q:'Time to explain what happened in Investigation A. Start with your <b>claim</b>. ' +
       'Which surface stopped the cart the soonest?',
     opts:['Ice','Wood','Carpet','Sand'], resolve: d => d.shortestA },
 
   { id:'L30',
-    why: "Those two numbers are your evidence. They show the biggest difference in your whole table.", cer:'evidence',
-    q:'Now the <b>evidence</b>. Which two numbers from <b>your own table</b> show your claim best?',
+    why: "Those two distances are your evidence. Those two distances show the biggest difference in your whole data table.", cer:'evidence',
+    q:'Now the <b>evidence</b>. Which two distances from <b>your own data table</b> show your claim best?',
     optsFrom: d => [
       'On ' + d.farthestA.toLowerCase() + ' the cart rolled ' + d.maxAvgA +
         ' cm, but on ' + d.shortestA.toLowerCase() + ' only ' + d.minAvgA + ' cm',
       'On ' + d.farthestA.toLowerCase() + ' the cart rolled ' + d.maxAvgA + ' cm',
-      'Every surface gave about the same number',
+      'The cart traveled about the same distance on every surface',
       'The truck did not go as far as the car'
     ],
     resolve: d => 'On ' + d.farthestA.toLowerCase() + ' the cart rolled ' + d.maxAvgA +
@@ -230,7 +230,7 @@ window.WHY_BANK = {
   D: 'Both got the same push, but friction slows the heavier truck down sooner'
 };
 window.WHY_DISTRACTORS = [
-  'The measuring went wrong, so the numbers in my table cannot be trusted',
+  'The measuring went wrong, so the distances in my data table cannot be trusted',
   'The result was luck. If I ran the test again the other answer would probably win',
   'Nothing explains the result. Sometimes science just does not make sense'
 ];
@@ -264,7 +264,7 @@ window.WRITTEN_Q = [
     wordbank:['friction', 'sand', 'ice', 'centimeters', 'surface', 'distance'],
     q:'Explain why the cart stopped much sooner on <b>sand</b> than on <b>ice</b>, even though you gave the cart the same push every time.',
     hints:['<b>Claim</b> &mdash; say which surface stopped the cart sooner.',
-           '<b>Evidence</b> &mdash; use two real numbers from your data table.',
+           '<b>Evidence</b> &mdash; use two real distances from your data table.',
            '<b>Reasoning</b> &mdash; use the word <i>friction</i> to explain why.'] }
 ];
 

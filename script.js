@@ -578,12 +578,12 @@ const DO_STEPS = {
   vq:       ['Read the question. Tap the speaker to hear the question read to you.',
              'Tap the answer you think is right.',
              'Press <b>Check my answer</b>.'],
-  analysis: ['Look at <b>your own table</b> on this screen. The numbers are yours.',
+  analysis: ['Look at <b>your own data table</b> on this screen. The distances are the ones you measured.',
              'Read the question, then find the answer in your table.',
              'Tap your answer, then press <b>Check my answer</b>.'],
   claims:   ['You are building one explanation out of three picks.',
              'First the <b>claim</b> — what you think is true.',
-             'Then the <b>evidence</b> — the numbers from your table.',
+             'Then the <b>evidence</b> — the distances from your data table.',
              'Then the <b>reasoning</b> — the reason why.'],
   exit:     ['Last few questions. Nothing new &mdash; same as before.',
              'Read the question, tap your answer, press <b>Check my answer</b>.']
@@ -596,7 +596,7 @@ function doStepsFor(phase) {
       return ['Read what this test changes.', 'Make your guess. A guess is never marked wrong.',
               'Press <b>Lock in my prediction</b>.'];
     if (m[1] === 'run') return (inv && inv.doSteps) || null;
-    return ['Look at the bars. A longer bar means a longer distance.',
+    return ['Look at the bars. A longer bar means ' + moverOf(inv.runs[0]) + ' traveled farther.',
             'Read what the page says about your guess.', 'Press <b>Next</b> to keep going.'];
   }
   return DO_STEPS[phase] || null;
@@ -664,7 +664,7 @@ const RAIL = [
   { key:'invA',  n:'Day 1', l:'Surfaces',phases:['predictA','runA','graphA'] },
   { key:'invB',  n:'Day 1', l:'Push',    phases:['predictB','runB','graphB','daygate'] },
   { key:'invC',  n:'Day 2', l:'Ramp',    phases:['predictC','runC','graphC'] },
-  { key:'invD',  n:'Day 2', l:'Weight',  phases:['predictD','runD','graphD'] },
+  { key:'invD',  n:'Day 2', l:'Truck',   phases:['predictD','runD','graphD'] },
   { key:'anal',  n:'Day 2', l:'Analyze', phases:['analysis'] },
   { key:'write', n:'Day 2', l:'Explain', phases:['claims','write'] },
   { key:'exit',  n:'Day 2', l:'Exit',    phases:['exit','end'] }
@@ -713,7 +713,7 @@ const app = {
       predictA:'Surfaces predict', runA:'Surfaces runs', graphA:'Surfaces graph',
       predictB:'Push predict',     runB:'Push runs',     graphB:'Push graph',
       predictC:'Ramp predict',     runC:'Ramp runs',     graphC:'Ramp graph',
-      predictD:'Weight predict',   runD:'Weight runs',   graphD:'Weight graph',
+      predictD:'Truck predict',    runD:'Truck runs',    graphD:'Truck graph',
       analysis:'Analyze data', claims:'Claim and evidence', write:'Explain',
       daygate:'End of Day 1', exit:'Exit ticket', end:'Done' };
     return m[this.phase] || this.phase;
@@ -1137,7 +1137,7 @@ const INV_NAME = { A:'Investigation A (the surfaces)', B:'Investigation B (how h
 function adaptiveTarget() {
   const miss = missedPredictions();
   if (miss.length) return { inv:miss[0].inv, said:miss[0].said, got:miss[0].got, missed:true };
-  return { inv:'D', said:stripTags(app.predictions.D || ''), got:labSummary().fartherD + ' went farther', missed:false };
+  return { inv:'D', said:stripTags(app.predictions.D || ''), got:lowerFirst(labSummary().fartherD) + ' traveled farther', missed:false };
 }
 function adaptiveStem() {
   const t = adaptiveTarget();
@@ -1365,7 +1365,9 @@ function drawTrack(run, cartCm, travelledCm) {
   for (let m = 0; m <= 9; m++) {
     const x = X0 + m * 100 * CM_PX(run);
     g.beginPath(); g.moveTo(x, TRACK.y - 9); g.lineTo(x, TRACK.y); g.stroke();
-    if (m > 0) g.fillText(m + ' m', x - 14, TRACK.y - 14);   /* 0 is the START line */
+    /* centimeters, the unit the readout and the data table use. The marks
+       said "1 m" to "9 m" beside a readout in cm: two units, never explained. */
+    if (m > 0) g.fillText((m * 100) + ' cm', x - 27, TRACK.y - 14);   /* 0 is the START line */
   }
 
   /* start line */
@@ -1426,7 +1428,7 @@ function drawTrack(run, cartCm, travelledCm) {
   /* The track is the lesson. Keep a spoken equivalent on it so a student using a
      screen reader gets the same information as one watching the cart. */
   c.setAttribute('aria-label',
-    'Track 9 meters long. Surface: ' + stripTags(s.name) + ', ' + s.note + '. ' +
+    'Track 900 centimeters long. Surface: ' + stripTags(s.name) + ', ' + s.note + '. ' +
     (run.ramp ? 'Ramp of ' + LAB.ramps[run.ramp].name + ' at the start. ' : '') +
     (run.vehicle ? 'Vehicle: ' + LAB.vehicles[run.vehicle].name + '. ' : '') +
     (cartCm > 0 ? 'The cart is ' + Math.round(cartCm) + ' centimeters from the start.'
@@ -1520,6 +1522,21 @@ function renderRun(invKey) {
   attachSpeakers(document.getElementById('run-card'));
 }
 
+/* WHAT moved, by name, for every sentence about a push. Tests 1 and 2 push a
+   cart, Test 3 rolls a car down a ramp, Test 4 pushes a car and then a truck.
+   Marcos 10/10: "the distance the cart traveled. Be more specific in what is
+   happening." */
+function moverOf(run) {
+  if (run && run.vehicle) return 'the ' + stripTags(LAB.vehicles[run.vehicle].name).toLowerCase();
+  return run && run.ramp ? 'the car' : 'the cart';
+}
+const lowerFirst = t => String(t || '').replace(/^[A-Z]/, c => c.toLowerCase());
+/* The readout beside the button: a sentence, not the label "Distance:". */
+function traveledText(run, cm, stopped) {
+  const who = moverOf(run).replace(/^t/, 'T');
+  return who + (stopped ? ' traveled ' : ' has traveled ') + cm + ' cm';
+}
+
 /* Every piece of one push, in a child's words. Used three ways: the strip
    above the track (short), the "new this time" card (full, heard once), and
    the Stuck? panel (full, any time). */
@@ -1534,7 +1551,7 @@ function setupBits(run) {
       full:(r.note || '') + '. You let the car go. You do not push the car.' }); }
   if (run.vehicle) { const v = LAB.vehicles[run.vehicle];
     bits.push({ key:'vehicle:' + run.vehicle, kind:'vehicle', pic:art(INV_ART.D, 'swatch'),
-      name:stripTags(v.name), short:v.note || '', full:v.note || '' }); }
+      name:stripTags(v.name), short:v.note || '', full:(v.note || '') + (v.ex ? ' &mdash; ' + v.ex : '') }); }
   if (run.push && !run.ramp) { const pu = LAB.pushes[run.push];
     bits.push({ key:'push:' + run.push, kind:'push', pic:art(INV_ART.B, 'swatch'),
       name:stripTags(pu.name), short:'', arrows:pu.arrows, full:pu.note || '' }); }
@@ -1609,9 +1626,9 @@ function paintRun(invKey) {
   if (done) {
     renderTable(invKey, [just]);
     strip.innerHTML = ''; fresh.innerHTML = '';
-    tnote.innerHTML = '<b>Your table is full.</b> All ' + total + ' ' +
-      (inv.runNoun ? inv.runNoun.toLowerCase() + 's' : 'pushes') + ' are in your table. Now look at what your numbers say.';
-    read.textContent = 'Table complete';
+    tnote.innerHTML = '<b>Your data table is full.</b> All ' + total + ' ' +
+      (inv.runNoun ? inv.runNoun.toLowerCase() + 's' : 'pushes') + ' are in your data table. Now look at what the distances tell you.';
+    read.textContent = 'Your data table is full';
     runBtn.classList.add('hidden'); recBtn.classList.add('hidden');
     doneBtn.classList.remove('hidden');
     doneBtn.onclick = () => app.next();
@@ -1640,8 +1657,8 @@ function paintRun(invKey) {
       '<span class="schip">' + b.pic + '<b>' + b.name + '</b>' + (b.short ? ' &mdash; ' + b.short : '') +
       (b.arrows ? ' <span data-noread aria-hidden="true">' + b.arrows + '</span>' : '') + '</span>').join('') +
     (nTrials > 1 ? '<span class="schip try">' + (run.trial === 1
-        ? 'Try 1 of ' + nTrials
-        : 'Try ' + run.trial + ' of ' + nTrials + ' &mdash; the same again, to be sure') + '</span>' : '');
+        ? 'Trial 1 of ' + nTrials
+        : 'Trial ' + run.trial + ' of ' + nTrials + ' &mdash; the same again, to be sure') + '</span>' : '');
 
   /* NEW THIS TIME — the full explanation, with its example, the first time a
      thing appears. It has to be heard (guide.js) before the button exists,
@@ -1667,13 +1684,13 @@ function paintRun(invKey) {
 
   if (landed) {
     const cm = app.lastRun.cm;
-    read.textContent = 'Distance: ' + cm + ' cm';
+    read.textContent = traveledText(run, cm, true);
     /* Say what just happened, in a sentence, and say what to do next. The
        number is on the button and the box it will land in is glowing. */
-    tnote.innerHTML = '<b>' + noun + ' ' + (i + 1) + ' went ' + cm + ' cm.</b> ' +
-      'That number is not in your table yet. Press the button and ' + cm + ' drops into the <b>glowing box</b>.';
+    tnote.innerHTML = '<b>On ' + noun.toLowerCase() + ' ' + (i + 1) + ' ' + moverOf(run) + ' traveled ' + cm + ' cm.</b> ' +
+      'That distance is not in your data table yet. Press the button and ' + cm + ' cm drops into the <b>glowing box</b>.';
     runBtn.classList.add('hidden');
-    recBtn.innerHTML = '&#11015; Write ' + cm + ' in my table';
+    recBtn.innerHTML = '&#11015; Write ' + cm + ' cm in my table';
     recBtn.classList.remove('hidden');
     recBtn.onclick = () => {
       /* keep every setting of the run, or ramp and vehicle rows never match
@@ -1689,8 +1706,8 @@ function paintRun(invKey) {
       paintRun(invKey);
     };
   } else {
-    read.textContent = 'Distance: —';
-    tnote.innerHTML = 'The <b>glowing box</b> is where this ' + noun.toLowerCase() + ' goes.';
+    read.textContent = traveledText(run, 0, false);
+    tnote.innerHTML = 'The <b>glowing box</b> is where you will write how far ' + moverOf(run) + ' travels on this ' + noun.toLowerCase() + '.';
     recBtn.classList.add('hidden');
     runBtn.classList.remove('hidden');
     runBtn.disabled = false;
@@ -1699,7 +1716,7 @@ function paintRun(invKey) {
       const cm = distanceCm(run, true);
       animateRun(run, cm, () => {
         app.lastRun = { index:i, cm:cm };
-        read.textContent = 'Distance: ' + cm + ' cm';
+        read.textContent = traveledText(run, cm, true);
         runBtn.classList.add('hidden');
         paintRun(invKey);
       });
@@ -1735,7 +1752,7 @@ function animateRun(run, cm, done) {
     clearTimeout(app._runGuard); app._runGuard = null;
     app._runPending = null;
     drawTrack(run, cm, cm);
-    read.textContent = 'Distance: ' + cm + ' cm';
+    read.textContent = traveledText(run, cm, true);
     done();
   }
   app._runPending = finish;
@@ -1748,7 +1765,7 @@ function animateRun(run, cm, done) {
     const tau = Math.min(1, (now - t0) / dur);
     const x = cm * (2 * tau - tau * tau);                 /* x = d(2τ − τ²) under constant friction */
     drawTrack(run, x, x);
-    read.textContent = 'Distance: ' + Math.round(x) + ' cm';
+    read.textContent = traveledText(run, Math.round(x), false);
     if (tau < 1) requestAnimationFrame(frame);
     else finish();
   })(t0);
@@ -1770,7 +1787,7 @@ const INV_COLUMNS = {
        b:r => LAB.pushes[r.push].name },
   B: { first:'Push',    second:'Surface', a:r => LAB.pushes[r.push].name,      b:r => LAB.surfaces[r.surface].name },
   C: { first:'Ramp',    second:'Surface', a:r => LAB.ramps[r.ramp].name,       b:r => LAB.surfaces[r.surface].name },
-  D: { first:'Vehicle', second:'Push',    a:r => LAB.vehicles[r.vehicle].name, b:r => LAB.pushes[r.push].name }
+  D: { first:'Car or truck', second:'Push',    a:r => LAB.vehicles[r.vehicle].name, b:r => LAB.pushes[r.push].name }
 };
 const runKey = r => [r.surface, r.push || '', r.ramp || '', r.vehicle || ''].join('|');
 
@@ -1877,10 +1894,10 @@ function renderGraph(invKey) {
   document.getElementById('gr-eyebrow').innerHTML = inv.label + ' results';
   document.getElementById('gr-head').innerHTML = 'What my data looks like';
   const LEAD = {
-    A: 'Each bar is the average of your two trials on that surface. The push was the same every time.',
-    B: 'Each bar is the average of your two pushes at that strength. The surface was wood every time.',
-    C: 'Each bar is the average of your two runs from that ramp. You never pushed the car — you let the car go.',
-    D: 'Each bar is the average of your two pushes for that vehicle. The car and the truck got the very same push, on wood.'
+    A: 'Each bar shows how far the cart traveled on that surface. The bar is the average of your two trials. The push was the same every time.',
+    B: 'Each bar shows how far the cart traveled with that push. The bar is the average of your two trials. The surface was wood every time.',
+    C: 'Each bar shows how far the car traveled from that ramp. The bar is the average of your two trials. You never pushed the car — you let the car go.',
+    D: 'Each bar shows how far the car or the truck traveled. The bar is the average of your two trials. The car and the truck got the very same push, on wood.'
   };
   document.getElementById('gr-lead').innerHTML = LEAD[invKey];
 
@@ -1909,24 +1926,24 @@ function renderGraph(invKey) {
   if (invKey === 'A') {
     const win = labSummary().farthestA;
     const hit = stripTags(pred).toLowerCase() === win.toLowerCase();
-    box.innerHTML = said + 'Your data says <b>' + win + '</b> went the farthest. ' +
+    box.innerHTML = said + 'Your data says the cart traveled the farthest on <b>' + win.toLowerCase() + '</b>. ' +
       (hit ? 'Your prediction matched your data.' :
              'Your prediction did not match — and that is fine. Scientists learn the most from the predictions that miss.');
   } else if (invKey === 'B') {
-    box.innerHTML = said + 'Your data shows the distance went from <b>' + vals[0] +
-      ' cm</b> with the small push to <b>' + vals[vals.length - 1] + ' cm</b> with the big push — so a bigger force ' +
+    box.innerHTML = said + 'Your data shows the cart traveled <b>' + vals[0] +
+      ' cm</b> with the small push and <b>' + vals[vals.length - 1] + ' cm</b> with the big push — so a bigger push ' +
       (rose ? 'moved the cart farther.' : 'did not move the cart farther, which is worth telling Mr. O about.');
   } else if (invKey === 'C') {
-    box.innerHTML = said + 'Your data goes from <b>' + vals[0] + ' cm</b> off the shortest ramp to <b>' +
-      vals[vals.length - 1] + ' cm</b> off the tallest — so a taller ramp ' +
+    box.innerHTML = said + 'Your data shows the car traveled <b>' + vals[0] + ' cm</b> from the shortest ramp and <b>' +
+      vals[vals.length - 1] + ' cm</b> from the tallest ramp — so a taller ramp ' +
       (rose ? 'sent the car farther. Starting higher up gave the car more energy.'
             : 'did not send the car farther, which is worth telling Mr. O about.');
   } else {
     const win = labSummary().fartherD;
     const hit = stripTags(pred).toLowerCase() === win.toLowerCase();
-    box.innerHTML = said + 'Your data says <b>' + win + '</b> went farther on the very same push. ' +
+    box.innerHTML = said + 'Your data says <b>' + lowerFirst(win) + '</b> traveled farther with the very same push. ' +
       (hit ? 'Your prediction matched your data.'
-           : 'Your prediction did not match — and that is worth knowing. The heavier vehicle keeps less of the push.');
+           : 'Your prediction did not match — and that is worth knowing. The heavy truck has more mass, so the truck does not travel as far as the car with the same push.');
   }
 
 
@@ -1952,13 +1969,13 @@ function missedPredictions() {
   const grew = k => { const v = groupsFor(k).map(g => cellsFor(k, g).avg || 0);
                       return v.length >= 2 && v[v.length - 1] > v[0]; };
   if (app.data.A.length && say('A').toLowerCase() !== d.farthestA.toLowerCase())
-    out.push({ inv:'A', name:'Investigation A (the surfaces)', said:say('A'), got:d.farthestA + ' went the farthest' });
+    out.push({ inv:'A', name:'Investigation A (the surfaces)', said:say('A'), got:'the cart traveled the farthest on ' + d.farthestA.toLowerCase() });
   if (app.data.B.length && say('B') && !/farther/i.test(say('B')) && grew('B'))
-    out.push({ inv:'B', name:'Investigation B (how hard the push)', said:say('B'), got:'a bigger push went farther' });
+    out.push({ inv:'B', name:'Investigation B (how hard the push)', said:say('B'), got:'a bigger push sent the cart farther' });
   if (app.data.C.length && say('C') && !/farther/i.test(say('C')) && grew('C'))
-    out.push({ inv:'C', name:'Investigation C (how tall the ramp)', said:say('C'), got:'a taller ramp went farther' });
+    out.push({ inv:'C', name:'Investigation C (how tall the ramp)', said:say('C'), got:'a taller ramp sent the car farther' });
   if (app.data.D.length && say('D').toLowerCase() !== d.fartherD.toLowerCase())
-    out.push({ inv:'D', name:'Investigation D (car against truck)', said:say('D'), got:d.fartherD + ' went farther' });
+    out.push({ inv:'D', name:'Investigation D (car against truck)', said:say('D'), got:lowerFirst(d.fartherD) + ' traveled farther' });
   return out;
 }
 
@@ -2122,7 +2139,7 @@ function finish() {
 
   document.getElementById('end-lead').innerHTML =
     'You ran <b>' + (app.data.A.length + app.data.B.length) + ' pushes</b>, filled two data tables, ' +
-    'and used your own numbers to explain what stops a moving object. Mr. O can see all of your work.';
+    'and used the distances you measured to explain what stops a moving object. Mr. O can see all of your work.';
 
   document.getElementById('end-scores').innerHTML = [
     ['' + app.score + '/' + total, 'Questions right'],

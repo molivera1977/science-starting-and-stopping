@@ -31,6 +31,8 @@
      C16 on a guided page a heading is read with its step, with no speaker
          of its own
      C17 student text names the thing and does not say "it"
+     C18 every science word a student meets is explained somewhere
+     C19 student text says what was measured, not "your number"
    It also lists how many words each screen asks a student to take in, and
    how many words each guided screen makes them listen to.
 
@@ -195,12 +197,19 @@
      cannot carry "it" back to the noun, so student text says the noun again.
      Two phrases use "it" with nothing to point back to and are allowed. */
   const IT_OK = [/it is hard to run on sand/gi, /what it means to need energy/gi];
-  const vague = {};
+  const vague = {}, bareNumber = {};
+  let corpus = '';
   const lintIt = (text, where) => {
     let t = String(text || '').replace(/<[^>]+>/g, ' ').replace(/&\w+;/g, ' ');
+    corpus += ' ' + t;
     IT_OK.forEach(rx => { t = t.replace(rx, ''); });
     const m = /(?:\S+\s+){0,4}\b[Ii]t(?:'s)?\b(?:\s+\S+){0,3}/.exec(t);
     if (m) vague[m[0].trim().slice(0, 60)] = where;
+    /* C19 — say WHAT was measured. Marcos 10/10: "the distance the cart
+       traveled. Be more specific in what is happening." "Your number" and
+       "the numbers" do not say what the number is a number OF. */
+    const n = /(?:\S+\s+){0,3}\b(?:your|the|that|those|these|two|own|real) numbers?\b(?:\s+\S+){0,3}/i.exec(t);
+    if (n) bareNumber[n[0].trim().slice(0, 60)] = where;
   };
   /* every sentence the lesson keeps as data, whether or not a preview stop
      happens to show it */
@@ -353,6 +362,31 @@
   const vagueList = Object.keys(vague);
   rec('C17', 'Student text names the thing and does not say "it"', vagueList.length === 0,
       vagueList.length + ' found. ' + vagueList.slice(0, 6).map(k => '"' + k + '" (' + vague[k] + ')').join(' | '));
+  const bareList = Object.keys(bareNumber);
+  rec('C19', 'Student text says what was measured, not "your number"', bareList.length === 0,
+      bareList.length + ' found. ' + bareList.slice(0, 6).map(k => '"' + k + '" (' + bareNumber[k] + ')').join(' | '));
+
+  /* C18 — a science word is explained before a student is asked to use it.
+     Marcos 10/10: "was mass really discussed? It shows in the experiments yet
+     it was not mentioned in the lead up." It was not: "mass" was the right
+     answer to a scored question and nothing defined it. Every word below
+     that appears anywhere in student text must be one of the six words, or
+     in the Stuck? panel's word list. */
+  const WATCH = { mass:/\bmass\b/i, vehicle:/\bvehicles?\b/i, object:/\bobjects?\b/i,
+    centimeter:/\bcentimeters?\b|\bcm\b/i, meter:/\bmeters?\b|\b\d+ m\b/i, gravity:/\bgravity\b/i,
+    friction:/\bfriction\b/i, force:/\bforces?\b/i, energy:/\benergy\b/i, motion:/\bmotion\b/i,
+    surface:/\bsurfaces?\b/i, distance:/\bdistances?\b/i, average:/\baverages?\b/i,
+    investigation:/\binvestigations?\b/i, predict:/\bpredict\w*/i, evidence:/\bevidence\b/i,
+    claim:/\bclaims?\b/i, reasoning:/\breasoning\b/i, trial:/\btrials?\b/i, setup:/\bsetups?\b/i,
+    ramp:/\bramps?\b/i, track:/\btrack\b/i, cart:/\bcarts?\b/i, data:/\bdata\b/i,
+    unbalanced:/\bunbalanced\b/i, magnetism:/\bmagnetism\b/i, 'from rest':/\bfrom rest\b/i };
+  const taught = LESSON.vocab.map(v => v.word).concat(Object.keys(window.THING_WORDS || {}), Object.keys(window.METHOD_WORDS || {}))
+    .map(w => w.toLowerCase());
+  const isTaught = w => taught.some(k => k === w || k.split(' ').indexOf(w) !== -1 || k.indexOf(w) === 0 || w.indexOf(k) === 0);
+  const untaught = Object.keys(WATCH).filter(w => WATCH[w].test(corpus) && !isTaught(w));
+  rec('C18', 'Every science word a student meets is explained somewhere', untaught.length === 0,
+      'used but never explained: ' + untaught.join(', '));
+
   rec('C12', 'Every question has its own feedback (' + bank.length + ' questions)',
       !empty.length && !dupes.length, (empty.length ? 'none: ' + empty.join(' ') + '. ' : '') + (dupes.length ? 'same as another: ' + dupes.join(' ') : ''));
 

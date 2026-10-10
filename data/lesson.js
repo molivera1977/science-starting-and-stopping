@@ -41,12 +41,16 @@ window.RECAP = {
     now: 'Next, you get to <b>test these ideas yourself</b>.'
   },
   day2: {
-    lead: 'Mr. O just showed you the two new tests. Here are the two tests again.',
+    lead: 'Mr. O just showed you two new tests and one new word. Here are all three again.',
     items: [
       { t: 'The <b>ramp</b> test &mdash; you change how tall the ramp is.',
-        d: 'You do NOT push the car. You let the car go at the top and gravity does the rest.' },
-      { t: 'The <b>truck</b> test &mdash; you change which one you push.',
-        d: 'The truck is heavier than the car. Both get the very same push.' }
+        d: 'You do NOT push the car. You let the car go at the top and gravity pulls the car down the ramp.' },
+      { t: 'The <b>truck</b> test &mdash; you change what you push: a car, then a truck.',
+        d: 'The truck is heavier than the car. The car and the truck get the very same push.' },
+      /* 'mass' is the correct answer to the truck question and was taught
+         nowhere. Marcos 10/10: "was mass really discussed?" It was not. */
+      { t: 'The new word is <b>mass</b>. Mass is how much stuff a thing is made of.',
+        d: 'Think of an empty backpack and a full backpack. The full backpack has more mass. The truck has more mass than the car.' }
     ],
     now: 'Every test still changes <b>one thing only</b>. That is what makes the test fair.'
   }
@@ -68,12 +72,12 @@ window.THING_WORDS = {
                 'and you keep the push exactly the same. That is one investigation. ' +
                 'This lesson has four of them.' },
   'data table':
-          { def: 'the boxes where you write your numbers down',
-            ex: 'Like a chart with rows and columns. Every time the cart stops you write ' +
-                'that number in a box. By the end the table is full, and the numbers in the table ' +
+          { def: 'the boxes where you write down how far the cart traveled',
+            ex: 'Like a chart with rows and columns. Every time the cart stops, you write ' +
+                'the distance the cart traveled in a box. By the end the table is full, and the distances in the table ' +
                 'are what you use to answer the questions.' },
   distance:
-          { def: 'how far something went',
+          { def: 'how far something traveled',
             ex: 'From where the cart started to where the cart stopped. You measure distance in ' +
                 'centimeters. 500 cm is about as long as three desks in a row. ' +
                 '50 cm is about the length of your arm.' },
@@ -86,6 +90,16 @@ window.THING_WORDS = {
                 'On your screen the cart is the small box with two wheels.' },
   track:  { def: 'the long straight path the cart rolls down',
             ex: 'Like a bowling lane, or a hallway, or the lines on a running track.' },
+  /* Added 10/10 from an audit of words used against words explained. */
+  object: { def: 'a thing',
+            ex: 'A ball. A cart. A book. A truck. Anything you can touch and move is an object.' },
+  mass:   { def: 'how much stuff a thing is made of',
+            ex: 'An empty backpack and a full backpack. The full backpack has more mass, so the full ' +
+                'backpack is heavier and harder to push. A truck has more mass than a car.' },
+  centimeter:
+          { def: 'a small unit for measuring how long something is. The short way to write centimeter is cm',
+            ex: 'Your fingernail is about 1 centimeter wide. A new pencil is about 19 centimeters long. ' +
+                'One big step is about 100 centimeters. The marks on the track count centimeters: 100, 200, 300.' },
   ramp:   { def: 'a slope that something rolls down',
             ex: 'A slide at the park. A wheelchair ramp. A skateboard ramp. ' +
                 'A piece of cardboard with one end up on some books.' }
@@ -96,7 +110,7 @@ window.THING_WORDS = {
 window.WHY_REPEAT =
   'You do every setup <b>twice</b>. Why? Because one try can go wrong &mdash; maybe your hand ' +
   'slipped, or you pushed a little harder without meaning to. Doing each setup twice lets you catch a mistake, ' +
-  'and the middle of the two numbers is closer to the truth. Scientists never trust one try.';
+  'and the middle of the two distances is closer to the truth. Scientists never trust one try.';
 
 /* ══════════════════════════════════════════════════════
    THE PLAN — what used to be one eight-sentence paragraph
@@ -120,9 +134,9 @@ window.INTRO_PLAN = {
         d: 'Push a car and a heavy truck the same way. Does the car or the truck go farther?' } ] }
   ],
   every: [
-    { art: 'distance',      t: 'Measure the distance', d: 'See how far the cart went, in centimeters.' },
-    { art: 'data table',    t: 'Write the number down', d: 'Put the number in your data table.' },
-    { art: 'investigation', t: 'Explain why',     d: 'Use your own numbers to say why the cart stopped.' }
+    { art: 'distance',      t: 'Measure the distance the cart traveled', d: 'See how far the cart traveled from START, in centimeters.' },
+    { art: 'data table',    t: 'Write the distance in your data table', d: 'Put the distance the cart traveled in a box in your data table.' },
+    { art: 'investigation', t: 'Explain why the cart stopped', d: 'Use the distances in your own data table to say why the cart stopped.' }
   ],
   calm: 'Take your time. This takes two days. Good scientists test more than once.'
 };
@@ -165,7 +179,7 @@ window.CART_INTRO = [
   { art: 'why',      t: 'Why use a cart?',
     d: 'A cart rolls easily. So you can see exactly what slows the cart down and stops the cart.' },
   { art: 'distance', t: 'Watch where the cart stops',
-    d: 'Every time, a number shows how far the cart went. That number is in centimeters.' }
+    d: 'Every time, a number shows the distance the cart traveled. That distance is in centimeters.' }
 ];
 
 window.METHOD_WORDS = {
@@ -174,11 +188,11 @@ window.METHOD_WORDS = {
             'surface. Here is why. One push can go wrong &mdash; maybe your hand slipped, or you ' +
             'pushed a tiny bit harder without meaning to. If you only pushed once you would never ' +
             'know. Pushing twice lets you catch a mistake. Real scientists never trust one try either.',
-  average:  'The <b>average</b> is the middle of your two trials. Add the two numbers together, ' +
-            'then cut that number in half.<br><br>The average is fairer than picking one number. If one push went a ' +
-            'bit far and one went a bit short, the middle is closer to the truth than either one.',
+  average:  'The <b>average</b> is the middle of your two trials. Add the two distances together, ' +
+            'then cut that total in half.<br><br>The average is fairer than picking one distance. If one push sent the cart a ' +
+            'bit far and one push sent the cart a bit short, the middle is closer to the truth than either distance.',
   claim:    'A <b>claim</b> is what you think is true.',
-  evidence: '<b>Evidence</b> is the numbers from your table that show your claim is true.',
+  evidence: '<b>Evidence</b> is the distances from your data table that show your claim is true.',
   reasoning:'<b>Reasoning</b> is the reason why your claim is true.'
 };
 
@@ -199,7 +213,7 @@ window.LESSON = {
     'tell what makes a thing start moving and what makes a thing stop.',
     'use my data to say why one surface let the cart go farther.',
     'show that a bigger push sends the cart farther.',
-    'use numbers from my table to back up what I say.'
+    'use the distances in my data table to back up what I say.'
   ],
 
   icanDistrict: [
@@ -217,7 +231,7 @@ window.LESSON = {
      a pacing document lists it. Marcos asked for it 10/9/2026. */
   vocab: [
     { word: 'force',    es: 'fuerza',     def: 'a push or a pull on an object',
-      ex: 'Pushing a shopping cart at the store. Pulling the classroom door open. Kicking a ball. Dragging your backpack across the floor. Every single one of those is you making something move or stop. That is what a force does.' },
+      ex: 'An object is any thing you can touch: a ball, a door, a backpack. Pushing a shopping cart at the store. Pulling the classroom door open. Kicking a ball. Dragging your backpack across the floor. Every single one of those is you making something move or stop. That is what a force does.' },
     { word: 'friction', es: 'resistencia',def: 'a force that pushes back on a moving object and slows the object down',
       ex: 'Your sneakers gripping the gym floor so you do not slip. Rubbing your hands together to get warm. A bike slowing down after you stop pedalling. Why it is hard to run on sand. In every one of those, something is rubbing and that rubbing is slowing things down. The rubbing is the friction.' },
     { word: 'motion',   es: '&mdash;',    def: 'when an object changes position',
@@ -285,7 +299,7 @@ window.LAB = {
       'The site sets up each push for you. Read the tags above the track.',
       'Press <b>Push the cart</b>.',
       'Watch where the cart stops.',
-      'Press the <b>Write in my table</b> button. Your number drops into the glowing box.',
+      'Press the <b>Write in my table</b> button. The distance the cart traveled drops into the glowing box.',
       'Do that 8 times. Then your table is full.'
     ],
     runs: [
@@ -318,9 +332,11 @@ window.LAB = {
          d = W / (µ m g)   — twice the mass, half the distance.
      Mass is relative to the car, which is 1. */
   vehicles: {
-    car:   { name: 'Car',   mass: 1,   emoji: '\u{1F697}', note: 'the car is light' },
-    truck: { name: 'Truck', mass: 2.5, emoji: '\u{1F69B}',
-             note: 'the truck is heavy \u2014 the truck has more mass' }
+    car:   { name: 'Car',   mass: 1,   emoji: '\u{1F697}', note: 'the car is light',
+             ex: 'A light thing has only a little mass. Mass is how much stuff a thing is made of.' },
+    truck: { name: 'Truck', mass: 2.5, emoji: '\u{1F69B}', note: 'the truck is heavy',
+             ex: 'A heavy thing has a lot of mass. Think of an empty backpack and a full backpack. ' +
+                 'The full backpack has more mass, so the full backpack is harder to push.' }
   },
 
   /* Investigation B — same surface every time, three different pushes.
@@ -337,16 +353,16 @@ window.LAB = {
     changeLabel: 'What we change:',
     changeValue: 'how hard we push',
     doCount: '6 pushes',
-    doWhy:   'Three sizes of push. You do each size twice, so you can check your number.',
+    doWhy:   'Three sizes of push. You do each size twice, so you can check how far the cart traveled.',
     doSteps: [
       'The site sets up each push for you. Read the tags above the track.',
       'Press <b>Push the cart</b>.',
       'Watch where the cart stops.',
-      'Press the <b>Write in my table</b> button. Your number drops into the glowing box.',
+      'Press the <b>Write in my table</b> button. The distance the cart traveled drops into the glowing box.',
       'Do that 6 times. Then your table is full.'
     ],
-    predictQ: 'Before you test &mdash; what will happen to the distance when the push gets BIGGER?',
-    predictOpts: ['The cart will roll farther', 'The cart will roll a shorter way', 'The distance will stay the same', 'The cart will not move at all'],
+    predictQ: 'Before you test &mdash; what will happen to the distance the cart travels when the push gets BIGGER?',
+    predictOpts: ['The cart will roll farther', 'The cart will roll a shorter way', 'The cart will roll the same distance', 'The cart will not move at all'],
     /* Two trials, like every investigation. A single push cannot be checked,
        and averaging is the habit the lesson is teaching. */
     runs: [
@@ -367,7 +383,7 @@ window.LAB = {
     label: 'Investigation C',
     heading: 'Same car, different ramp heights',
     headingPlain: 'That means the same car on the same wood every time. The only thing that changes is how tall the ramp is.',
-    question: 'If the car always starts from rest, does a taller ramp send the car farther?',
+    question: 'If nobody pushes the car, does a taller ramp send the car farther?',
     sameLabel: 'Car and surface stay the same:',
     sameValue: 'The same car, on wood',
     changeLabel: 'What we change:',
@@ -375,7 +391,7 @@ window.LAB = {
     runVerb: '&#9660; Let the car go',
     runNoun: 'Run',
     doCount: '6 runs',
-    doWhy:   'Three ramps. You use each ramp twice, so you can check your number.',
+    doWhy:   'Three ramps. You use each ramp twice, so you can check how far the car traveled.',
     /* The "you do not push" line is first and said twice, because in A and B
        they pushed every time and the habit carries over. */
     doSteps: [
@@ -383,11 +399,11 @@ window.LAB = {
       'The site sets up each ramp for you. Read the tags above the track.',
       'Press <b>Let the car go</b>.',
       'Watch where the car stops.',
-      'Press the <b>Write in my table</b> button. Your number drops into the glowing box.',
+      'Press the <b>Write in my table</b> button. The distance the car traveled drops into the glowing box.',
       'Do that 6 times. Remember: no pushing.'
     ],
     predictQ: 'Before you test &mdash; what happens when the ramp gets TALLER?',
-    predictOpts: ['The car rolls farther', 'The car rolls a shorter way', 'The distance stays the same', 'The car rolls backwards'],
+    predictOpts: ['The car rolls farther', 'The car rolls a shorter way', 'The car rolls the same distance', 'The car rolls backwards'],
     runs: [
       { surface: 'wood', ramp: 'low',  trial: 1 },
       { surface: 'wood', ramp: 'low',  trial: 2 },
@@ -404,19 +420,19 @@ window.LAB = {
     id: 'D',
     label: 'Investigation D',
     heading: 'Same push, car against truck',
-    headingPlain: 'That means the same push on the same wood every time. The only thing that changes is whether you push the car or the truck.',
-    question: 'If the push is exactly the same, does a heavier vehicle travel as far?',
+    headingPlain: 'That means the same push on the same wood every time. The only thing that changes is whether you push the car or the truck. The truck has more mass than the car. Mass is how much stuff a thing is made of.',
+    question: 'If the push is exactly the same, does the heavy truck travel as far as the light car?',
     sameLabel: 'Push and surface stay the same:',
     sameValue: 'Medium push, on wood',
     changeLabel: 'What we change:',
-    changeValue: 'how heavy the vehicle is',
+    changeValue: 'the mass: a light car, then a heavy truck',
     doCount: '4 pushes',
     doWhy:   'The car twice, then the truck twice. Every push is the same size.',
     doSteps: [
       'The site sets up each push for you. Read the tags above the track.',
       'Press <b>Push the car</b> or <b>Push the truck</b>.',
       'Watch where the car or the truck stops.',
-      'Press the <b>Write in my table</b> button. Your number drops into the glowing box.',
+      'Press the <b>Write in my table</b> button. The distance the car or the truck traveled drops into the glowing box.',
       'Do that 4 times. Then your table is full.'
     ],
     predictQ: 'Before you test &mdash; does the car or the truck go FARTHER with the very same push?',
