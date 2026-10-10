@@ -37,6 +37,14 @@
      C20 a label is read with the line under it, on every screen
      C21 after every Listen the next thing to press is on screen, clear of
          the pinned help bar
+     C22 after every push the helper says something (with a speaker), and
+         the button and the glowing box of the table are on screen; on a
+         Chromebook-size window the cart is on screen with them
+     C23 no screen is wider than the window (no sideways scroll)
+     C24 a lesson saved when each setup had a different number of pushes is
+         made to fit: pushes that no longer line up are dropped and the
+         student goes back to the first test that is not full; a save that
+         already fits is left exactly as it is
    It also lists how many words each screen asks a student to take in, and
    how many words each guided screen makes them listen to.
 
@@ -198,7 +206,7 @@
     await jump(stops.findIndex(s => s.phase === ph));
     const [rootId, afterId] = GATED(ph);
     await gateCheck(ph, document.getElementById(rootId), document.getElementById(afterId));
-    if (ph === 'daygate') {
+    if (/^daygate/.test(ph)) {
       document.getElementById('dg-next').click(); await wait(200);
       await gateCheck('day 2 recap', document.getElementById('dg-recap'), document.getElementById('dg-go'));
     }
@@ -213,6 +221,7 @@
 
   const phaseBad = [], uncovered = [], noSpeaker = [], noLight = [], words = [], tiny = {};
   const cover = {}, lockedInPreview = [], apart = [], loose = [], flow = [];
+  const tooWide = [];
   /* C17 — name the thing. Marcos 10/10, on "Which one lets it go farthest?":
      "don't say it, say what you are talking about". A struggling reader
      cannot carry "it" back to the noun, so student text says the noun again.
@@ -255,6 +264,11 @@
     const sec = v[0];
     const blocks = speech.readable(sec);
     const set = new Set(blocks.map(b => b.el));
+
+    /* C23 — nothing sticks out past the side of the window. The help bar did,
+       by 16px, for two days: a sideways scroll on every working screen. */
+    { const de = document.documentElement;
+      if (de.scrollWidth > de.clientWidth + 1) tooWide.push(stops[i].label + ' (+' + (de.scrollWidth - de.clientWidth) + 'px)'); }
 
     /* C15 — which page of which guided screen is this? */
     const g = guide.current;
@@ -417,6 +431,116 @@
   const seenT = {}, dupes = [];
   fb.forEach(f => { if (f.t) { if (seenT[f.t]) dupes.push(f.id + '=' + seenT[f.t]); else seenT[f.t] = f.id; } });
   fb.forEach(f => lintIt(f.t, f.id + ' feedback'));
+  /* The helper's lines exist only after a push, which the preview never
+     shows. So make every one — each test, run by run, with a prediction that
+     hits and one that misses — and hold them to the same wording rules. */
+  ['A', 'B', 'C', 'D'].forEach(k => {
+    const opts = invOf(k).predictOpts || [];
+    opts.concat(['']).forEach(pred => {
+      const rows = [];
+      invOf(k).runs.forEach((r, n) => {
+        const cm = distanceCm(r, true);
+        lintIt(helperSays(k, n, cm, rows, String(pred || '').replace(/<[^>]+>/g, '')), 'helper, Test ' + ({ A:1, B:2, C:3, D:4 })[k] + ' push ' + (n + 1));
+        rows.push(Object.assign({}, r, { cm }));
+      });
+    });
+  });
+
+  rec('C23', 'No screen is wider than the window', tooWide.length === 0,
+      tooWide.length + ' are. ' + tooWide.slice(0, 6).join(' | '));
+
+  /* C22 — THE PUSH SCREEN, after a push. The preview never pushes, so this
+     does: every run of every test, before the push and after the cart lands,
+     laid out the way a student sees it (cards already heard and folded).
+     Marcos 10/9: "kids won't know where the data table is and its connection
+     to cart moving" — so the box the distance goes into must be on screen
+     with the button, and on a Chromebook the cart with them. 10/10: the
+     helper has to say something every time. */
+  {
+    const keep = { data: JSON.stringify(app.data), runIndex: JSON.stringify(app.runIndex),
+                   predictions: JSON.stringify(app.predictions), lastRun: app.lastRun };
+    const pushBad = [];
+    guide.testGate = true; guide.instant = true; guide.testHeard = {};
+    const R = el => el.getBoundingClientRect();
+    const roomy = innerWidth >= 700 && innerHeight >= 640;      /* a Chromebook, not a phone */
+    for (const k of ['A', 'B', 'C', 'D']) {
+      const inv = invOf(k), opts = inv.predictOpts || [''];
+      inv.runs.forEach((r, n) => { guide.testHeard['run' + k + n] = 99; });
+      await jump(stops.findIndex(s => s.phase === 'run' + k)); await wait(120);
+      /* a prediction that misses makes the longest thing the helper says */
+      app.predictions[k] = opts[opts.length - 1]; app.data[k] = [];
+      for (let n = 0; n < inv.runs.length; n++) {
+        const run = inv.runs[n], cm = distanceCm(run, true);
+        for (const landed of [false, true]) {
+          app.runIndex[k] = n; app.lastRun = landed ? { index: n, cm } : null;
+          paintRun(k); focusRun(true);
+          const tag = 'Test ' + ({ A: 1, B: 2, C: 3, D: 4 })[k] + ' push ' + (n + 1) + (landed ? ' landed' : '');
+          const floor = innerHeight - guide.barHeight() + 1;
+          const box = document.querySelector('#run-card td.target'), cv = document.querySelector('#run-card canvas');
+          const btn = [...document.querySelectorAll('#run-record, #run-btn')].find(shown);
+          const h = document.getElementById('run-helper');
+          if (!btn) { pushBad.push(tag + ': no button'); continue; }
+          if (R(btn).top < 0 || R(btn).bottom > floor) pushBad.push(tag + ': the button is off screen');
+          if (!box) pushBad.push(tag + ': no glowing box');
+          else if (R(box).top < 0 || R(box).bottom > floor) pushBad.push(tag + ': the glowing box is off screen');
+          if (roomy && R(cv).top < -4) pushBad.push(tag + ': the cart is cut off by ' + Math.round(-R(cv).top) + 'px');
+          if (landed) {
+            if (!shown(h) || wordsIn(h.textContent) < 8) pushBad.push(tag + ': the helper says nothing');
+            else if (!h.querySelector('.mini-spk')) pushBad.push(tag + ': the helper cannot be read aloud');
+            lintIt(h.querySelector('p') ? h.querySelector('p').textContent : '', 'helper, ' + tag);
+          } else if (shown(h)) pushBad.push(tag + ': the helper is talking before the push');
+          const de = document.documentElement;
+          if (de.scrollWidth > de.clientWidth + 1) pushBad.push(tag + ': wider than the window');
+        }
+        app.data[k].push(Object.assign({}, run, { cm }));
+      }
+    }
+    app.data = JSON.parse(keep.data); app.runIndex = JSON.parse(keep.runIndex);
+    app.predictions = JSON.parse(keep.predictions); app.lastRun = keep.lastRun;
+    guide.testGate = false; guide.instant = false; guide.testHeard = {};
+    await jump(0); await wait(150);
+    rec('C22', 'After every push: the helper speaks, and the button and the glowing box are on screen', pushBad.length === 0,
+        pushBad.length + ' problems. ' + [...new Set(pushBad)].slice(0, 6).join(' | '));
+  }
+
+  /* C24 — picking up a lesson that was saved before the runs changed. */
+  {
+    const fitBad = [];
+    const rowsOf = (k, runs) => runs.map(r => Object.assign({}, r, { cm: distanceCm(r, true) }));
+    /* a save that fits: every test full, the student on the last questions */
+    const full = { phase: 'exit', heard: { runA0: 2, graphA: 7, vocab: 12 },
+      data: { A: rowsOf('A', invOf('A').runs), B: rowsOf('B', invOf('B').runs), C: rowsOf('C', invOf('C').runs), D: rowsOf('D', invOf('D').runs) } };
+    const f1 = fitSaved(full);
+    if (f1.redo || f1.phase !== 'exit') fitBad.push('a save that fits was sent back to ' + f1.phase);
+    ['A', 'B', 'C', 'D'].forEach(k => { if (f1.data[k].length !== invOf(k).runs.length || f1.runIndex[k] !== invOf(k).runs.length) fitBad.push('a save that fits lost pushes in ' + k); });
+    if (f1.heard.runA0 !== 2 || f1.heard.graphA !== 7) fitBad.push('a save that fits lost what was heard');
+    /* partway through a test, nothing wrong with it */
+    const mid = { phase: 'runA', data: { A: rowsOf('A', invOf('A').runs.slice(0, 5)) } };
+    const f2 = fitSaved(mid);
+    if (f2.redo || f2.phase !== 'runA' || f2.runIndex.A !== 5) fitBad.push('a save in the middle of Test 1 was changed');
+    /* a save from a lesson with one push fewer per setup: the same runs with
+       the last trial of every setup left out */
+    const top = k => invOf(k).runs.reduce((m, r) => Math.max(m, r.trial), 1);
+    const old = { phase: 'analysis', heard: { runA0: 2, runA3: 1, graphA: 7, runB0: 1 }, analysisAns: { L05: 1 },
+      data: { A: rowsOf('A', invOf('A').runs.filter(r => r.trial < top('A'))), B: rowsOf('B', invOf('B').runs.filter(r => r.trial < top('B'))),
+              C: rowsOf('C', invOf('C').runs.filter(r => r.trial < top('C'))), D: rowsOf('D', invOf('D').runs.filter(r => r.trial < top('D'))) } };
+    const f3 = fitSaved(old);
+    if (top('A') > 1) {
+      if (f3.redo !== 'A' || f3.phase !== 'runA') fitBad.push('an older save was not sent back to Test 1 (went to ' + f3.phase + ')');
+      ['A', 'B', 'C', 'D'].forEach(k => {
+        const want = top(k) - 1;                       /* the first setup's pushes still line up; nothing after them does */
+        if (f3.data[k].length !== want || f3.runIndex[k] !== want) fitBad.push('an older save kept ' + f3.data[k].length + ' pushes in ' + k + ', not ' + want);
+        if (f3.data[k].some((r, n) => runKey(r) !== runKey(invOf(k).runs[n]) || r.trial !== invOf(k).runs[n].trial)) fitBad.push('an older save kept a push that does not line up in ' + k);
+      });
+      if ('runA0' in f3.heard || 'runA3' in f3.heard || 'runB0' in f3.heard) fitBad.push('an older save kept "new this time" cards as heard');
+      if (f3.heard.graphA !== 7) fitBad.push('an older save lost a page that was heard');
+    }
+    /* rows that are not rows at all (a damaged save) must not crash */
+    try { const f4 = fitSaved({ phase: 'runB', data: { A: [1, 2, 3], B: null } }); if (f4.phase !== 'runA' || f4.data.A.length) fitBad.push('a damaged save was not reset to Test 1'); }
+    catch (e) { fitBad.push('a damaged save crashed: ' + e.message); }
+    rec('C24', 'A lesson saved before the pushes changed is made to fit when it is picked up', fitBad.length === 0, fitBad.slice(0, 5).join(' | '));
+  }
+
   const vagueList = Object.keys(vague);
   rec('C17', 'Student text names the thing and does not say "it"', vagueList.length === 0,
       vagueList.length + ' found. ' + vagueList.slice(0, 6).map(k => '"' + k + '" (' + vague[k] + ')').join(' | '));

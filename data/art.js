@@ -344,3 +344,14 @@ window.COVER_ART =
 /* the help panel's word list is keyed by word; these two share a picture */
 window.THING_ART.test = window.THING_ART.investigation;
 window.THING_ART.tags = window.THING_ART.setup;
+
+/* The helper on the push screen: a small friendly robot. */
+window.HELPER_ART = svg(
+  '<path d="M24 5v6" stroke="var(--sci-dark)" stroke-width="3" stroke-linecap="round"/>' +
+  '<circle cx="24" cy="4" r="3" fill="var(--accent)"/>' +
+  '<rect x="8" y="11" width="32" height="25" rx="7" fill="var(--sci)"/>' +
+  '<circle cx="18" cy="22" r="4.5" fill="#fff"/><circle cx="30" cy="22" r="4.5" fill="#fff"/>' +
+  '<circle cx="18" cy="22" r="2" fill="var(--sci-dark)"/><circle cx="30" cy="22" r="2" fill="var(--sci-dark)"/>' +
+  '<path d="M18 30q6 4 12 0" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>' +
+  '<rect x="3" y="18" width="5" height="10" rx="2" fill="var(--sci-dark)"/><rect x="40" y="18" width="5" height="10" rx="2" fill="var(--sci-dark)"/>' +
+  '<rect x="16" y="38" width="16" height="6" rx="2" fill="var(--sci-dark)"/>');

@@ -40,7 +40,7 @@
     start: 'Pick your name', vocab: 'Six words', vq: 'Word check',
     predictA: 'Test 1 · predict', runA: 'Test 1 · push (surfaces)', graphA: 'Test 1 · graph',
     predictB: 'Test 2 · predict', runB: 'Test 2 · push (push size)', graphB: 'Test 2 · graph',
-    daygate:  'End of Day 1 · ask Mr. O',
+    daygate:  'End of Day 1 · ask Mr. O', daygate2: 'End of Day 2 · ask Mr. O',
     predictC: 'Test 3 · predict', runC: 'Test 3 · let go (ramp)', graphC: 'Test 3 · graph',
     predictD: 'Test 4 · predict', runD: 'Test 4 · push (car vs truck)', graphD: 'Test 4 · graph',
     analysis: 'Read my data', claims: 'Build the explanation', write: 'Written answer',
@@ -48,9 +48,9 @@
   };
   const GROUP = p =>
     ['cover', 'why', 'care', 'summary', 'cart', 'plan', 'start'].indexOf(p) !== -1 ? 'Before the lesson'
-    : PHASES.indexOf(p) < PHASES.indexOf('daygate') ? 'Day 1'
-    : p === 'daygate' ? 'Day 1'
-    : 'Day 2';
+    : PHASES.indexOf(p) <= PHASES.indexOf('daygate')  ? 'Day 1'
+    : PHASES.indexOf(p) <= PHASES.indexOf('daygate2') ? 'Day 2'
+    : 'Day 3';
 
   const BANK = {
     vq: () => VOCAB_Q, analysis: () => ANALYSIS_Q,
@@ -87,7 +87,9 @@
   function sampleRows(k) {
     const inv = invOf(k), S = SAMPLE[k];
     return inv.runs.map(r => Object.assign({}, r, {
-      cm: S.v[r[S.by]] + (r.trial === 1 ? 3 : -3)    /* two trials, average exact */
+      /* first trial a little long, last a little short, any between exact:
+         the average comes out as the plan's number */
+      cm: S.v[r[S.by]] + (r.trial === 1 ? 3 : r.trial === LAB.TRIALS ? -3 : 0)
     }));
   }
   function fillAll() {

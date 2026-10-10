@@ -15,6 +15,24 @@
    point of use. Marcos 10/9: "explain everything and take nothing for
    granted. These are kids who will easily lose focus at 2:30pm." */
 /* ══════════════════════════════════════════════════════
+   HOW MANY TIMES EACH SETUP IS RUN — one number.
+
+   Marcos 10/10, once the lesson had room to run over three days: "3 pushes
+   instead of 2 pushes. More like an experiment." Every run list, table
+   column, count and sentence below is built from TRIALS, so changing this
+   one number changes the whole lesson.
+══════════════════════════════════════════════════════ */
+const TRIALS = 3;
+const TIMES  = ['', 'one time', 'two times', 'three times', 'four times'][TRIALS];
+const N_WORD = ['', 'one', 'two', 'three', 'four'][TRIALS];
+/* each setup, TRIALS times over: trial 1, trial 2, ... */
+const repeatRuns = setups => setups.reduce((out, st) =>
+  out.concat(Array.from({ length: TRIALS }, (_, t) => Object.assign({}, st, { trial: t + 1 }))), []);
+/* script.js reads these as window.TIMES and window.N_WORD. A top-level const is
+   NOT a property of window, so they are put there on purpose. */
+window.TRIALS = TRIALS; window.TIMES = TIMES; window.N_WORD = N_WORD;
+
+/* ══════════════════════════════════════════════════════
    WHAT MR. O JUST SHOWED YOU
 
    The bridge from the teacher-led minutes into the lab. Marcos 10/9:
@@ -40,11 +58,21 @@ window.RECAP = {
     ],
     now: 'Next, you get to <b>test these ideas yourself</b>.'
   },
+  /* Three days (10/10): Day 2 is the push test and the ramp test, Day 3 is the
+     truck test and the thinking. Each day opens with what Mr. O just showed. */
   day2: {
-    lead: 'Mr. O just showed you two new tests and one new word. Here are all three again.',
+    lead: 'Mr. O just showed you two new tests. Here are the two tests again.',
     items: [
+      { t: 'The <b>push</b> test &mdash; you change how hard the push is.',
+        d: 'The surface stays the same every time: wood. You try a small push, a medium push and a big push.' },
       { t: 'The <b>ramp</b> test &mdash; you change how tall the ramp is.',
-        d: 'A <dfn>ramp</dfn> is a slope, like a slide at the park. You do NOT push the car. You let the car go at the top and gravity pulls the car down the ramp.' },
+        d: 'A <dfn>ramp</dfn> is a slope, like a slide at the park. You do NOT push the car. You let the car go at the top and gravity pulls the car down the ramp.' }
+    ],
+    now: 'Every test still changes <b>one thing only</b>. That is what makes the test fair.'
+  },
+  day3: {
+    lead: 'Mr. O just showed you one new test and one new word. Here are the test and the word again.',
+    items: [
       { t: 'The <b>truck</b> test &mdash; you change what you push: a car, then a truck.',
         d: 'The truck is heavier than the car. The car and the truck get the very same push.' },
       /* 'mass' is the correct answer to the truck question and was taught
@@ -52,7 +80,7 @@ window.RECAP = {
       { t: 'The new word is <dfn>mass</dfn>. Mass is how much stuff a thing is made of.',
         d: 'Think of an empty backpack and a full backpack. The full backpack has more mass. The truck has more mass than the car.' }
     ],
-    now: 'Every test still changes <b>one thing only</b>. That is what makes the test fair.'
+    now: 'After the truck test you will use all of your data to explain what you found.'
   }
 };
 
@@ -107,9 +135,10 @@ window.THING_WORDS = {
 /* The one question a child doing try 2 of 2 is actually asking. It sits on
    the lesson, not on one investigation, because all four repeat. */
 window.WHY_REPEAT =
-  'You do every push <b>two times</b>. Why? Because one push can go wrong &mdash; maybe your hand ' +
-  'slipped, or you pushed a little harder without meaning to. Doing each push two times lets you catch a mistake, ' +
-  'and the middle of the two distances is closer to the truth. That middle distance is called the <dfn>average</dfn>. Scientists never trust one push.';
+  'You do every push <b>' + TIMES + '</b>. Why? Because one push can go wrong &mdash; maybe your hand ' +
+  'slipped, or you pushed a little harder without meaning to. Doing each push ' + TIMES + ' lets you catch a mistake. ' +
+  'Then the site finds one distance that stands for all ' + N_WORD + ' pushes. That one distance is called the ' +
+  '<dfn>average</dfn>. Scientists never trust one push.';
 
 /* ══════════════════════════════════════════════════════
    THE PLAN — what used to be one eight-sentence paragraph
@@ -121,23 +150,26 @@ window.WHY_REPEAT =
 ═══════════════════════════════════════════════════════ */
 window.INTRO_PLAN = {
   days: [
-    { label: 'Today', tests: [
+    { label: 'Day 1 &mdash; today', tests: [
       { inv: 'A', t: 'Test 1 &mdash; the surface',
-        d: 'Push the cart on ice, wood, carpet and sand. Which surface lets the cart go farthest?' },
+        d: 'Push the cart on ice, wood, carpet and sand. Which surface lets the cart go farthest?' } ] },
+    { label: 'Day 2', tests: [
       { inv: 'B', t: 'Test 2 &mdash; the push',
-        d: 'Give the cart a small push, a medium push and a big push. Does a bigger push send the cart farther?' } ] },
-    { label: 'Next time', tests: [
+        d: 'Give the cart a small push, a medium push and a big push. Does a bigger push send the cart farther?' },
       { inv: 'C', t: 'Test 3 &mdash; the ramp',
-        d: 'A <dfn>ramp</dfn> is a slope, like a slide at the park. Let a car roll down a ramp. Does a taller ramp send the car farther?' },
+        d: 'A <dfn>ramp</dfn> is a slope, like a slide at the park. Let a car roll down a ramp. Does a taller ramp send the car farther?' } ] },
+    { label: 'Day 3 &mdash; the last day', tests: [
       { inv: 'D', t: 'Test 4 &mdash; the truck',
-        d: 'Push a car and a heavy truck the same way. Does the car or the truck go farther?' } ] }
+        d: 'Push a car and a heavy truck the same way. Does the car or the truck go farther?' },
+      { art: 'investigation', t: 'Then you explain what you found',
+        d: 'You answer questions about your tests. Then you build an explanation. An <dfn>explanation</dfn> tells what happened and why.' } ] }
   ],
   every: [
     { art: 'distance',      t: 'Measure the distance the cart traveled', d: 'See how far the cart traveled from START, in centimeters.' },
     { art: 'data table',    t: 'Write the distance in your data table', d: 'A <dfn>data table</dfn> is a set of boxes for writing down what you measure. What you write down is called your <dfn>data</dfn>. Put the distance the cart traveled in a box in your data table.' },
     { art: 'investigation', t: 'Explain why the cart stopped', d: 'Use the distances in your own data table to say why the cart stopped.' }
   ],
-  calm: 'Take your time. This takes two days. Good scientists test more than once.'
+  calm: 'Take your time. This takes three days. Good scientists test more than once.'
 };
 
 /* ══════════════════════════════════════════════════════
@@ -203,22 +235,64 @@ window.CART_PAGES = [
         d: 'The distance the cart travels shows what the surface did to the cart. The distance also shows what the push did to the cart. That is how the cart helps us answer the big question.' } ] }
 ];
 
+/* ══════════════════════════════════════════════════════
+   THE STOP AT THE END OF DAY 1 AND OF DAY 2
+
+   A real stop, not a scroll-past: what you did, what comes next time, then
+   "ask Mr. O". One entry per stop; the page is drawn from it.
+   `runs` is worked out from the tests named in `nextTests`.
+══════════════════════════════════════════════════════ */
+window.DAY_GATES = {
+  daygate: {
+    day: 1, head: 'Nice work. You finished today&rsquo;s test.',
+    nextLabel: 'Next time you will do two more tests',
+    nextTests: ['B', 'C'],
+    next: [
+      '<b>The push test.</b> You push the cart on wood with a small push, a medium push and a big push. ' +
+        'You do each push ' + TIMES + ', so <b>' + (3 * TRIALS) + ' pushes</b>. ' +
+        'You are finding out whether a bigger push sends the cart farther.',
+      '<b>The ramp test.</b> You put a car at the top of a ramp and let the car go. ' +
+        '<b>You do not push the car at all</b> &mdash; gravity pulls the car down. You try three ramp heights: ' +
+        '1 book high, then 2 books, then 3 books. You do each ramp ' + TIMES + ', so <b>' + (3 * TRIALS) + ' runs</b>. ' +
+        'You are finding out whether a taller ramp sends the car farther.'
+    ],
+    recap: 'day2', go: 'Start the push test &rarr;'
+  },
+  daygate2: {
+    day: 2, head: 'Nice work. You finished both of today&rsquo;s tests.',
+    nextLabel: 'Next time is the last day',
+    nextTests: ['D'],
+    next: [
+      '<b>The truck test.</b> You push a car, then you push a truck, with the exact same push on the exact ' +
+        'same wood. The truck is heavier than the car. Scientists say the truck has more <dfn>mass</dfn>. ' +
+        'Mass is how much stuff a thing is made of. You push the car ' + TIMES + ' and the truck ' + TIMES + ', so <b>' +
+        (2 * TRIALS) + ' pushes</b>. You are finding out whether the heavy truck goes as far as the light car.',
+      '<b>Then you answer questions about your tests.</b> You look at your own data tables to find each answer.',
+      '<b>Then you explain what you found.</b> You will not have to write a paragraph. ' +
+        'You pick your answer three times: <b>what you think is true</b>, then <b>the distances from your own ' +
+        'data table that prove your answer</b>, then <b>the reason why</b>. The site puts your three picks ' +
+        'together into one explanation and shows you the explanation.'
+    ],
+    recap: 'day3', go: 'Start the truck test &rarr;'
+  }
+};
+
 window.METHOD_WORDS = {
   predict:  'A <b>prediction</b> is your best guess <i>before</i> you test. A prediction is never marked wrong.',
-  trial:    'A <b>trial</b> is one push.<br><br>In Test 1 you push <b>twice</b> on every ' +
+  trial:    'A <b>trial</b> is one push.<br><br>In Test 1 you push <b>' + TIMES + '</b> on every ' +
             'surface. Here is why. One push can go wrong &mdash; maybe your hand slipped, or you ' +
             'pushed a tiny bit harder without meaning to. If you only pushed once you would never ' +
-            'know. Pushing twice lets you catch a mistake. Real scientists never trust one try either.',
+            'know. Pushing ' + TIMES + ' lets you catch a mistake. Real scientists never trust one try either.',
   /* Rewritten 10/10. Marcos: "we need to explain what an average is for their
-     level." The old one said "add the two distances, then cut that total in
-     half" — a division most of this class cannot yet do. For two amounts the
-     average IS the amount in the middle, which a child can see. */
-  average:  'The <b>average</b> is the amount in the middle of two amounts.<br><br>' +
-            'Think of reading. On Monday you read 10 pages. On Tuesday you read 20 pages. ' +
-            'The amount in the middle is 15 pages. So 15 pages is the average.<br><br>' +
-            'In this lab the average is the distance in the middle of your two trials. ' +
-            'Say the cart traveled 480 cm, then 500 cm. The distance in the middle is 490 cm. ' +
-            'So the average is 490 cm. The site finds the average for you.',
+     level." No adding and dividing: most of this class cannot do that yet.
+     An average is one amount that stands for a few amounts, and it sits in
+     the middle of them — something a child can see on a line. */
+  average:  'The <b>average</b> is one amount that stands for a few amounts. The average is in the middle: ' +
+            'not the smallest amount, not the biggest amount.<br><br>' +
+            'Think of reading. On Monday you read 10 pages. On Tuesday you read 20 pages. On Wednesday you ' +
+            'read 30 pages. The amount in the middle is 20 pages. So 20 pages is the average.<br><br>' +
+            'In this lab the average is one distance that stands for your ' + N_WORD + ' trials. ' +
+            'The site finds the average for you.',
   claim:    'A <b>claim</b> is what you think is true.',
   evidence: '<b>Evidence</b> is the distances from your data table that show your claim is true.',
   reasoning:'<b>Reasoning</b> is the reason why your claim is true.'
@@ -282,6 +356,7 @@ window.LESSON = {
 ══════════════════════════════════════════════════════ */
 window.LAB = {
   G: 9.8,
+  TRIALS: TRIALS,   /* how many times each setup is run; see the top of this file */
   trackCm: 900,
 
   surfaces: {
@@ -322,25 +397,21 @@ window.LAB = {
     predictOpts: ['Ice', 'Wood', 'Carpet', 'Sand'],
     /* Said out loud on the screen before they start. Nothing here is a hint
        about the answer — it is only what their hands have to do. */
-    doCount: '8 pushes',
-    doWhy:   'That is 4 surfaces. You push 2 times on each surface. Each push is called a <dfn>trial</dfn>.',
+    doCount: (4 * TRIALS) + ' pushes',
+    doWhy:   'That is 4 surfaces. You push ' + TRIALS + ' times on each surface. Each push is called a <dfn>trial</dfn>.',
     doSteps: [
       'The site gets each push ready for you. Above the track you will see little <dfn>tags</dfn>, like Ice and Medium push. The tags tell you what this push uses. Read the tags.',
       'Press <b>Push the cart</b>.',
       'Watch where the cart stops.',
       'Press the <b>Write in my table</b> button. The distance the cart traveled drops into the glowing box.',
-      'Do that 8 times. Then your table is full.'
+      'Do that ' + (4 * TRIALS) + ' times. Then your table is full.'
     ],
-    runs: [
-      { surface: 'ice',    push: 'medium', trial: 1 },
-      { surface: 'ice',    push: 'medium', trial: 2 },
-      { surface: 'wood',   push: 'medium', trial: 1 },
-      { surface: 'wood',   push: 'medium', trial: 2 },
-      { surface: 'carpet', push: 'medium', trial: 1 },
-      { surface: 'carpet', push: 'medium', trial: 2 },
-      { surface: 'sand',   push: 'medium', trial: 1 },
-      { surface: 'sand',   push: 'medium', trial: 2 }
-    ]
+    runs: repeatRuns([
+      { surface: 'ice', push: 'medium' },
+      { surface: 'wood', push: 'medium' },
+      { surface: 'carpet', push: 'medium' },
+      { surface: 'sand', push: 'medium' }
+    ])
   },
 
   /* Ramp heights for Test 3. A car released from rest at height h
@@ -382,27 +453,24 @@ window.LAB = {
     sameValue: 'Wood',
     changeLabel: 'What we change:',
     changeValue: 'how hard we push',
-    doCount: '6 pushes',
-    doWhy:   'Three sizes of push. You do each size twice, so you can check how far the cart traveled.',
+    doCount: (3 * TRIALS) + ' pushes',
+    doWhy:   'Three sizes of push. You do each size ' + TIMES + ', so you can check how far the cart traveled.',
     doSteps: [
       'The site gets each push ready for you. Above the track you will see little <dfn>tags</dfn>, like Ice and Medium push. The tags tell you what this push uses. Read the tags.',
       'Press <b>Push the cart</b>.',
       'Watch where the cart stops.',
       'Press the <b>Write in my table</b> button. The distance the cart traveled drops into the glowing box.',
-      'Do that 6 times. Then your table is full.'
+      'Do that ' + (3 * TRIALS) + ' times. Then your table is full.'
     ],
     predictQ: 'Before you test &mdash; what will happen to the distance the cart travels when the push gets BIGGER?',
     predictOpts: ['The cart will roll farther', 'The cart will roll a shorter way', 'The cart will roll the same distance', 'The cart will not move at all'],
     /* Two trials, like every investigation. A single push cannot be checked,
        and averaging is the habit the lesson is teaching. */
-    runs: [
-      { surface: 'wood', push: 'small',  trial: 1 },
-      { surface: 'wood', push: 'small',  trial: 2 },
-      { surface: 'wood', push: 'medium', trial: 1 },
-      { surface: 'wood', push: 'medium', trial: 2 },
-      { surface: 'wood', push: 'big',    trial: 1 },
-      { surface: 'wood', push: 'big',    trial: 2 }
-    ]
+    runs: repeatRuns([
+      { surface: 'wood', push: 'small' },
+      { surface: 'wood', push: 'medium' },
+      { surface: 'wood', push: 'big' }
+    ])
   },
 
   /* Test 3 — same car, same surface, three ramp heights.
@@ -421,8 +489,8 @@ window.LAB = {
     changeValue: 'how tall the ramp is',
     runVerb: '&#9660; Let the car go',
     runNoun: 'Run',
-    doCount: '6 runs',
-    doWhy:   'Three ramps. You use each ramp twice, so you can check how far the car traveled.',
+    doCount: (3 * TRIALS) + ' runs',
+    doWhy:   'Three ramps. You use each ramp ' + TIMES + ', so you can check how far the car traveled.',
     /* The "you do not push" line is first and said twice, because in A and B
        they pushed every time and the habit carries over. */
     doSteps: [
@@ -431,18 +499,15 @@ window.LAB = {
       'Press <b>Let the car go</b>.',
       'Watch where the car stops.',
       'Press the <b>Write in my table</b> button. The distance the car traveled drops into the glowing box.',
-      'Do that 6 times. Remember: no pushing.'
+      'Do that ' + (3 * TRIALS) + ' times. Remember: no pushing.'
     ],
     predictQ: 'Before you test &mdash; what happens when the ramp gets TALLER?',
     predictOpts: ['The car rolls farther', 'The car rolls a shorter way', 'The car rolls the same distance', 'The car rolls backwards'],
-    runs: [
-      { surface: 'wood', ramp: 'low',  trial: 1 },
-      { surface: 'wood', ramp: 'low',  trial: 2 },
-      { surface: 'wood', ramp: 'mid',  trial: 1 },
-      { surface: 'wood', ramp: 'mid',  trial: 2 },
-      { surface: 'wood', ramp: 'high', trial: 1 },
-      { surface: 'wood', ramp: 'high', trial: 2 }
-    ]
+    runs: repeatRuns([
+      { surface: 'wood', ramp: 'low' },
+      { surface: 'wood', ramp: 'mid' },
+      { surface: 'wood', ramp: 'high' }
+    ])
   },
 
   /* Test 4 — same push, same surface, two different masses.
@@ -458,24 +523,22 @@ window.LAB = {
     sameValue: 'Medium push, on wood',
     changeLabel: 'What we change:',
     changeValue: 'the mass: a light car, then a heavy truck',
-    doCount: '4 pushes',
-    doWhy:   'The car twice, then the truck twice. Every push is the same size.',
+    doCount: (2 * TRIALS) + ' pushes',
+    doWhy:   'The car ' + TIMES + ', then the truck ' + TIMES + '. Every push is the same size.',
     doSteps: [
       'The site gets each push ready for you. Above the track you will see little <dfn>tags</dfn>, like Ice and Medium push. The tags tell you what this push uses. Read the tags.',
       'Press <b>Push the car</b> or <b>Push the truck</b>.',
       'Watch where the car or the truck stops.',
       'Press the <b>Write in my table</b> button. The distance the car or the truck traveled drops into the glowing box.',
-      'Do that 4 times. Then your table is full.'
+      'Do that ' + (2 * TRIALS) + ' times. Then your table is full.'
     ],
     predictQ: 'Before you test &mdash; does the car or the truck go FARTHER with the very same push?',
     predictOpts: ['The car', 'The truck', 'The car and the truck go exactly the same distance', 'Neither the car nor the truck moves'],
     /* Discovery's own Activity 11 asks for repeated trials and an average on
        exactly this comparison, so one push here contradicted the district. */
-    runs: [
-      { surface: 'wood', push: 'medium', vehicle: 'car',   trial: 1 },
-      { surface: 'wood', push: 'medium', vehicle: 'car',   trial: 2 },
-      { surface: 'wood', push: 'medium', vehicle: 'truck', trial: 1 },
-      { surface: 'wood', push: 'medium', vehicle: 'truck', trial: 2 }
-    ]
+    runs: repeatRuns([
+      { surface: 'wood', push: 'medium', vehicle: 'car' },
+      { surface: 'wood', push: 'medium', vehicle: 'truck' }
+    ])
   }
 };

@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232E7D6B'/%3E%3Ccircle cx='11' cy='21' r='3' fill='%23fff'/%3E%3Ccircle cx='22' cy='21' r='3' fill='%23fff'/%3E%3Crect x='7' y='11' width='18' height='7' rx='2' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="style.css?v=teach1">
+<link rel="stylesheet" href="style.css?v=helper1">
 </head>
 <body>
 <div class="wrap">
@@ -66,7 +66,7 @@
        the info gets lost with 4th graders." -->
   <section id="why-screen" class="card hidden">
     <div class="cv-q" data-step>
-      <span class="lbl">The big question for these two days</span>
+      <span class="lbl">The big question for these three days</span>
       <p id="cv-driving"></p>
     </div>
 
@@ -178,7 +178,7 @@
       <button class="btn ghost small hidden" id="resume-btn" type="button">Pick up where I left off</button>
       <button class="btn ghost small" id="teacher-btn" type="button">Teacher</button>
     </div>
-    <p class="counter">This lesson takes two days. You will not finish the whole lesson today, and that is the plan.</p>
+    <p class="counter">This lesson takes three days. You will not finish the whole lesson today, and that is the plan.</p>
   </section>
 
   <!-- ══════════════ 2 · READ ALOUD ══════════════ -->
@@ -272,6 +272,10 @@
         <button class="btn big" id="run-btn" type="button">&#128072; Push the cart</button>
         <button class="btn big hidden" id="run-record" type="button">Write in my table</button>
         <span class="readout" id="run-readout" aria-live="polite">The cart has traveled 0 cm</span>
+        <!-- The helper reacts to the push that just landed, with the student's
+             own distances. Marcos 10/10: "commentary from an experiment
+             assistant... Gets the kids thinking." -->
+        <div class="helper hidden" id="run-helper" aria-live="polite"></div>
       </div>
 
       <!-- The table sits right under the push, and the box this push fills
@@ -304,10 +308,12 @@
 
   </section>
 
-  <!-- ══════════════ 5b · END OF DAY 1 ══════════════ -->
+  <!-- ══════════════ 5b · THE STOP AT THE END OF A DAY ══════════════
+       One screen, used at the end of Day 1 and again at the end of Day 2.
+       Everything in it is filled from DAY_GATES in data/lesson.js. -->
   <section id="daygate-screen" class="card hidden">
-    <div class="eyebrow">End of Day 1</div>
-    <h2>Nice work. You finished both of today&rsquo;s tests.</h2>
+    <div class="eyebrow" id="dg-eyebrow"></div>
+    <h2 id="dg-head"></h2>
     <!-- page 1 · what you did today -->
     <div data-gpage>
       <p class="lead" id="dg-did" data-step></p>
@@ -315,41 +321,18 @@
 
     <!-- page 2 · what happens next time -->
     <div data-gpage>
-    <div class="box todo" data-parts>
-      <span class="lbl">Next time you will do two more tests</span>
-      <ol>
-        <li data-step><b>The ramp test.</b> You put a car at the top of a ramp and let the car go.
-        <b>You do not push the car at all</b> &mdash; gravity pulls the car down. You try three
-        ramp heights: 1 book high, then 2 books, then 3 books. Twice each, so <b>6 runs</b>.
-        You are finding out whether a taller ramp sends the car farther.</li>
-
-        <li data-step><b>The truck test.</b> You push a car, then you push a truck, with the exact same
-        push on the exact same wood. The truck is heavier than the car. Scientists say the truck has more <dfn>mass</dfn>. Mass is how much stuff a thing is made of. Twice each, so
-        <b>4 pushes</b>. You are finding out whether the heavy truck goes as far as the light car.</li>
-
-        <li data-step><b>Then you explain what you found.</b> An <dfn>explanation</dfn> tells what happened and why. You will not have to write a paragraph.
-        You pick your answer three times: <b>what you think is true</b>, then <b>the distances from
-        your own data table that prove your answer</b>, then <b>the reason why</b>. The site puts your three
-        picks together into one explanation and shows you the explanation.</li>
-      </ol>
-      <p data-step>That is <b>10 runs</b> altogether &mdash; fewer than today.</p>
-    </div>
+      <div class="box todo" data-parts id="dg-nextbox"></div>
     </div>
 
     <!-- page 3 · stop and ask -->
     <div data-gpage>
     <div id="dg-choices">
-      <div class="box ask" data-parts data-step>
-        <span class="lbl">Stop here</span>
-        <p><b>Ask Mr. O if you should go on to Day 2.</b></p>
-        <p>Put your hand up and ask. Do not start Day 2 on your own &mdash; he will
-        show the class the new tests first, and they are easier to do after he does.</p>
-      </div>
+      <div class="box ask" data-parts data-step id="dg-ask"></div>
       <div data-gafter>
         <p class="qtext">What did Mr. O say?</p>
         <div class="btnrow">
-          <button class="btn" id="dg-next" type="button">He said I can start Day 2 &rarr;</button>
-          <button class="btn ghost" id="dg-stop" type="button">He said stop here for today</button>
+          <button class="btn" id="dg-next" type="button"></button>
+          <button class="btn ghost" id="dg-stop" type="button"></button>
         </div>
       </div>
     </div>
@@ -358,9 +341,9 @@
     <div id="dg-stopped" class="hidden">
       <div class="box todo" data-parts>
         <span class="lbl">Saved</span>
-        <p>Your work is saved. You can close this now.</p>
+        <p>Your work is saved. You can close this page now.</p>
         <p>When you open the lesson again on <b>this same computer</b>, press
-        <b>Pick up where I left off</b> and you will start Day 2.</p>
+        <b>Pick up where I left off</b> and you will start <b id="dg-stopped-day">the next day</b>.</p>
       </div>
     </div>
   </section>
@@ -433,14 +416,14 @@
   </p>
 </div>
 
-<script src="data/art.js?v=teach1"></script>
-<script src="data/lesson.js?v=teach1"></script>
-<script src="data/questions.js?v=teach1"></script>
-<script src="guide.js?v=teach1"></script>
-<script src="script.js?v=teach1"></script>
-<script src="preview.js?v=teach1"></script>
+<script src="data/art.js?v=helper1"></script>
+<script src="data/lesson.js?v=helper1"></script>
+<script src="data/questions.js?v=helper1"></script>
+<script src="guide.js?v=helper1"></script>
+<script src="script.js?v=helper1"></script>
+<script src="preview.js?v=helper1"></script>
 <!-- The pre-push check. Runs only when the address has ?qa in it. -->
-<script>if (/[?&]qa\b/.test(location.search)) { var q = document.createElement('script'); q.src = 'qa.js?v=teach1'; document.body.appendChild(q); }</script>
+<script>if (/[?&]qa\b/.test(location.search)) { var q = document.createElement('script'); q.src = 'qa.js?v=helper1'; document.body.appendChild(q); }</script>
 
 <!-- ══════════════ WORD HELP — on every working screen ══════════════
      Marcos 10/9: "add reminders of those definitions. Don't expect them to

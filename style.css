@@ -465,7 +465,9 @@ table.data td.pending{color:var(--ink-faint)}
    Sticks to the bottom of every working screen. Closed it is one line;
    open it is the six lesson words plus the method words, each a tap. */
 #wordhelp{
-  position:sticky; bottom:0; z-index:40; margin:18px -16px 0;
+  /* No side margins: the bar is a child of <body>, already full width. The
+     old -16px made the page 16px wider than the window (a sideways scroll). */
+  position:sticky; bottom:0; z-index:40; margin:18px 0 0;
   background:var(--surface); border-top:2px solid var(--sci-line);
   box-shadow:0 -4px 18px rgba(22,33,31,.09);
 }
@@ -1026,6 +1028,32 @@ li.gstep{ margin:10px 0; }
 .avgline svg text{ font-family:"Public Sans",system-ui,sans-serif; }
 .avgbox p, .newcard p + p{ margin-top:8px; }
 .box.todo.avgbox > p{ font-size:21px; color:var(--ink); }
+
+/* THE HELPER: a speech bubble beside the button, on the same row. The
+   button stays where the push button was (top of the row) however tall the
+   bubble grows; the "Your helper says:" label runs into the sentence so the
+   bubble costs no extra line. */
+.actrow{ align-items:flex-start; }
+.actrow .readout{ align-self:center; }
+.helper{
+  flex:1 1 320px; min-width:0; display:flex; gap:10px; align-items:flex-start;
+  background:var(--warn-soft); border:1px solid rgba(224,180,104,.6); border-radius:4px 14px 14px 14px;
+  padding:8px 12px;
+}
+.helper .art.helpart{ flex:none; width:42px; height:42px; }
+.helper .lbl{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:16px;
+  letter-spacing:.08em; text-transform:uppercase; color:var(--warn); font-weight:700;
+}
+.helper p{ margin:0; font-size:19px; line-height:1.4; color:var(--ink); }
+.tablezone .helper{ margin-top:10px; }      /* narrow screens: under the table */
+
+/* a step taller than the window carries its Listen button at the top */
+.gstep.g-tall > .gbar{ margin:0 0 10px; }
+
+/* three trials and an average across the page: keep each box on one line */
+.tablezone table.data th, .tablezone table.data td{ white-space:nowrap; }
+table.data td.avg{ background:var(--sci-soft); }
 
 /* <dfn> marks the place a word is explained (qa.js C18 looks for it). To a
    student the word being taught is simply bold. */

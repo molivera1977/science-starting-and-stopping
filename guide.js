@@ -103,7 +103,7 @@
       b.onclick = e => { e.preventDefault(); e.stopPropagation(); press(k); };
       bar.appendChild(b);
       s.el.appendChild(bar);
-      s.btn = b;
+      s.btn = b; s.bar = bar;
     });
 
     let dots = null;
@@ -192,6 +192,16 @@
            of the student, not while it sits on a page they have not reached. */
         if (live && gate && noVoice && !s.manual && s.page === page) arm(s);
         s.btn.textContent = label(s, k);
+        /* A STEP TALLER THAN THE WINDOW (a phone, a long explanation): its
+           Listen button sat at the bottom, off the screen, under text the
+           student had not been read yet. While such a step is the open one,
+           the button goes to the top of the step, where the step starts. */
+        const tall = live && s.page === page && s.el.offsetHeight > innerHeight - barHeight() - 26;
+        if (tall !== !!s.tall) {
+          s.tall = tall;
+          if (tall) s.el.insertBefore(s.bar, s.el.firstChild); else s.el.appendChild(s.bar);
+          s.el.classList.toggle('g-tall', tall);
+        }
         s.btn.classList.toggle('wait', live && !!s.manual && Date.now() < s.readyAt);
       });
     }
@@ -291,7 +301,7 @@
   function pagesFor(phase) {
     const count = sel => document.querySelectorAll(sel + ' [data-gpage]').length;
     if (/^predict[ABCD]$/.test(phase)) return count('#predict-card');
-    if (phase === 'daygate') return count('#daygate-screen');
+    if (/^daygate/.test(phase)) return count('#daygate-screen');
     if (phase === 'vocab') return LESSON.vocab.length;
     if (phase === 'cart') return (window.CART_PAGES || []).length;
     if (phase === 'plan') return (planHTML().match(/data-gpage/g) || []).length;
