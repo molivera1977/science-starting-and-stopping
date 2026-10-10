@@ -699,6 +699,8 @@ table.data td.pending{color:var(--ink-faint)}
 }
 @media (max-width:620px){
   .ptile.step3{ flex-direction:row; text-align:left; align-items:center; padding:14px 13px 11px 20px; }
+  .ptile.step3.gstep{ flex-wrap:wrap; }
+  .ptile.step3.gstep > .gbar{ flex:1 1 100%; text-align:left; }
   .pnum{ left:-8px; top:50%; transform:translateY(-50%); }
 }
 .plan-calm{
@@ -832,3 +834,121 @@ body.tp-on{ padding-top:58px; }
 #cart-scene svg{ display:block; width:100%; height:auto; }
 .cart-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 @media (max-width:760px){ .cart-grid{ grid-template-columns:1fr; } }
+
+
+/* ══════════════════════════════════════════════════════
+   GUIDED READING (guide.js) — one open step, the rest locked
+
+   Marcos 10/9: "There are so many things to look at but not guaranteed flow
+   that the kids should follow." Three looks, and only one of them has
+   anything to press:
+     locked  blank, dashed, a padlock. Nothing to read yet.
+     live    orange ring and one big Listen button.
+     done    green check, a small "Hear it again".
+══════════════════════════════════════════════════════ */
+.ghide{ display:none !important; }
+/* A button row keeps its space while it waits, so the page does not jump
+   when Next appears. Hidden this way it cannot be clicked or tabbed to. */
+.btnrow.ghide, .gnav .btn.ghide{ display:flex !important; visibility:hidden; }
+
+.gstep{ position:relative; }
+.gstep, .gnav, [data-gafter]{ scroll-margin:16px 0 84px; }
+/* A step laid out as a ROW (number + text, picture + text) drops its button
+   onto a line of its own. A step laid out as a COLUMN must not wrap: there
+   the button would start a second column beside the tile. */
+.rcard.gstep, .plan-day .ptile.gstep{ flex-wrap:wrap; }
+.rcard.gstep > .gbar, .plan-day .ptile.gstep > .gbar{ flex:1 1 100%; }
+/* inside a step the Listen button IS the speaker: one thing to press */
+.gstep .mini-spk{ display:none; }
+
+.gstep.g-locked{
+  color:transparent !important; background:var(--surface-2) !important;
+  border-color:transparent !important; box-shadow:none !important;
+  outline:2px dashed var(--line); outline-offset:-2px; border-radius:12px;
+  max-height:76px; min-height:60px; overflow:hidden; list-style:none;
+}
+.gstep.g-locked > *{ visibility:hidden; }
+.gstep.g-locked::after{
+  content:'\1F512'; position:absolute; inset:0; display:grid; place-items:center;
+  font-size:24px; color:var(--ink-faint); opacity:.6; visibility:visible;
+  font-style:normal; letter-spacing:0;
+}
+/* tiles in a row share the row's height, so a locked tile there stays tall */
+.care-grid .gstep.g-locked, .plan-every .gstep.g-locked,
+.cart-grid .gstep.g-locked, .varbox .gstep.g-locked{ max-height:none; }
+
+.gstep.g-live{ outline:3px solid #C2530F; outline-offset:3px; border-radius:12px; }
+.gstep.g-done::after{
+  content:'\2713'; position:absolute; top:-11px; right:-9px;
+  width:30px; height:30px; border-radius:50%; background:var(--good); color:#fff;
+  font:700 18px/30px "Public Sans",system-ui,sans-serif; text-align:center;
+  box-shadow:0 1px 4px rgba(0,0,0,.25); font-style:normal; letter-spacing:0;
+}
+:root[data-theme="dark"] .gstep.g-done::after{ color:#0F1F16; }
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .gstep.g-done::after{ color:#0F1F16; } }
+
+.gbar{ flex:0 0 auto; width:100%; align-self:stretch; margin-top:12px; text-align:left; line-height:1.3; }
+.g-locked .gbar{ display:none; }
+.gbtn{
+  font:inherit; font-size:22px; font-weight:700; letter-spacing:0; text-transform:none;
+  font-style:normal; min-height:54px; padding:12px 22px; border:0; border-radius:13px;
+  background:#C2530F; color:#fff; cursor:pointer; width:100%; max-width:420px;
+  box-shadow:0 3px 0 #8A3A08;
+}
+.g-live:not(.g-play) .gbtn:not(.wait){ animation:gpulse 1.6s ease-in-out infinite; }
+@keyframes gpulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.035); } }
+.gbtn:focus-visible{ outline:3px solid var(--hl-line); outline-offset:3px; }
+.g-play .gbtn{ background:#5A6E68; box-shadow:none; cursor:default; }
+.gbtn.wait{ background:#5A6E68; box-shadow:none; cursor:default; }
+.g-done .gbtn{
+  width:auto; min-height:0; padding:7px 13px; font-size:18px; font-weight:600;
+  background:transparent; color:var(--sci-dark); border:1px solid var(--sci-line);
+  box-shadow:none; animation:none;
+}
+.g-done.g-play .gbtn{ background:var(--sci-soft); }
+/* centred tiles keep their button centred too */
+.ptile.step3 .gbar{ text-align:center; }
+
+.gdots{ display:flex; gap:9px; justify-content:center; margin:8px 0 16px; }
+.gdots i{ width:13px; height:13px; border-radius:50%; background:var(--line); }
+.gdots i.done{ background:var(--sci); }
+.gdots i.on{ background:#C2530F; transform:scale(1.3); }
+
+/* steps that had no box of their own get a little room for the ring */
+p.gstep, li.gstep, .cv-you.gstep{ padding:10px 12px; border-radius:12px; }
+li.gstep{ margin:10px 0; }
+.box.todo ol:has(> li.gstep){ padding-left:0; list-style-position:inside; }
+.plan-day .ptile.gstep{ padding:12px; border-top:0; margin-top:10px; border-radius:12px; }
+.rcard.gstep, .recap .rnow.gstep{ margin-bottom:14px; }
+.cv-care-lead.gstep{ margin-bottom:16px; }
+.care-grid, .cart-grid, .plan-every{ padding-top:4px; row-gap:16px; }
+
+/* ── ONE WORD PER PAGE ─────────────────────────────────
+   Picture on the left, the word and what it means on the right, so the whole
+   card sits on a Chromebook screen without scrolling. Stacks on a phone. */
+.vpage .vcard .vn{
+  grid-column:2; font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:16px;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--accent); font-weight:600;
+}
+.vpage .vcard{
+  display:grid; grid-template-columns:auto 1fr; column-gap:22px; align-items:center;
+  text-align:left; padding:18px 22px 16px; border-radius:16px;
+}
+.vpage .vcard .art.wordart{ grid-column:1; grid-row:1 / span 4; width:128px; height:128px; margin:0; }
+.vpage .vcard .w, .vpage .vcard .es, .vpage .vcard .d{ grid-column:2; }
+.vpage .vcard .w{ font-size:46px; line-height:1.1; }
+.vpage .vcard .es{ font-size:17px; margin:2px 0 6px; }
+.vpage .vcard .d{ font-size:25px; line-height:1.4; color:var(--ink); }
+.vpage .vcard .gbar{ grid-column:1 / -1; }
+@media (max-width:560px){
+  .vpage .vcard{ grid-template-columns:1fr; text-align:center; }
+  .vpage .vcard .art.wordart{ grid-row:auto; margin:0 auto 6px; }
+  .vpage .vcard .w, .vpage .vcard .es, .vpage .vcard .d, .vpage .vcard .vn{ grid-column:1; }
+  .vpage .vcard .w{ font-size:38px; }
+  .vpage .vcard .gbar{ text-align:center; }
+}
+.vex{
+  margin-top:18px; padding:14px 17px; border-radius:13px;
+  background:var(--warn-soft); border:1px solid rgba(224,180,104,.55);
+  font-size:21px; line-height:1.55; color:var(--ink);
+}

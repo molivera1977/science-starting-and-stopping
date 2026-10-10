@@ -288,15 +288,21 @@ const speech = {
      lights up is the PART being spoken: the card, the bar, the choice. Each part
      carries the text to say for it, and the boundary event picks the part whose
      words are being read. */
-  sayParts(parts, rate, onEnd) {
+  /* onEnd(ok, why): ok is true only when the voice reached the end by
+     itself. why is 'ended', 'cancelled' (someone stopped it or started
+     another), 'unavailable' (this device has no speech) or 'error'. The
+     guided screens (guide.js) unlock the next step on ok and on nothing
+     else. onStart fires when sound actually begins. */
+  sayParts(parts, rate, onEnd, onStart) {
     this.stop();
     this.parts = parts.map(p => p.el).filter(Boolean);
     this.parts.forEach(el => el.classList.remove('spk'));
-    if (!('speechSynthesis' in window) || !parts.length) { if (onEnd) onEnd(); return; }
+    if (!('speechSynthesis' in window) || !parts.length) { if (onEnd) onEnd(false, 'unavailable'); return; }
 
     const texts = parts.map(p => String(p.text || '').trim()).filter(Boolean);
     const text = texts.join(' ');
-    if (!text) { if (onEnd) onEnd(); return; }
+    if (!text) { if (onEnd) onEnd(false, 'unavailable'); return; }
+    const job = this.job = { cancelled: false };
 
     /* where each part starts, counted in words */
     const bounds = []; let n = 0;
@@ -322,6 +328,7 @@ const speech = {
       light(text.slice(0, e.charIndex).split(/\s+/).filter(Boolean).length);
     };
     u.onstart = () => {
+      if (onStart) onStart();
       /* voices that never report a boundary still get a moving highlight */
       const per = Math.max(240, (text.length * 58) / Math.max(1, total) * (READ_RATE / u.rate));
       let i = 0;
@@ -331,10 +338,15 @@ const speech = {
         if (i > total) { clearInterval(this.timer); this.timer = null; }
       }, per);
     };
-    u.onend = u.onerror = () => { this.clear(); if (onEnd) onEnd(); };
+    u.onend = () => { this.clear(); if (onEnd) onEnd(!job.cancelled, job.cancelled ? 'cancelled' : 'ended'); };
+    u.onerror = e => {
+      this.clear();
+      const stopped = job.cancelled || /interrupted|cancell?ed/.test((e && e.error) || '');
+      if (onEnd) onEnd(false, stopped ? 'cancelled' : 'error');
+    };
 
     try { window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); }
-    catch (e) { if (onEnd) onEnd(); }
+    catch (e) { if (onEnd) onEnd(false, 'error'); }
   },
   clear() {
     if (this.timer) { clearInterval(this.timer); this.timer = null; }
@@ -342,6 +354,7 @@ const speech = {
     (this.parts || []).forEach(el => el.classList.remove('spk'));
   },
   stop() {
+    if (this.job) this.job.cancelled = true;
     this.clear();
     try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch (e) {}
   }
@@ -599,6 +612,7 @@ const app = {
   data:{ A:[], B:[], C:[], D:[] },
   runIndex:{ A:0, B:0, C:0, D:0 },
   lastRun:null,
+  heard:{},        /* guide.js: how many steps of each guided screen were heard to the end */
 
   /* ── screens ── */
   show(id) {
@@ -672,6 +686,7 @@ const app = {
         qIndex:this.qIndex, vocabAns:this.vocabAns, analysisAns:this.analysisAns, claimsAns:this.claimsAns,
         exitAns:this.exitAns, written:this.written, predictions:this.predictions,
         data:this.data, runIndex:this.runIndex, tabSwitches:tabSwitchCount,
+        heard:this.heard,
         savedAt:new Date().toISOString()
       }));
     } catch (e) {}
@@ -702,6 +717,7 @@ const app = {
     this.data = Object.assign({ A:[], B:[], C:[], D:[] }, s.data || {});
     this.runIndex = s.runIndex || { A:this.data.A.length, B:this.data.B.length, C:this.data.C.length, D:this.data.D.length };
     tabSwitchCount = s.tabSwitches || 0;
+    this.heard = s.heard || {};
   },
 
   /* ── router ── */
@@ -773,7 +789,7 @@ function buildCover() {
   /* Built before attachSpeakers below, so every tile gets its own speaker. */
   const care = document.getElementById('cv-care');
   if (care) care.innerHTML = (window.CARE || []).map(c =>
-    '<div class="ptile ctile">' + art((window.CARE_ART || {})[c.art], 'ptart') +
+    '<div class="ptile ctile" data-step>' + art((window.CARE_ART || {})[c.art], 'ptart') +
     '<div><b class="pt">' + c.t + '</b><span class="pd">' + c.d + '</span>' +
     '<span class="ctest">' + c.test + '</span></div></div>').join('');
   document.getElementById('cover-go').onclick = () => { logEvent('cover_begin'); showWhy(); };
@@ -833,6 +849,7 @@ function buildStart() {
     app.vocabAns = {}; app.analysisAns = {}; app.claimsAns = {}; app.exitAns = {};
     app.written = {}; app.predictions = {};
     app.data = { A:[], B:[], C:[], D:[] }; app.runIndex = { A:0, B:0, C:0, D:0 };
+    app.heard = {};
     app.timerSeconds = 0; app.labStart = null; app.labEnd = null;
     app.startedAt = new Date().toISOString();
     logEvent('start', { name:app.studentName });
@@ -871,12 +888,12 @@ function recapHTML(which) {
   if (!r) return '';
   return '<div class="recap">' +
     '<span class="lbl">What Mr. O just showed you</span>' +
-    '<p class="rl">' + r.lead + '</p>' +
+    '<p class="rl" data-step>' + r.lead + '</p>' +
     r.items.map((it, i) =>
-      '<div class="rcard"><span class="rnum" data-noread>' + (i + 1) + '</span>' +
+      '<div class="rcard" data-step><span class="rnum" data-noread>' + (i + 1) + '</span>' +
       '<div class="rbody"><div class="rt">' + it.t + '</div>' +
       '<div class="rd">' + it.d + '</div></div></div>').join('') +
-    '<div class="rnow">' + r.now + '</div>' +
+    '<div class="rnow" data-step>' + r.now + '</div>' +
   '</div>';
 }
 
@@ -887,21 +904,22 @@ function planHTML() {
   const P = window.INTRO_PLAN;
   if (!P) return '';
   const tArt = window.THING_ART || {};
-  return '<span class="plan-h">Which test, which day</span>' +
-    '<div class="plan-days">' + P.days.map(day =>
+  /* One page per idea: today's tests, next time's tests, then what happens
+     every single time. Each tile is a step that has to be heard (guide.js). */
+  return P.days.map(day =>
+      '<div data-gpage><span class="plan-h">Which test, which day</span>' +
       '<div class="plan-day"><p class="pday">' + day.label + '</p>' +
       day.tests.map(t =>
-        '<div class="ptile">' + art(INV_ART[t.inv], 'ptart') +
+        '<div class="ptile" data-step>' + art(INV_ART[t.inv], 'ptart') +
         '<div><b class="pt">' + t.t + '</b><span class="pd">' + t.d + '</span></div></div>'
-      ).join('') + '</div>').join('') +
-    '</div>' +
-    '<span class="plan-h">Every single time</span>' +
+      ).join('') + '</div></div>').join('') +
+    '<div data-gpage><span class="plan-h">Every single time</span>' +
     '<div class="plan-every">' + P.every.map((e, i) =>
-      '<div class="ptile step3"><span class="pnum" data-noread>' + (i + 1) + '</span>' +
+      '<div class="ptile step3" data-step><span class="pnum" data-noread>' + (i + 1) + '</span>' +
       art(tArt[e.art], 'ptart') +
       '<div><b class="pt">' + e.t + '</b><span class="pd">' + e.d + '</span></div></div>'
     ).join('') + '</div>' +
-    '<p class="plan-calm">' + P.calm + '</p>';
+    '<p class="plan-calm" data-step>' + P.calm + '</p></div>';
 }
 
 /* Page two: the big question, "you will be the scientist", and why they
@@ -911,6 +929,7 @@ function showWhy() {
   app.phase = 'why'; drawRail();
   app.show('why-screen');
   attachSpeakers(document.getElementById('why-screen'));
+  guide.run(document.getElementById('why-screen'), { id: 'why' });
   document.getElementById('why-next').onclick = () => { speech.stop(); showCare(); };
 }
 
@@ -920,6 +939,7 @@ function showCare() {
   app.phase = 'care'; drawRail();
   app.show('care-screen');
   attachSpeakers(document.getElementById('care-screen'));
+  guide.run(document.getElementById('care-screen'), { id: 'care' });
   document.getElementById('care-next').onclick = () => { speech.stop(); showSummary(); };
 }
 
@@ -928,6 +948,7 @@ function showSummary() {
   document.getElementById('recap-host').innerHTML = recapHTML('day1');
   app.show('summary-screen');
   attachSpeakers(document.getElementById('summary-screen'));
+  guide.run(document.getElementById('summary-screen'), { id: 'summary' });
   /* Nothing on these pages speaks on its own. Marcos 10/9: "this read on its
      own. It shouldn't." Twenty-two devices would all start talking at once. */
   document.getElementById('sum-next').onclick = () => { speech.stop(); showCart(); };
@@ -943,9 +964,10 @@ function showCart() {
   if (scene) scene.innerHTML = window.MEET_CART_SCENE || '';
   const pics = Object.assign({}, window.THING_ART || {}, window.CART_ART || {});
   document.getElementById('cart-tiles').innerHTML = (window.CART_INTRO || []).map(c =>
-    '<div class="ptile step3">' + art(pics[c.art], 'ptart') +
+    '<div class="ptile step3" data-step>' + art(pics[c.art], 'ptart') +
     '<div><b class="pt">' + c.t + '</b><span class="pd">' + c.d + '</span></div></div>').join('');
   app.show('cart-screen');
+  guide.run(document.getElementById('cart-screen'), { id: 'cart' });
   document.getElementById('cart-next').onclick = () => { speech.stop(); showPlan(); };
 }
 
@@ -955,7 +977,7 @@ function showPlan() {
   host.innerHTML = planHTML();
   app.show('plan-screen');
   attachSpeakers(document.getElementById('plan-screen'));
-  document.getElementById('ra-again').onclick = () => speech.sayScreen(host, INTRO_RATE);
+  guide.run(document.getElementById('plan-screen'), { id: 'plan' });
   /* Plan -> the name picker, not straight into the lesson. */
   document.getElementById('ra-next').onclick = () => {
     speech.stop(); app.phase = 'start'; app.show('start-screen'); drawRail();
@@ -966,17 +988,24 @@ function showPlan() {
    VOCABULARY
 ══════════════════════════════════════════════════════ */
 function renderVocab() {
-  document.getElementById('vocab-cards').innerHTML = LESSON.vocab.map(v =>
-    '<div class="vcard">' + art(WORD_ART[v.word], 'wordart') +
+  /* One word per page (Marcos 10/9: "Split them"). Six cards at once was 3.5
+     screens of text; now a page is one word and its examples, and each has to
+     be heard before the next word appears (guide.js). */
+  const n = LESSON.vocab.length;
+  document.getElementById('vocab-cards').innerHTML = LESSON.vocab.map((v, i) =>
+    '<div class="vpage" data-gpage>' +
+    '<div class="vcard" data-step>' + art(WORD_ART[v.word], 'wordart') +
+    '<div class="vn">Word ' + (i + 1) + ' of ' + n + '</div>' +
     '<div class="w">' + v.word + '</div>' +
     /* data-noread: textOf() strips these before speaking, so the Spanish
        stays on screen for the reader who wants it and the English voice
        never tries to pronounce it. */
     '<div class="es" data-noread>en espa&ntilde;ol: ' + v.es + '</div>' +
-    '<div class="d">' + v.def + '</div>' +
-    (v.ex ? '<div class="ex"><span class="exlbl">For example</span>' + v.ex + '</div>' : '') +
+    '<div class="d">' + v.def + '</div></div>' +
+    (v.ex ? '<div class="vex" data-step><span class="exlbl">For example</span>' + v.ex + '</div>' : '') +
     '</div>').join('');
   document.getElementById('vocab-next').onclick = () => app.go('vq');
+  guide.run(document.getElementById('vocab-screen'), { id: 'vocab' });
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1349,6 +1378,7 @@ function renderPredict(inv) {
   steps.innerHTML = '';
   (inv.doSteps || []).forEach(t => {
     const li = document.createElement('li');
+    li.setAttribute('data-step', '');
     li.innerHTML = t;
     steps.appendChild(li);
   });
@@ -1373,6 +1403,7 @@ function renderPredict(inv) {
   });
   nx.disabled = !already;
   attachSpeakers(document.getElementById('predict-card'));
+  guide.run(document.getElementById('predict-card'), { id: 'predict' + inv.id });
   nx.onclick = () => { logEvent('predict', { inv:inv.id, v:stripTags(app.predictions[inv.id]) }); app.next(); };
 
 }
@@ -1779,6 +1810,13 @@ function missedPredictions() {
 ══════════════════════════════════════════════════════ */
 function renderDayGate() {
   app.show('daygate-screen');
+  /* back to its opening state every time: the choices on, the rest off */
+  document.getElementById('dg-choices').classList.remove('hidden');
+  document.getElementById('dg-stopped').classList.add('hidden');
+  const recapHost = document.getElementById('dg-recap');
+  recapHost.classList.add('hidden'); recapHost.innerHTML = '';
+  const gateRoot = document.getElementById('daygate-screen');
+  const hidePages = () => gateRoot.querySelectorAll('[data-gpage],.gdots').forEach(n => n.classList.add('ghide'));
   const pushes = (app.data.A || []).length + (app.data.B || []).length;
   const surfaces = new Set((app.data.A || []).map(r => r.surface)).size;
   /* "1 different surfaces" is not a sentence. Count words out properly —
@@ -1795,22 +1833,28 @@ function renderDayGate() {
   document.getElementById('dg-next').onclick = () => {
     logEvent('day2_start', { cleared: 'teacher said yes' });
     document.getElementById('dg-choices').classList.add('hidden');
+    hidePages();
     const host = document.getElementById('dg-recap');
+    /* Day 2 opens with the RAMP test. This button said "push test" from when
+       the push test was still on Day 2. */
     host.innerHTML = recapHTML('day2') +
-      '<div class="btnrow"><button class="btn" id="dg-go" type="button">' +
-      'Start the push test &rarr;</button></div>';
+      '<div class="btnrow" data-gafter><button class="btn" id="dg-go" type="button">' +
+      'Start the ramp test &rarr;</button></div>';
     host.classList.remove('hidden');
     attachSpeakers(host);
+    guide.run(host, { id: 'day2recap' });
     document.getElementById('dg-go').onclick = () => app.next();
-    host.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   document.getElementById('dg-stop').onclick = () => {
     logEvent('day1_stop'); app.save(); submitPartial();
     document.getElementById('dg-choices').classList.add('hidden');
+    hidePages();
     document.getElementById('dg-stopped').classList.remove('hidden');
     speech.stop();
   };
-  attachSpeakers(document.getElementById('daygate-screen'));
+  attachSpeakers(gateRoot);
+  guide.run(gateRoot, { id: 'daygate' });
 }
 
 function renderWrite() {

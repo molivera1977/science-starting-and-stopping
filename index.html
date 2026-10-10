@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232E7D6B'/%3E%3Ccircle cx='11' cy='21' r='3' fill='%23fff'/%3E%3Ccircle cx='22' cy='21' r='3' fill='%23fff'/%3E%3Crect x='7' y='11' width='18' height='7' rx='2' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="style.css?v=big1">
+<link rel="stylesheet" href="style.css?v=guide1">
 </head>
 <body>
 <div class="wrap">
@@ -65,17 +65,17 @@
        cover. The second pic should be page two." and "Too much on the page and
        the info gets lost with 4th graders." -->
   <section id="why-screen" class="card hidden">
-    <div class="cv-q">
+    <div class="cv-q" data-step>
       <span class="lbl">The big question for these two days</span>
       <p id="cv-driving"></p>
     </div>
 
-    <div class="cv-you">
+    <div class="cv-you" data-step>
       <p><b>You will be the scientist.</b> You will run tests and measure how far things go
       before they stop. Then your own numbers will tell you the answer.</p>
     </div>
 
-    <div class="btnrow">
+    <div class="btnrow" data-gafter>
       <button class="btn" id="why-next" type="button">Next &rarr;</button>
     </div>
   </section>
@@ -86,10 +86,10 @@
   <section id="care-screen" class="card hidden">
     <div class="cv-care">
       <span class="lbl">Why should you care?</span>
-      <p class="cv-care-lead">Stopping is everywhere in your life. Sometimes it is what keeps you safe.</p>
+      <p class="cv-care-lead" data-step>Stopping is everywhere in your life. Sometimes it is what keeps you safe.</p>
       <div class="care-grid" id="cv-care"></div>
     </div>
-    <div class="btnrow">
+    <div class="btnrow" data-gafter>
       <button class="btn" id="care-next" type="button">Next &rarr;</button>
     </div>
   </section>
@@ -101,7 +101,7 @@
     <div class="eyebrow">Before you start &middot; 1 of 2</div>
     <h2>What we just talked about</h2>
     <div id="recap-host"></div>
-    <div class="btnrow">
+    <div class="btnrow" data-gafter>
       <button class="btn" id="sum-next" type="button">Next &rarr;</button>
     </div>
   </section>
@@ -113,7 +113,7 @@
     <h2>Meet your cart</h2>
     <div id="cart-scene" data-noread></div>
     <div class="cart-grid" id="cart-tiles"></div>
-    <div class="btnrow">
+    <div class="btnrow" data-gafter>
       <button class="btn" id="cart-next" type="button">Next &mdash; show me the plan &rarr;</button>
     </div>
   </section>
@@ -125,9 +125,8 @@
     <div class="eyebrow">Before you start &middot; 2 of 2</div>
     <h2>Here is the plan</h2>
     <div id="ra-text"></div>
-    <div class="btnrow">
+    <div class="btnrow" data-gafter>
       <button class="btn" id="ra-next" type="button">Got it &mdash; let me start &rarr;</button>
-      <button class="btn ghost small" id="ra-again" data-noread type="button">&#128266; Read the plan to me</button>
     </div>
   </section>
 
@@ -172,11 +171,10 @@
   <!-- ══════════════ 2 · READ ALOUD ══════════════ -->
   <!-- ══════════════ 3 · VOCABULARY ══════════════ -->
   <section id="vocab-screen" class="card hidden">
-    <div class="eyebrow">Step 1 &middot; Words you need</div>
+    <div class="eyebrow">Step 1 &middot; Words you need, one at a time</div>
     <h2>Six words for today</h2>
-    <p class="lead">Read these six words. You will use them all through the lab.</p>
-    <div class="vgrid" id="vocab-cards"></div>
-    <div class="btnrow">
+    <div id="vocab-cards"></div>
+    <div class="btnrow" data-gafter>
       <button class="btn" id="vocab-next" type="button">Check that I know them &rarr;</button>
     </div>
   </section>
@@ -201,23 +199,38 @@
     <div class="card" id="predict-card">
       <div class="eyebrow" id="pr-eyebrow"></div>
       <h2 id="pr-head"></h2>
-      <p class="plain" id="pr-plain"></p>
-      <p class="lead" id="pr-question"></p>
-      <div class="varbox">
-        <div class="same"><span class="lb" id="pr-same-lb"></span><span class="v" id="pr-same-v"></span></div>
-        <div class="chg"><span class="lb" id="pr-chg-lb"></span><span class="v" id="pr-chg-v"></span></div>
+
+      <!-- Three short pages instead of one long one (Marcos 10/9: "Split
+           them"). Every [data-step] has to be heard before the next opens. -->
+      <!-- page 1 · what this test is -->
+      <div data-gpage>
+        <p class="plain" id="pr-plain" data-step></p>
+        <p class="lead" id="pr-question" data-step></p>
+        <div class="varbox">
+          <div class="same" data-step><span class="lb" id="pr-same-lb"></span><span class="v" id="pr-same-v"></span></div>
+          <div class="chg" data-step><span class="lb" id="pr-chg-lb"></span><span class="v" id="pr-chg-v"></span></div>
+        </div>
       </div>
-      <div class="box todo" id="pr-todo" data-parts>
-        <span class="lbl">What you will do &mdash; <span id="pr-docount"></span></span>
-        <p id="pr-dowhy"></p>
-        <ol id="pr-dosteps"></ol>
+
+      <!-- page 2 · what you will do -->
+      <div data-gpage>
+        <div class="box todo" id="pr-todo" data-parts>
+          <span class="lbl">What you will do &mdash; <span id="pr-docount"></span></span>
+          <p id="pr-dowhy" data-step></p>
+          <ol id="pr-dosteps"></ol>
+        </div>
       </div>
-      <hr class="hr">
-      <p class="qtext" id="pr-predict"></p>
-      <p class="counter">A prediction is not graded right or wrong. Scientists write it down <i>before</i> they test, then check it after.</p>
-      <div class="opts" id="pr-opts"></div>
-      <div class="btnrow">
-        <button class="btn" id="pr-next" type="button" disabled>Lock in my prediction &rarr;</button>
+
+      <!-- page 3 · your prediction -->
+      <div data-gpage>
+        <p class="counter" data-step>A prediction is not graded right or wrong. Scientists write it down <i>before</i> they test, then check it after.</p>
+        <div data-gafter>
+          <p class="qtext" id="pr-predict"></p>
+          <div class="opts" id="pr-opts"></div>
+          <div class="btnrow">
+            <button class="btn" id="pr-next" type="button" disabled>Lock in my prediction &rarr;</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -272,38 +285,51 @@
   <section id="daygate-screen" class="card hidden">
     <div class="eyebrow">End of Day 1</div>
     <h2>Nice work. You finished both of today&rsquo;s tests.</h2>
-    <p class="lead" id="dg-did"></p>
+    <!-- page 1 · what you did today -->
+    <div data-gpage>
+      <p class="lead" id="dg-did" data-step></p>
+    </div>
+
+    <!-- page 2 · what happens next time -->
+    <div data-gpage>
     <div class="box todo" data-parts>
       <span class="lbl">Next time you will do two more tests</span>
       <ol>
-        <li><b>The ramp test.</b> You put a car at the top of a ramp and let it go.
+        <li data-step><b>The ramp test.</b> You put a car at the top of a ramp and let it go.
         <b>You do not push it at all</b> &mdash; gravity pulls it down on its own. You try three
         ramp heights: 1 book high, then 2 books, then 3 books. Twice each, so <b>6 runs</b>.
         You are finding out whether a taller ramp sends the car farther.</li>
 
-        <li><b>The truck test.</b> You push a car, then you push a truck, with the exact same
+        <li data-step><b>The truck test.</b> You push a car, then you push a truck, with the exact same
         push on the exact same wood. The truck is the heavier one. Twice each, so
         <b>4 pushes</b>. You are finding out whether the heavy one goes as far as the light one.</li>
 
-        <li><b>Then you explain what you found.</b> You will not have to write a paragraph.
+        <li data-step><b>Then you explain what you found.</b> You will not have to write a paragraph.
         You pick your answer three times: <b>what you think is true</b>, then <b>the numbers from
         your own table that show it</b>, then <b>why it happened</b>. The site puts your three
         picks together into one explanation and shows it to you.</li>
       </ol>
-      <p>That is <b>10 runs</b> altogether &mdash; fewer than today.</p>
+      <p data-step>That is <b>10 runs</b> altogether &mdash; fewer than today.</p>
     </div>
+    </div>
+
+    <!-- page 3 · stop and ask -->
+    <div data-gpage>
     <div id="dg-choices">
-      <div class="box ask" data-parts>
+      <div class="box ask" data-parts data-step>
         <span class="lbl">Stop here</span>
         <p><b>Ask Mr. O if you should go on to Day 2.</b></p>
         <p>Put your hand up and ask. Do not start Day 2 on your own &mdash; he will
         show the class the new tests first, and they are easier to do after he does.</p>
       </div>
-      <p class="qtext">What did Mr. O say?</p>
-      <div class="btnrow">
-        <button class="btn" id="dg-next" type="button">He said I can start Day 2 &rarr;</button>
-        <button class="btn ghost" id="dg-stop" type="button">He said stop here for today</button>
+      <div data-gafter>
+        <p class="qtext">What did Mr. O say?</p>
+        <div class="btnrow">
+          <button class="btn" id="dg-next" type="button">He said I can start Day 2 &rarr;</button>
+          <button class="btn ghost" id="dg-stop" type="button">He said stop here for today</button>
+        </div>
       </div>
+    </div>
     </div>
     <div id="dg-recap" class="hidden"></div>
     <div id="dg-stopped" class="hidden">
@@ -384,13 +410,14 @@
   </p>
 </div>
 
-<script src="data/art.js?v=big1"></script>
-<script src="data/lesson.js?v=big1"></script>
-<script src="data/questions.js?v=big1"></script>
-<script src="script.js?v=big1"></script>
-<script src="preview.js?v=big1"></script>
+<script src="data/art.js?v=guide1"></script>
+<script src="data/lesson.js?v=guide1"></script>
+<script src="data/questions.js?v=guide1"></script>
+<script src="guide.js?v=guide1"></script>
+<script src="script.js?v=guide1"></script>
+<script src="preview.js?v=guide1"></script>
 <!-- The pre-push check. Runs only when the address has ?qa in it. -->
-<script>if (/[?&]qa\b/.test(location.search)) { var q = document.createElement('script'); q.src = 'qa.js?v=big1'; document.body.appendChild(q); }</script>
+<script>if (/[?&]qa\b/.test(location.search)) { var q = document.createElement('script'); q.src = 'qa.js?v=guide1'; document.body.appendChild(q); }</script>
 
 <!-- ══════════════ WORD HELP — on every working screen ══════════════
      Marcos 10/9: "add reminders of those definitions. Don't expect them to

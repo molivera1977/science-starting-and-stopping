@@ -10,6 +10,9 @@
    stop, in the order a student meets them. Left and right arrow keys work
    too.
 
+   Guided screens (guide.js) show every step already unlocked here, so you
+   can read straight through without listening to each one.
+
    Sample numbers fill every data table (the lesson plan's expected averages),
    so graphs, data questions and the built explanation all show real values.
    On a push screen that investigation's table is emptied, so you see what a
@@ -64,7 +67,16 @@
         qs.forEach((q, i) => out.push({ phase: p, q: i,
           label: NAMES[p] + ' · ' + (i + 1) + ' of ' + qs.length }));
       } else {
-        out.push({ phase: p, label: NAMES[p] || p });
+        /* A guided screen with several pages (one word per page, the three
+           predict pages) is one stop PER PAGE, so the preview shows exactly
+           what a student sees. The count comes from the screen's own markup. */
+        const n = window.guide ? guide.pagesFor(p) : 0;
+        if (n > 1) {
+          for (let i = 0; i < n; i++) out.push({ phase: p, gp: i,
+            label: (NAMES[p] || p) + ' \u00b7 ' + (p === 'vocab' ? 'word ' : 'page ') + (i + 1) + ' of ' + n });
+        } else {
+          out.push({ phase: p, label: NAMES[p] || p });
+        }
       }
     });
     return out;
@@ -121,6 +133,7 @@
       app.go(p);
       if (stop.q != null) { app.qIndex = stop.q; app.qLocked = false; renderQ(); }
     }
+    if (stop.gp != null && window.guide && guide.current) guide.current.goto(stop.gp);
     syncWordHelp(p);
     document.getElementById('tp-jump').value = String(at);
     document.getElementById('tp-pos').textContent = (at + 1) + ' / ' + STOPS.length;

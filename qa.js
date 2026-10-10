@@ -16,7 +16,7 @@
      C3  nothing starts talking on its own when a page opens
      C4  every preview stop shows exactly one screen, in the right phase
      C5  every visible piece of text belongs to a block that can be read aloud
-     C6  every readable block has its own speaker icon
+     C6  every readable block has its own speaker (or its step's Listen button)
      C7  every readable block visibly lights up while it is being read
      C8  no uncaught errors anywhere
      C9  no rows sent to the sheet
@@ -24,7 +24,15 @@
      C11 nothing mentions the cart before the Meet your cart page
      C12 every question has its own feedback
      C13 no text a student reads is under 16px
-   It also lists how many words each screen asks a student to take in.
+     C14 guided screens: Next does not exist until every step was heard to
+         the end, in order; stopping the voice early does not count
+     C15 the teacher preview reaches every page of every guided screen
+   It also lists how many words each screen asks a student to take in, and
+   how many words each guided screen makes them listen to.
+
+   The voice is replaced by a stand-in while the guided screens are tested,
+   so C14 tests the lock, not the device's speech. Real speech has to be
+   tried by ear on a real device.
 ═══════════════════════════════════════════════════════ */
 (async function () {
   const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -42,6 +50,8 @@
   for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); original[k] = localStorage.getItem(k); }
 
   const visible = () => [...document.querySelectorAll('section')].filter(s => !s.classList.contains('hidden'));
+  const shown = el => !!el && el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden';
+  const wordsIn = t => (String(t).match(/[A-Za-z0-9']+/g) || []).length;
   const hush = () => { try { speechSynthesis.cancel(); speech.stop(); } catch (e) {} };
   await wait(900); hush();
 
@@ -57,11 +67,65 @@
      for a change this test made itself. */
   if (KEY in original) localStorage.setItem(KEY, original[KEY]); else localStorage.removeItem(KEY);
 
-  /* C2, C3 */
+  /* ── the guided screens ──────────────────────────────────
+     A stand-in for the voice: it "finishes" at once, or is "stopped early"
+     when endOk is false. Anything that asks it to speak when this test did
+     not press a button is the page talking on its own. */
+  const realSay = speech.sayParts;
+  let qaTap = false, endOk = true;
+  const selfTalk = [], gateBad = [], listen = [];
+  speech.sayParts = function (parts, rate, onEnd, onStart) {
+    if (!qaTap) selfTalk.push(app.phase);
+    if (onStart) onStart();
+    if (onEnd) setTimeout(() => onEnd(endOk, endOk ? 'ended' : 'cancelled'), 0);
+  };
+  const press = async btn => { qaTap = true; btn.click(); qaTap = false; await wait(40); };
+
+  /* Do what a student has to do on the guided screen inside `sec`, and note
+     anything the lock let through. `after` is what must stay out of reach
+     until the last step has been heard. */
+  async function gateCheck(name, sec, after) {
+    const steps = () => [...sec.querySelectorAll('.gstep')];
+    const done = () => steps().filter(e => e.classList.contains('g-done')).length;
+    if (!steps().length) { gateBad.push(name + ': no steps at all'); return; }
+    listen.push({ screen: name, steps: steps().length,
+      words: steps().reduce((n, e) => n + wordsIn(speech.textOf(e)), 0) });
+
+    if (shown(after)) gateBad.push(name + ': Next is reachable before anything was heard');
+    const open = steps().filter(shown);
+    if (!open[0] || !open[0].classList.contains('g-live')) gateBad.push(name + ': the first step is not open');
+    if (open.slice(1).some(e => !e.classList.contains('g-locked'))) gateBad.push(name + ': a later step is open too early');
+
+    /* stopping the voice early must not count */
+    endOk = false;
+    await press(open[0].querySelector('.gbtn'));
+    endOk = true;
+    if (done() !== 0) gateBad.push(name + ': stopping the voice early still unlocked the step');
+
+    let guard = 0;
+    while (guard++ < 120) {
+      const live = steps().filter(e => e.classList.contains('g-live')).find(shown);
+      if (live) {
+        const before = done();
+        if (shown(after)) { gateBad.push(name + ': Next appeared with a step still unheard'); break; }
+        await press(live.querySelector('.gbtn'));
+        if (done() !== before + 1) { gateBad.push(name + ': a step did not unlock after it was heard'); break; }
+        continue;
+      }
+      const nx = [...sec.querySelectorAll('.gnext')].find(shown);
+      if (nx) { nx.click(); await wait(60); continue; }
+      break;
+    }
+    if (done() !== steps().length) gateBad.push(name + ': ' + done() + ' of ' + steps().length + ' steps heard at the end');
+    if (!shown(after)) gateBad.push(name + ': Next never appeared after every step was heard');
+  }
+
+  /* C2, C3, C14 (opening pages) — the student's own path, through the lock */
   const path = [app.phase], talked = [];
   for (const id of ['cover-go', 'why-next', 'care-next', 'sum-next', 'cart-next', 'ra-next']) {
     const b = document.getElementById(id);
     if (!b) { path.push('(no #' + id + ')'); break; }
+    if (id !== 'cover-go') await gateCheck(app.phase, visible()[0], b);
     b.click(); await wait(1200);
     if (speechSynthesis.speaking || speechSynthesis.pending) talked.push(app.phase);
     hush(); path.push(app.phase);
@@ -82,13 +146,36 @@
   document.getElementById('pin-input').value = TEACHER_PIN;
   document.getElementById('pin-ok').click(); await wait(500);
   const stops = window.__previewStops();
+  const jump = async i => { const j = document.getElementById('tp-jump'); j.value = String(i);
+    j.dispatchEvent(new Event('change')); await wait(250); };
   const SPK_ATTR = ['background-color', 'box-shadow'];
   const MIN_FS = 16;   /* px — labels. Sentences are 18 and up. */
 
+  /* C14 (inside the lesson) — the same lock on the words, the predict pages
+     and the end of Day 1. guide.testGate turns the lock on inside the
+     preview, so this needs no student name and sends nothing. */
+  guide.testGate = true;
+  const AFTER = { vocab: 'vocab-next', daygate: 'dg-next' };
+  for (const ph of [...new Set(stops.filter(s => s.gp != null).map(s => s.phase))]) {
+    if (ph === 'plan') continue;                       /* walked above, as a student */
+    await jump(stops.findIndex(s => s.phase === ph));
+    const sec = visible()[0];
+    await gateCheck(ph, sec, document.getElementById(AFTER[ph] || 'pr-opts'));
+    if (ph === 'daygate') {
+      document.getElementById('dg-next').click(); await wait(200);
+      await gateCheck('day 2 recap', document.getElementById('dg-recap'), document.getElementById('dg-go'));
+    }
+  }
+  guide.testGate = false;
+  speech.sayParts = realSay;
+  rec('C14', 'Guided screens: Next is locked until every step is heard (' + listen.length + ' screens)',
+      gateBad.length === 0, gateBad.slice(0, 6).join(' | '));
+
   const phaseBad = [], uncovered = [], noSpeaker = [], noLight = [], words = [], tiny = {};
+  const cover = {}, lockedInPreview = [];
   for (let i = 0; i < stops.length; i++) {
-    if (i > 0) { document.getElementById('tp-next').click(); }
-    await wait(1000);
+    await jump(i);
+    await wait(650);
     if (speechSynthesis.speaking || speechSynthesis.pending) talked.push(stops[i].label);
     hush();
     const v = visible();
@@ -96,6 +183,14 @@
     const sec = v[0];
     const blocks = speech.readable(sec);
     const set = new Set(blocks.map(b => b.el));
+
+    /* C15 — which page of which guided screen is this? */
+    const g = guide.current;
+    if (g && shown(g.root) && (g.root === sec || sec.contains(g.root))) {
+      (cover[g.id] = cover[g.id] || { n: g.pageCount, seen: new Set() }).seen.add(g.page);
+      if ([...sec.querySelectorAll('.gstep')].some(e => shown(e) && !e.classList.contains('g-done')))
+        lockedInPreview.push(stops[i].label);
+    }
 
     /* C5 — no visible text outside a readable block */
     sec.querySelectorAll('span,div,p,li,h1,h2,h3,h4,td,th,label,b').forEach(el => {
@@ -122,11 +217,14 @@
 
     blocks.forEach(b => {
       const el = b.el;
-      /* C6 — its own speaker, attached by the page itself, not by this test */
-      if (!el.querySelector(':scope > .mini-spk') && !el.classList.contains('opt'))
-        noSpeaker.push(stops[i].label + ': "' + b.text.slice(0, 40) + '"');
-      else if (el.classList.contains('opt') && !el.querySelector('.mini-spk'))
-        noSpeaker.push(stops[i].label + ' (choice): "' + b.text.slice(0, 40) + '"');
+      /* C6 — a way to hear it: its own speaker icon that can be seen, or the
+         Listen button of the guided step it sits in. Attached by the page
+         itself, not by this test. */
+      const mine = el.querySelector(el.classList.contains('opt') ? '.mini-spk' : ':scope > .mini-spk');
+      const step = el.closest('.gstep');
+      const heardBy = (mine && getComputedStyle(mine).display !== 'none') ||
+                      (step && shown(step.querySelector('.gbtn')));
+      if (!heardBy) noSpeaker.push(stops[i].label + ': "' + b.text.slice(0, 40) + '"');
       /* C7 — visibly lights up */
       const off = getComputedStyle(el); const a = SPK_ATTR.map(k => off.getPropertyValue(k));
       el.classList.add('spk');
@@ -134,10 +232,11 @@
       el.classList.remove('spk');
       if (a.join('|') === c.join('|')) noLight.push(stops[i].label + ': "' + b.text.slice(0, 40) + '"');
     });
-    words.push({ screen: stops[i].label.replace(/ · \d+ of \d+$/, ''),
+    words.push({ screen: stops[i].label.replace(/ · (?:word |page )?\d+ of \d+$/, ''),
       words: blocks.reduce((n, b) => n + (b.text.match(/[A-Za-z]+/g) || []).length, 0) });
   }
 
+  talked.push(...selfTalk);
   rec('C3', 'Nothing speaks on its own', talked.length === 0, talked.join(', ') || 'silent');
   rec('C4', 'Every preview stop shows one screen in the right phase (' + stops.length + ' stops)',
       phaseBad.length === 0, phaseBad.join(', '));
@@ -149,6 +248,19 @@
   const tinyList = Object.keys(tiny);
   rec('C13', 'No text a student reads is under ' + MIN_FS + 'px', tinyList.length === 0,
       tinyList.length + ' small. ' + tinyList.slice(0, 6).map(k => k + ' on ' + tiny[k]).join(' | '));
+
+  /* C15 — a guided page the preview never lands on is a page Marcos cannot
+     check. Every phase the lesson says has pages must show all of them. */
+  const missed = Object.keys(cover).filter(id => cover[id].seen.size !== cover[id].n)
+    .map(id => id + ' ' + cover[id].seen.size + '/' + cover[id].n);
+  const expectPaged = [...new Set(stops.filter(s => s.gp != null).map(s => s.phase))].length;
+  const gotPaged = Object.keys(cover).filter(id => cover[id].n > 1).length;
+  rec('C15', 'Teacher preview reaches every guided page (' + Object.keys(cover).length + ' guided screens)',
+      missed.length === 0 && lockedInPreview.length === 0 && gotPaged === expectPaged,
+      (missed.length ? 'pages missed: ' + missed.join(', ') + '. ' : '') +
+      (lockedInPreview.length ? 'locked in preview: ' + lockedInPreview.slice(0, 4).join(', ') + '. ' : '') +
+      (gotPaged !== expectPaged ? gotPaged + ' paged screens seen, ' + expectPaged + ' expected' : ''));
+
   /* C12 — every question carries its own feedback. On 10/9 the feedback
      table was found keyed to the OLD question numbers: the truck question
      explained push size and the newest questions had none. This catches a
@@ -174,6 +286,7 @@
   const dense = {};
   words.forEach(w => { if (!dense[w.screen] || dense[w.screen] < w.words) dense[w.screen] = w.words; });
   window.__qaDensity = Object.entries(dense).sort((a, b) => b[1] - a[1]);
+  window.__qaListen = listen;
   report();
 
   function report() {
