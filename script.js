@@ -1164,13 +1164,20 @@ function planHTML() {
   const tArt = window.THING_ART || {};
   /* One page per idea: today's tests, next time's tests, then what happens
      every single time. Each tile is a step that has to be heard (guide.js). */
-  return P.days.map(day =>
+  return P.days.map((day, k) =>
       '<div data-gpage><span class="plan-h">Which test, which day</span>' +
       '<div class="plan-day"><p class="pday">' + day.label + '</p>' +
       day.tests.map(t =>
         '<div class="ptile" data-step>' + art(t.inv ? INV_ART[t.inv] : tArt[t.art], 'ptart') +
         '<div><b class="pt">' + t.t + '</b><span class="pd">' + t.d + '</span></div></div>'
-      ).join('') + '</div></div>').join('') +
+      ).join('') + '</div>' +
+      /* the later days as ONE short step under today's test: a preview,
+         not the plan (INTRO_PLAN.later) */
+      (k === P.days.length - 1 && P.later
+        ? '<div class="plan-day"><div class="ptile" data-step>' + art(tArt[P.later.art], 'ptart') +
+          '<div><b class="pt">' + P.later.label + '</b><span class="pd">' + P.later.text + '</span></div></div></div>'
+        : '') +
+      '</div>').join('') +
     '<div data-gpage><span class="plan-h">Every single time</span>' +
     '<div class="plan-every">' + P.every.map((e, i) =>
       '<div class="ptile step3" data-step><span class="pnum" data-noread>' + (i + 1) + '</span>' +

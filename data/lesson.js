@@ -149,21 +149,22 @@ window.WHY_REPEAT =
    picture, then the three things they do every time, then one calm line.
 ═══════════════════════════════════════════════════════ */
 window.INTRO_PLAN = {
+  /* TODAY IN FULL, THE LATER DAYS AS A PREVIEW. This page used to lay out
+     all three days, a tile for each of the four tests and one for the
+     explanation (105 words, 4 Listens about days that had not come).
+     Marcos 10/11: "we dont need to describe day 2 and 3 on day 1", and then:
+     "preview yes, go through whole plan no." So Day 1 shows today's test,
+     and `later` says in one short step that more is coming. Each later day
+     opens with its own page about its tests (RECAP.day2, RECAP.day3).
+     qa.js C28 keeps the preview short. */
   days: [
     { label: 'Day 1 &mdash; today', tests: [
       { inv: 'A', t: 'Test 1 &mdash; the surface',
-        d: 'Push the cart on ice, wood, carpet and sand. Which surface lets the cart go farthest?' } ] },
-    { label: 'Day 2', tests: [
-      { inv: 'B', t: 'Test 2 &mdash; the push',
-        d: 'Give the cart a small push, a medium push and a big push. Does a bigger push send the cart farther?' },
-      { inv: 'C', t: 'Test 3 &mdash; the ramp',
-        d: 'A <dfn>ramp</dfn> is a slope, like a slide at the park. Let a car roll down a ramp. Does a taller ramp send the car farther?' } ] },
-    { label: 'Day 3 &mdash; the last day', tests: [
-      { inv: 'D', t: 'Test 4 &mdash; the truck',
-        d: 'Push a car and a heavy truck the same way. Does the car or the truck go farther?' },
-      { art: 'investigation', t: 'Then you explain what you found',
-        d: 'You answer questions about your tests. Then you build an explanation. An <dfn>explanation</dfn> tells what happened and why.' } ] }
+        d: 'Push the cart on ice, wood, carpet and sand. Which surface lets the cart go farthest?' } ] }
   ],
+  later: { art: 'investigation', label: 'On the next two days',
+    text: '<b>Day 2</b> has two more tests: the push and the ramp. A <dfn>ramp</dfn> is a slope, like a slide at the park. ' +
+          '<b>Day 3</b> has one more test, with a truck. Then you explain what you found.' },
   every: [
     { art: 'distance',      t: 'Measure the distance the cart traveled', d: 'See how far the cart traveled from START, in centimeters.' },
     { art: 'data table',    t: 'Write the distance in your data table', d: 'A <dfn>data table</dfn> is a set of boxes for writing down what you measure. What you write down is called your <dfn>data</dfn>. Put the distance the cart traveled in a box in your data table.' },
@@ -245,16 +246,13 @@ window.CART_PAGES = [
 window.DAY_GATES = {
   daygate: {
     day: 1, head: 'Nice work. You finished today&rsquo;s test.',
-    nextLabel: 'Next time you will do two more tests',
-    nextTests: ['B', 'C'],
+    /* A preview, not the plan ("preview yes, go through whole plan no"):
+       this was two long steps on the push test and the ramp test, 118 words,
+       at the end of the longest day. Day 2 opens with its own page on both
+       tests (RECAP.day2), after Mr. O has shown them. */
+    nextLabel: 'Next time',
     next: [
-      '<b>The push test.</b> You push the cart on wood with a small push, a medium push and a big push. ' +
-        'You do each push ' + TIMES + ', so <b>' + (3 * TRIALS) + ' pushes</b>. ' +
-        'You are finding out whether a bigger push sends the cart farther.',
-      '<b>The ramp test.</b> You put a car at the top of a ramp and let the car go. ' +
-        '<b>You do not push the car at all</b> &mdash; gravity pulls the car down. You try three ramp heights: ' +
-        '1 book high, then 2 books, then 3 books. You do each ramp ' + TIMES + ', so <b>' + (3 * TRIALS) + ' runs</b>. ' +
-        'You are finding out whether a taller ramp sends the car farther.'
+      'You will do <b>two more tests</b>: the push test and the ramp test. Mr. O will show you both tests first.'
     ],
     recap: 'day2', go: 'Start the push test &rarr;'
   },
@@ -271,7 +269,7 @@ window.DAY_GATES = {
       '<b>Then you explain what you found.</b> You will not have to write a paragraph. ' +
         'You pick your answer three times: <b>what you think is true</b>, then <b>the distances from your own ' +
         'data table that prove your answer</b>, then <b>the reason why</b>. The site puts your three picks ' +
-        'together into one explanation and shows you the explanation.'
+        'together into one <dfn>explanation</dfn> and shows you the explanation. An explanation tells what happened and why.'
     ],
     recap: 'day3', go: 'Start the truck test &rarr;'
   }

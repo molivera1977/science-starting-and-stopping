@@ -54,6 +54,9 @@
          picked up with its pushes
      C26 the name page asks only for a name: almost nothing to read on it,
          and every "I can" line is inside a step of the locked page before it
+     C28 Day 1 previews the later days and does not walk through their plan:
+         the plan page shows today's test in full and the later days in one
+         short step; the End of Day 1 page says one short thing about next time
      C27 frequent understanding checks: What we just talked about, Meet your
          cart, Here is the plan, the six words and every test's results page
          are each followed at once by a check of two or three questions about
@@ -908,6 +911,28 @@
     rec('C27', 'Understanding checks after every block, 2 or 3 questions each (' + Object.keys(window.CHECKS).length + ' checks + the word check, ' +
         Object.keys(where).length + ' scored questions)', chk.length === 0,
         chk.slice(0, 6).join(' | '));
+  }
+
+  /* C28 — DAY 1 PREVIEWS THE LATER DAYS, IT DOES NOT WALK THROUGH THEM.
+     Marcos 10/11, with Day 1 running long: "we dont need to describe day 2
+     and 3 on day 1", then "preview yes, go through whole plan no." The plan
+     page had a tile for each of the four tests and the explanation, and the
+     End of Day 1 page spent 118 words on the two tests of Day 2. A preview
+     is a sentence or two; the word limits below are what "short" means here. */
+  {
+    const pv = [], P = window.INTRO_PLAN || {}, g = (window.DAY_GATES || {}).daygate || {};
+    const plain = h => String(h || '').replace(/<[^>]+>/g, ' ').replace(/&\w+;/g, ' ');
+    const laterTiles = (planHTML().match(/class="pt">\s*Test [2-9]/g) || []).length;
+    if (laterTiles) pv.push('the plan page has ' + laterTiles + ' tile' + (laterTiles === 1 ? '' : 's') + ' for tests of later days');
+    if ((P.days || []).length !== 1) pv.push('the plan page lays out ' + (P.days || []).length + ' days, not today only');
+    const laterWords = wordsIn(plain((P.later || {}).text));
+    if (!laterWords) pv.push('the plan page has no preview of the later days');
+    if (laterWords > 45) pv.push('the preview on the plan page is ' + laterWords + ' words (45 at most)');
+    const nextSteps = (g.next || []).length, nextWords = wordsIn(plain((g.next || []).join(' ')));
+    if (!nextSteps) pv.push('the End of Day 1 page has no preview of next time');
+    if (nextSteps > 1 || nextWords > 30) pv.push('the End of Day 1 page spends ' + nextSteps + ' steps and ' + nextWords + ' words on next time (1 step and 30 words at most)');
+    if ((g.nextTests || []).length) pv.push('the End of Day 1 page counts the runs of next time');
+    rec('C28', 'Day 1 previews the later days and does not walk through their plan', pv.length === 0, pv.join(' | '));
   }
 
   const vagueList = Object.keys(vague);
