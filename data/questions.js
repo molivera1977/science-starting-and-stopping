@@ -56,20 +56,25 @@ window.SKILLS = {
 
 /* ── VOCABULARY CHECK ──────────────────────────────────
    Week 1 words from the Unit Plan. Word -> meaning. */
+/* `word` says which word a question checks. The word check asks only the
+   words that get a page of their own in the word section (motion, energy,
+   gravity). Marcos 10/11: "quiz the other words not force and friction
+   again" — force and friction are checked right after What we just talked
+   about (L34, L35), so L01 and L02 are out of the asked set (CORE_IDS). */
 window.VOCAB_Q = [
-  { id:'L01',
+  { id:'L01', word:'force',
     why: "A force is a push or a pull. Kicking a ball is a push. Opening a door is a pull.", q:'What is a <b>force</b>?',
     opts:['A push or a pull on an object','A kind of metal','How heavy something is','The color of an object'], a:0 },
-  { id:'L02',
+  { id:'L02', word:'friction',
     why: "Friction pushes back on anything that is moving. That is why a ball rolling on grass slows down and stops.", q:'What is <b>friction</b>?',
     opts:['A force that pushes back on a moving object and slows the object down','A force that speeds objects up','The weight of an object','A machine with wheels'], a:0 },
-  { id:'L03',
+  { id:'L03', word:'motion',
     why: "Motion means something moved to a new place. A rolling ball is in a new spot every second.", q:'An object is in <b>motion</b> when the object &hellip;',
     opts:['changes position','stays in one place','gets heavier','makes a sound'], a:0 },
-  { id:'L04',
+  { id:'L04', word:'energy',
     why: "Things need energy to move. Your body gets energy from food. A toy car gets energy from a battery or a push.", q:'What does an object need in order to move or do work?',
     opts:['Energy','Color','A name','Friction'], a:0 },
-  { id:'L05',
+  { id:'L05', word:'gravity',
     why: "Gravity pulls things down toward Earth. That is why a dropped pencil falls down, not up.", q:'What is <b>gravity</b>?',
     opts:['The force that pulls objects down toward Earth','A force that pushes objects up','A rough surface','The speed of an object'], a:0 }
 ];
@@ -397,21 +402,21 @@ window.EXIT_Q = [
    that reads the data table and the question that says what the test
    showed. That brought five questions back (L08 L11 L12 L15 L19) and
    added the two about the cart (L32 L33). Then "add a check after what
-   we talked about and the plan" added L34-L38: 27 scored questions.
+   we talked about and the plan" added L34-L38. Then the word check moved
+   off force and friction (L01 L02 out) onto the three words not yet
+   talked about (L03 L04 L05 in): 28 scored questions.
 
    Day 1  what we talked about L34 L35 L36 · cart check L32 L33 ·
-          plan check L37 L38 · word check L01 L02 · Test 1 check L06 L08 L09
+          plan check L37 L38 · word check L03 L04 L05 · Test 1 check L06 L08 L09
    Day 2  Test 2 check L11 L10 · Test 3 check L12 L14
    Day 3  Test 4 check L15 L16 · look back L18 L19 ·
           explanation L20 L21 L29 L30 L31 · exit ticket L26 L28
 
-   Still cut, still in the file: L03 L04 L05 L07 L13 L17 L22-L25 L27.
-   "Motion and position" and "gravity" are taught on the word pages and
-   are reinforced on IXL (XPH, 8GH) — see the lesson plan.
+   Still cut, still in the file: L01 L02 L07 L13 L17 L22-L25 L27.
    Set CORE_ONLY to false and the full bank comes back.
 ═══════════════════════════════════════════════════════ */
 window.CORE_ONLY = true;
-window.CORE_IDS = ['L34','L35','L36','L32','L33','L37','L38','L01','L02','L06','L08','L09','L11','L10','L12','L14','L15','L16','L18','L19',
+window.CORE_IDS = ['L34','L35','L36','L32','L33','L37','L38','L03','L04','L05','L06','L08','L09','L11','L10','L12','L14','L15','L16','L18','L19',
                    'L20','L21','L29','L30','L31','L26','L28'];
 
 if (window.CORE_ONLY) {

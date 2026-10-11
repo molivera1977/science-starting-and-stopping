@@ -1048,6 +1048,16 @@ li.gstep{ margin:10px 0; }
 .helper p{ margin:0; font-size:19px; line-height:1.4; color:var(--ink); }
 .tablezone .helper{ margin-top:10px; }      /* narrow screens: under the table */
 
+/* THE WORDS ALREADY TAUGHT: one reminder page, a row for each word (picture,
+   one sentence, the Spanish), heard with one Listen. */
+.vmet{ border:1px solid var(--line); border-radius:12px; padding:12px 14px; background:var(--surface-2); }
+.vmet .exlbl{ display:block; margin-bottom:4px; }
+.vmrow{ display:flex; gap:16px; align-items:center; padding:10px 0; }
+.vmrow + .vmrow{ border-top:1px solid var(--line); }
+.vmrow .art.wordart{ flex:none; width:72px; height:72px; margin:0; }
+.vmrow .d{ margin:0; font-size:23px; line-height:1.4; color:var(--ink); }
+.vmrow .es{ font-size:16px; color:var(--ink-faint); font-style:italic; margin-top:2px; }
+
 /* a step taller than the window carries its Listen button at the top */
 .gstep.g-tall > .gbar{ margin:0 0 10px; }
 

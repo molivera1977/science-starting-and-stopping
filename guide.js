@@ -302,7 +302,8 @@
     const count = sel => document.querySelectorAll(sel + ' [data-gpage]').length;
     if (/^predict[ABCD]$/.test(phase)) return count('#predict-card');
     if (/^daygate/.test(phase)) return count('#daygate-screen');
-    if (phase === 'vocab') return LESSON.vocab.length;
+    /* one page for the words already taught, then a page for each new word */
+    if (phase === 'vocab') return (LESSON.vocab.some(v => v.met) ? 1 : 0) + LESSON.vocab.filter(v => !v.met).length;
     if (phase === 'cart') return (window.CART_PAGES || []).length;
     if (phase === 'plan') return (planHTML().match(/data-gpage/g) || []).length;
     return 0;

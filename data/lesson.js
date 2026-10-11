@@ -332,10 +332,21 @@ window.LESSON = {
      leans on it constantly — "First the surface, then the push" — and a word
      the task cannot be done without belongs on the word screen whether or not
      a pacing document lists it. Marcos asked for it 10/9/2026. */
+  /* WORDS ALREADY TAUGHT GET A REMINDER, NOT A PAGE. Marcos 10/11, on the
+     page for "force": "in the word section reference force and friction but
+     focus more on the other vocab words that have not been talked about."
+     Force, friction and surface are each explained on an opening page (What
+     we just talked about; surface again on Meet your cart) and force and
+     friction were just checked. So `met: true` puts a word on one short
+     reminder page, said as the one sentence in `short`; a word without it
+     gets its own page with examples, as before. The full examples of every
+     word stay in the Stuck? panel. qa.js C29 holds this. */
   vocab: [
     { word: 'force',    es: 'fuerza',     def: 'a push or a pull on an object',
+      met: true, short: 'A <dfn>force</dfn> is a push or a pull on an object.',
       ex: 'An object is any thing you can touch: a ball, a door, a backpack. Pushing a shopping cart at the store. Pulling the classroom door open. Kicking a ball. Dragging your backpack across the floor. Every single one of those is you making something move or stop. That is what a force does.' },
     { word: 'friction', es: 'resistencia',def: 'a force that pushes back on a moving object and slows the object down',
+      met: true, short: '<dfn>Friction</dfn> is a force that pushes back on a moving object and slows the object down.',
       ex: 'Your sneakers gripping the gym floor so you do not slip. Rubbing your hands together to get warm. A bike slowing down after you stop pedalling. Why it is hard to run on sand. In every one of those, something is rubbing and that rubbing is slowing things down. The rubbing is the friction.' },
     { word: 'motion',   es: '&mdash;',    def: 'when an object changes position',
       ex: 'A bus pulling away from the stop. A ball rolling down the hall. You, walking to lunch. A pencil rolling off a desk. In every one, the thing is in a different spot than the thing was a second ago. Changing spot is what motion means.' },
@@ -344,6 +355,7 @@ window.LESSON = {
     { word: 'gravity',  es: 'gravedad',   def: 'the force that pulls objects down toward Earth',
       ex: 'A dropped phone hitting the floor. Rain falling down and never up. A ball coming back down after you throw the ball. Notice the phone, the rain and the ball all go the same direction: DOWN. Gravity is what pulls all three down.' },
     { word: 'surface',  es: 'superficie', def: 'the top of the thing an object moves on',
+      met: true, short: 'A <dfn>surface</dfn> is the top of the thing an object moves on.',
       ex: 'The gym floor. The carpet in the classroom. An icy sidewalk. Sand at the beach. Each one of those feels different under your shoe, and that is exactly why the cart will not roll the same way on each one.' }
   ]
 };

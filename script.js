@@ -880,6 +880,8 @@ const app = {
     this.data = fit.data; this.runIndex = fit.runIndex; this.heard = fit.heard; this.phase = fit.phase;
     this.refit = fit.redo || fit.catchUp;
     this.resumeAt = fit.resumeAt;
+    Object.assign(this, fit.answers);                 /* only the questions asked today */
+    this.score = fit.score; this.missedQuestions = fit.missed;
     tabSwitchCount = s.tabSwitches || 0;
   },
 
@@ -1278,23 +1280,39 @@ function showGoals() {
    VOCABULARY
 ══════════════════════════════════════════════════════ */
 function renderVocab() {
-  /* One word per page (Marcos 10/9: "Split them"). Six cards at once was 3.5
-     screens of text; now a page is one word and its examples, and each has to
-     be heard before the next word appears (guide.js). */
-  const n = LESSON.vocab.length;
-  document.getElementById('vocab-cards').innerHTML = LESSON.vocab.map((v, i) =>
-    '<div class="vpage" data-gpage>' +
-    '<div class="vcard" data-step>' + art(WORD_ART[v.word], 'wordart') +
-    '<div class="vn">Word ' + (i + 1) + ' of ' + n + '</div>' +
-    '<div class="w"><dfn>' + v.word + '</dfn></div>' +
-    /* data-noread: textOf() strips these before speaking, so the Spanish
-       stays on screen for the reader who wants it and the English voice
-       never tries to pronounce it. */
-    '<div class="es" data-noread>en espa&ntilde;ol: ' + v.es + '</div>' +
-    '<div class="d">' + v.def + '</div></div>' +
-    (v.ex ? '<div class="vex" data-step><span class="exlbl">For example</span>' + v.ex + '</div>' : '') +
-    '</div>').join('');
-  document.getElementById('vocab-next').onclick = () => app.go('vq');
+  /* One word per page (Marcos 10/9: "Split them"), each heard before the next
+     appears (guide.js) — for the words that are NEW here. The words already
+     taught on an opening page share one short reminder page first (10/11:
+     "reference force and friction but focus more on the other vocab words
+     that have not been talked about"). Which is which is `met` on the word
+     in data/lesson.js. */
+  const met = LESSON.vocab.filter(v => v.met), fresh = LESSON.vocab.filter(v => !v.met);
+  const num = n => ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'][n] || String(n);
+  const spanish = v => '<div class="es" data-noread>en espa&ntilde;ol: ' + v.es + '</div>';
+  document.getElementById('vocab-cards').innerHTML =
+    (met.length
+      ? '<div class="vpage" data-gpage><div class="vmet" data-step>' +
+        '<span class="exlbl">You already know ' + num(met.length) + ' of the ' + num(LESSON.vocab.length) + ' words</span>' +
+        met.map(v => '<div class="vmrow">' + art(WORD_ART[v.word], 'wordart') +
+          '<div><p class="d">' + (v.short || '<dfn>' + v.word + '</dfn>: ' + v.def + '.') + '</p>' + spanish(v) + '</div></div>').join('') +
+        '</div></div>'
+      : '') +
+    fresh.map((v, i) =>
+      '<div class="vpage" data-gpage>' +
+      '<div class="vcard" data-step>' + art(WORD_ART[v.word], 'wordart') +
+      '<div class="vn">' + (met.length ? 'New word ' : 'Word ') + (i + 1) + ' of ' + fresh.length + '</div>' +
+      '<div class="w"><dfn>' + v.word + '</dfn></div>' +
+      /* data-noread: textOf() strips these before speaking, so the Spanish
+         stays on screen for the reader who wants it and the English voice
+         never tries to pronounce it. */
+      spanish(v) +
+      '<div class="d">' + v.def + '</div></div>' +
+      (v.ex ? '<div class="vex" data-step><span class="exlbl">For example</span>' + v.ex + '</div>' : '') +
+      '</div>').join('');
+  /* the button says what comes next: the questions on the new words */
+  const nQ = bankFor('vq').length, b = document.getElementById('vocab-next');
+  if (nQ) b.innerHTML = 'Answer ' + nQ + ' question' + (nQ === 1 ? '' : 's') + ' about the ' + (met.length ? 'new ' : '') + 'words &rarr;';
+  b.onclick = () => app.go('vq');
 }
 
 /* ══════════════════════════════════════════════════════
@@ -2302,12 +2320,30 @@ function fitSaved(s) {
      asked. Those questions count toward the score, so the student is sent
      to the first such check, and from there next() walks the rest and then
      returns the student to `resumeAt`, the place worked out above. */
+  /* ANSWERS TO QUESTIONS THE LESSON NO LONGER ASKS (10/11: the word check
+     moved from force and friction to the other three words). They are
+     taken out, and so is the point for each one that was right: the score
+     is out of the questions asked today. */
+  const askedNow = Object.keys(Q_PHASE).reduce((all, p) => all.concat(bankFor(p).map(x => x.id)), []);
+  const wasMissed = id => (s.missedQuestions || []).some(m => m.id === id);
+  const answers = {};
+  let score = s.score || 0;
+  [...new Set(Object.keys(Q_PHASE).map(p => Q_PHASE[p].ans))].forEach(key => {
+    answers[key] = {};
+    Object.keys(s[key] || {}).forEach(id => {
+      if (askedNow.indexOf(id) !== -1) answers[key][id] = s[key][id];
+      else if (!wasMissed(id)) score--;
+    });
+  });
+  score = Math.max(0, score);
+  const missed = (s.missedQuestions || []).filter(m => askedNow.indexOf(m.id) !== -1);
+
   let resumeAt = '', catchUp = '';
-  const saidTo = p => s[Q_PHASE[p].ans] || {};
+  const saidTo = p => answers[Q_PHASE[p].ans] || {};
   const behind = PHASES.slice(0, Math.max(0, PHASES.indexOf(phase)))
     .find(p => isQPhase(p) && bankFor(p).some(q => saidTo(p)[q.id] == null));
   if (behind) { catchUp = behind; resumeAt = phase; phase = behind; }
-  return { data, runIndex, heard, phase, redo, catchUp, resumeAt };
+  return { data, runIndex, heard, phase, redo, catchUp, resumeAt, answers, score, missed };
 }
 
 function groupsFor(invKey) {

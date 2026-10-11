@@ -57,6 +57,10 @@
      C28 Day 1 previews the later days and does not walk through their plan:
          the plan page shows today's test in full and the later days in one
          short step; the End of Day 1 page says one short thing about next time
+     C29 the word section: a word already explained on an earlier page gets
+         one short reminder, a word that is new gets its own page with an
+         example, and the word check asks every new word and no word that
+         was already checked
      C27 frequent understanding checks: What we just talked about, Meet your
          cart, Here is the plan, the six words and every test's results page
          are each followed at once by a check of two or three questions about
@@ -613,6 +617,15 @@
       if ('runA0' in f3.heard || 'runA3' in f3.heard || 'runB0' in f3.heard) fitBad.push('an older save kept "new this time" cards as heard');
       if (f3.heard.graphA !== 7) fitBad.push('an older save lost a page that was heard');
     }
+    /* answers to questions the lesson no longer asks are taken out, and so is
+       the point for the one that was right (the score is out of today's
+       questions); everything that is still asked is kept */
+    const stale = fitSaved(Object.assign({}, mid, { score: 5, missedQuestions: [{ id: 'L99' }],
+      vocabAns: Object.assign({ L98: 0, L99: 1 }, mid.vocabAns) }));
+    if (stale.score !== 4 || 'L98' in stale.answers.vocabAns || 'L99' in stale.answers.vocabAns || stale.missed.length)
+      fitBad.push('answers to questions no longer asked were kept (score ' + stale.score + ', ' + stale.missed.length + ' misses)');
+    if (Object.keys(mid.vocabAns || {}).some(id => !(id in stale.answers.vocabAns)) || stale.phase !== 'runA' || stale.catchUp)
+      fitBad.push('taking out old answers disturbed answers that are still asked');
     /* rows that are not rows at all (a damaged save) must not crash */
     try { const f4 = fitSaved({ phase: 'runB', data: { A: [1, 2, 3], B: null } }); if ((f4.resumeAt || f4.phase) !== 'runA' || f4.data.A.length) fitBad.push('a damaged save was not reset to Test 1'); }
     catch (e) { fitBad.push('a damaged save crashed: ' + e.message); }
@@ -911,6 +924,40 @@
     rec('C27', 'Understanding checks after every block, 2 or 3 questions each (' + Object.keys(window.CHECKS).length + ' checks + the word check, ' +
         Object.keys(where).length + ' scored questions)', chk.length === 0,
         chk.slice(0, 6).join(' | '));
+  }
+
+  /* C29 — THE WORD SECTION SPENDS ITS TIME ON THE NEW WORDS. Marcos 10/11, on
+     a full page for "force" two pages after force was taught and checked:
+     "reference force and friction but focus more on the other vocab words
+     that have not been talked about. Also quiz the other words not force and
+     friction again." A word is `met` in data/lesson.js when an earlier page
+     already explains it. */
+  {
+    const wb = [];
+    const metW = LESSON.vocab.filter(v => v.met), newW = LESSON.vocab.filter(v => !v.met);
+    const fv = flow.findIndex(f => /^Six words/.test(f.label));
+    if (fv === -1) wb.push('the word section is not in the preview');
+    const before = fv === -1 ? [] : flow.slice(0, fv);
+    /* shown short ONLY if an earlier page really explains the word... */
+    metW.forEach(v => { if (!before.some(f => f.taught.indexOf(v.word) !== -1)) wb.push('"' + v.word + '" is only a reminder here, but no earlier page explains "' + v.word + '"'); });
+    /* ...and a word an earlier page explains is not given a whole page again */
+    newW.forEach(v => { if (before.some(f => f.taught.indexOf(v.word) !== -1)) wb.push('"' + v.word + '" gets a full page although an earlier page already explains "' + v.word + '"');
+                        if (!v.ex) wb.push('"' + v.word + '" is new and has no example'); });
+    /* the reminder is one short sentence a word */
+    const remWords = wordsIn(metW.map(v => String(v.short || '').replace(/<[^>]+>/g, ' ')).join(' '));
+    metW.forEach(v => { if (!v.short) wb.push('"' + v.word + '" has no reminder sentence'); });
+    if (metW.length && remWords > 20 * metW.length) wb.push('the reminder is ' + remWords + ' words for ' + metW.length + ' words (20 a word at most)');
+    /* pages: one reminder page, then one page for each new word */
+    const pages = stops.filter(s => s.phase === 'vocab').length, wantPages = (metW.length ? 1 : 0) + newW.length;
+    if (pages !== wantPages) wb.push('the word section has ' + pages + ' pages, not ' + wantPages);
+    /* the word check asks every new word, and no word that was already checked */
+    const vq = bankFor('vq');
+    vq.forEach(x => { const v = LESSON.vocab.find(w => w.word === x.word);
+      if (!v) wb.push(x.id + ' does not say which word it checks');
+      else if (v.met) wb.push(x.id + ' asks about "' + x.word + '" again'); });
+    newW.forEach(v => { if (!vq.some(x => x.word === v.word)) wb.push('no question in the word check asks about "' + v.word + '"'); });
+    rec('C29', 'The word section: a reminder for words already taught, a page for each new word, and the check asks the new words',
+        wb.length === 0, wb.slice(0, 6).join(' | '));
   }
 
   /* C28 — DAY 1 PREVIEWS THE LATER DAYS, IT DOES NOT WALK THROUGH THEM.

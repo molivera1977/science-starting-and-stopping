@@ -68,7 +68,7 @@
         const n = window.guide ? guide.pagesFor(p) : 0;
         if (n > 1) {
           for (let i = 0; i < n; i++) out.push({ phase: p, gp: i,
-            label: (NAMES[p] || p) + ' \u00b7 ' + (p === 'vocab' ? 'word ' : 'page ') + (i + 1) + ' of ' + n });
+            label: (NAMES[p] || p) + ' \u00b7 page ' + (i + 1) + ' of ' + n });
         } else {
           out.push({ phase: p, label: NAMES[p] || p });
         }
