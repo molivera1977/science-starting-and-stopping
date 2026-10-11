@@ -61,6 +61,9 @@
          one short reminder, a word that is new gets its own page with an
          example, and the word check asks every new word and no word that
          was already checked
+     C30 a question answered from the student's own data has the data table
+         on the screen with it: every check after a test, the look back, and
+         every explanation question; and the right test's table
      C27 frequent understanding checks: What we just talked about, Meet your
          cart, Here is the plan, the six words and every test's results page
          are each followed at once by a check of two or three questions about
@@ -289,7 +292,7 @@
 
   const phaseBad = [], uncovered = [], noSpeaker = [], noLight = [], words = [], tiny = {};
   const cover = {}, lockedInPreview = [], apart = [], loose = [], flow = [];
-  const tooWide = [];
+  const tooWide = [], noData = [];
   /* C17 — name the thing. Marcos 10/10, on "Which one lets it go farthest?":
      "don't say it, say what you are talking about". A struggling reader
      cannot carry "it" back to the noun, so student text says the noun again.
@@ -332,6 +335,46 @@
     const sec = v[0];
     const blocks = speech.readable(sec);
     const set = new Set(blocks.map(b => b.el));
+
+    /* C30 — THE DATA IS ON THE SCREEN WITH THE QUESTION. Marcos 10/11, on the
+       first claim question: "shouldn't they be able to see their data when
+       answering the explain questions. It should be right there." A question
+       needs the table when its words, its choices or its answer come from
+       the student's own data, when it names a test or the data table, or
+       when it is part of building the explanation. */
+    if (stops[i].q != null) {
+      const qq = bankFor(stops[i].phase)[stops[i].q];
+      const text = [stemOf(qq)].concat(optsOf(qq)).join(' ').replace(/<[^>]+>/g, ' ');
+      /* (a question asked before the first push, like the plan check, can
+         name Test 1 or the data table: there is no data yet to show) */
+      const hasData = PHASES.indexOf(stops[i].phase) > PHASES.indexOf('runA');
+      const fromData = ['resolve', 'optsFrom', 'qFrom'].some(k => typeof qq[k] === 'function') ||
+        (hasData && /data table|your (own )?data|\bTest [1-4]\b/i.test(text)) || stops[i].phase === 'claims';
+      const box = document.getElementById('q-data');
+      /* one test: its whole table. All four: a short list of averages for each. */
+      const tables = shown(box) ? [...box.querySelectorAll('table')].filter(shown).length : 0;
+      const lists = shown(box) ? [...box.querySelectorAll('.qtable')].filter(shown) : [];
+      if (fromData && !tables && !lists.length) noData.push(stops[i].label + ' (' + qq.id + ')');
+      const one = ['A', 'B', 'C', 'D'].indexOf(qq.inv);
+      if (one !== -1 && (tables !== 1 || lists.length || box.textContent.indexOf('Test ' + (one + 1)) === -1))
+        noData.push(stops[i].label + ' (' + qq.id + ') does not show the Test ' + (one + 1) + ' table alone');
+      if (qq.inv === 'all' && lists.length !== 4) noData.push(stops[i].label + ' (' + qq.id + ') shows ' + lists.length + ' tests, not all four');
+      /* every setup of every test has its distance in the list, on one line */
+      lists.forEach((l, n) => {
+        const rows = [...l.querySelectorAll('.qrow')];
+        if (rows.length !== groupsFor('ABCD'[n]).length || rows.some(r => !/\d+ cm/.test(r.textContent)))
+          noData.push(stops[i].label + ' (' + qq.id + '): the list for Test ' + (n + 1) + ' is missing a distance');
+        if (innerWidth >= 1000 && rows.some(r => r.getBoundingClientRect().height > 48))
+          noData.push(stops[i].label + ' (' + qq.id + '): a line of the Test ' + (n + 1) + ' list wraps');
+      });
+      /* ...and the data must not bury the choices: on a Chromebook-size
+         window the first choice starts within a screen and a half of the
+         top (four full tables once put the choices two screens down) */
+      const firstOpt = document.querySelector('#q-opts .opt');
+      const down = firstOpt ? Math.round(firstOpt.getBoundingClientRect().top + window.scrollY) : 0;
+      if ((tables || lists.length) && innerWidth >= 700 && innerHeight >= 640 && down > innerHeight * 1.5)
+        noData.push(stops[i].label + ' (' + qq.id + '): the choices start ' + down + 'px down the page');
+    }
 
     /* C23 — nothing sticks out past the side of the window. The help bar did,
        by 16px, for two days: a sideways scroll on every working screen. */
@@ -514,6 +557,8 @@
     });
   });
 
+  rec('C30', 'A question answered from the student\'s own data has the data table on screen', noData.length === 0,
+      noData.length + ' do not. ' + noData.slice(0, 6).join(' | '));
   rec('C23', 'No screen is wider than the window', tooWide.length === 0,
       tooWide.length + ' are. ' + tooWide.slice(0, 6).join(' | '));
 

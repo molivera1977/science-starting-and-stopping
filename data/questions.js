@@ -247,8 +247,15 @@ window.ANALYSIS_Q = [
 
    `qFrom` and `optsFrom` are handed the student's own averages, so the
    question and the choices are made out of their data, not a fixed key. */
+/* `inv` says whose data sits on the screen with a question: 'A'-'D' is that
+   test's data table, 'all' is all four. Marcos 10/11, on the first claim
+   question with no table in sight: "shouldn't they be able to see their data
+   when answering the explain questions. It should be right there." The
+   claim, the evidence and the reasoning are about Test 1; the friend question
+   and its proof draw on every test. qa.js C30 holds this for every question
+   that is answered from the student's own data. */
 window.CLAIMS_Q = [
-  { id:'L20',
+  { id:'L20', inv:'all',
     why: "A moving thing keeps moving until a force stops that thing. On Earth friction is almost always there, so moving things do stop. A force is always what stops a moving thing.", part:'A',
     q:'A friend tells you, &ldquo;Once something is moving, that thing will just keep moving forever.&rdquo; ' +
       'Is your friend right?',
@@ -259,7 +266,7 @@ window.CLAIMS_Q = [
       'The answer depends on how heavy the object is'
     ], a:0 },
 
-  { id:'L21',
+  { id:'L21', inv:'all',
     why: d => "That is your strongest evidence. Even on " + d.farthestA.toLowerCase() + ", where the cart went " + d.maxAvgA + " cm, the cart still stopped. Something stopped the cart: friction.", part:'B',
     q:'Now show your proof. Which piece of <b>your own data</b> best backs up the answer you just picked?',
     optsFrom: d => [
@@ -285,13 +292,13 @@ window.CLAIMS_Q = [
      Known trade: 4-PS3-1 asks a student to CONSTRUCT an explanation, and
      choosing from four options tests recognition. Marcos's call, with the
      period and the reading levels in front of him. */
-  { id:'L29',
+  { id:'L29', inv:'A',
     why: d => "That is your claim: " + d.shortestA.toLowerCase() + " stopped the cart the soonest.", cer:'claim',
     q:'Time to explain what happened in Test 1. Start with your <b>claim</b>. A <dfn>claim</dfn> is what you think is true. ' +
       'Which surface stopped the cart the soonest?',
     opts:['Ice','Wood','Carpet','Sand'], resolve: d => d.shortestA },
 
-  { id:'L30',
+  { id:'L30', inv:'A',
     why: "Those two distances are your evidence. Those two distances show the biggest difference in your whole data table.", cer:'evidence',
     q:'Now the <b>evidence</b>. <dfn>Evidence</dfn> is the distances that prove your claim. Which two distances from <b>your own data table</b> show your claim best?',
     optsFrom: d => [
@@ -304,7 +311,7 @@ window.CLAIMS_Q = [
     resolve: d => 'On ' + d.farthestA.toLowerCase() + ' the cart rolled ' + d.maxAvgA +
       ' cm, but on ' + d.shortestA.toLowerCase() + ' only ' + d.minAvgA + ' cm' },
 
-  { id:'L31',
+  { id:'L31', inv:'A',
     why: "That is your reasoning. The surface with the most friction pushes back the hardest, so that surface stops the cart soonest.", cer:'reasoning',
     q:'Last part &mdash; the <b>reasoning</b>. <dfn>Reasoning</dfn> is the reason why. WHY did that surface stop the cart soonest?',
     optsFrom: d => [

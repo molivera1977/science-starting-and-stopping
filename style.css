@@ -1048,6 +1048,21 @@ li.gstep{ margin:10px 0; }
 .helper p{ margin:0; font-size:19px; line-height:1.4; color:var(--ink); }
 .tablezone .helper{ margin-top:10px; }      /* narrow screens: under the table */
 
+/* The four tests on one question: each test a short list (setup, average),
+   four lists side by side on a Chromebook, two by two on a tablet, one under
+   the other on a phone, so the answer choices stay close under the question. */
+.qtables{ display:grid; grid-template-columns:1fr; gap:10px 12px; }
+.qtables .qtable{ min-width:0; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:8px 10px; }
+.qtables .qdata-h{ margin:0 0 2px; letter-spacing:.04em; }
+.qrow{ display:flex; align-items:center; gap:6px; margin:0; padding:5px 0; font-size:18px; line-height:1.3; color:var(--ink); }
+.qrow + .qrow{ border-top:1px solid var(--line); }
+.qrow .qn{ flex:1 1 auto; min-width:0; }
+.qrow .qv{ flex:none; font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; color:var(--sci-dark); }
+.qrow .art.swatch{ flex:none; margin-right:0; }
+@media (min-width:600px){ .qtables{ grid-template-columns:1fr 1fr; } }
+/* the push list has the longest names ("Medium push"), the car and truck list the shortest */
+@media (min-width:1000px){ .qtables{ grid-template-columns:1fr 1.3fr 1fr .85fr; } }
+
 /* THE WORDS ALREADY TAUGHT: one reminder page, a row for each word (picture,
    one sentence, the Spanish), heard with one Listen. */
 .vmet{ border:1px solid var(--line); border-radius:12px; padding:12px 14px; background:var(--surface-2); }

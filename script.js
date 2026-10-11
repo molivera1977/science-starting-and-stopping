@@ -1433,14 +1433,19 @@ function renderQ() {
   /* L06–L13 ask the student to read their own table. Keeping it on the same
      screen means the question tests the science, not their memory of a table
      from two screens back. */
+  /* The table goes with the QUESTION, whichever screen asks the question.
+     It used to go with two named screens, so the explanation questions,
+     which are answered from the same data, had none (Marcos 10/11: "It
+     should be right there"). `inv` on the question: one test, or all four. */
   const dataBox = document.getElementById('q-data');
-  if (app.phase === 'analysis' || /^check[A-D]$/.test(app.phase)) {
-    const which = ['A','B','C','D'].includes(q.inv) ? q.inv : null;
+  const which = ['A','B','C','D'].includes(q.inv) ? q.inv : null;
+  const allFour = q.inv === 'all' || q.inv === '&mdash;';
+  if (which || allFour) {
     dataBox.className = '';
     dataBox.innerHTML = '<div class="qdata"><div class="qdata-h">' +
-      (which ? 'My Test ' + ({ A:1, B:2, C:3, D:4 }[which] || which) + ' data table' : 'My data table') + '</div>' +
-      '<div class="tablewrap">' + (which ? '<table class="data">' + tableHTML(which) + '</table>'
-                                          : allTablesHTML()) + '</div></div>';
+      (which ? 'My Test ' + ({ A:1, B:2, C:3, D:4 }[which] || which) + ' data table' : 'My four tests: the average distance in each one') + '</div>' +
+      (which ? '<div class="tablewrap"><table class="data">' + tableHTML(which) + '</table></div>'
+             : '<div class="qtables">' + allTablesHTML() + '</div>') + '</div>';
   } else {
     dataBox.className = 'hidden';
     dataBox.innerHTML = '';
@@ -2400,10 +2405,24 @@ function tableHTML(invKey, marks) {
 }
 const INV_TITLE = { A:'1 — surfaces', B:'2 — how hard the push',
                     C:'3 — how tall the ramp', D:'4 — car against truck' };
+/* ALL FOUR TESTS ON ONE QUESTION: each test as a short list of its setups
+   and their AVERAGE distances, four lists side by side on a Chromebook.
+   The four full tables (every trial of every setup, 13 rows by 5 columns)
+   put 800px of numbers between the question and its choices, and four small
+   tables side by side wrapped in every box. A question that draws on all
+   four tests is answered from the averages; a question about ONE test still
+   gets that test's whole table. Each row is one line that can be heard. */
+const INV_SHORT = { A:'surfaces', B:'push', C:'ramp', D:'car, truck' };
 function allTablesHTML() {
-  return ['A','B','C','D'].map((k, i) =>
-    '<div class="qdata-h"' + (i ? ' style="margin-top:.7rem"' : '') + '>Test ' + INV_TITLE[k] + '</div>' +
-    '<table class="data">' + tableHTML(k) + '</table>').join('');
+  return ['A','B','C','D'].map((k, n) => {
+    const col = INV_COLUMNS[k];
+    return '<div class="qtable"><div class="qdata-h">Test ' + (n + 1) + ' &middot; ' + INV_SHORT[k] + '</div>' +
+      groupsFor(k).map(g => {
+        const c = cellsFor(k, g);
+        return '<p class="qrow">' + (col.aArt ? col.aArt(g) : '') + '<span class="qn">' + col.a(g) + '</span>' +
+          '<b class="qv">' + (c.avg == null ? '&mdash;' : c.avg + ' cm') + '</b></p>';
+      }).join('') + '</div>';
+  }).join('');
 }
 
 function renderTable(invKey, marks) {
