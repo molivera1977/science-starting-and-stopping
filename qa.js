@@ -45,6 +45,11 @@
          made to fit: pushes that no longer line up are dropped and the
          student goes back to the first test that is not full; a save that
          already fits is left exactly as it is
+     C25 the name page never clears saved work on one tap: with saved work
+         "Pick up where I left off" is the big button, starting over asks
+         for the teacher PIN (also when the saved work is under another
+         name), a student with nothing saved still starts with one tap, and
+         a saved lesson is picked up with its pushes
    It also lists how many words each screen asks a student to take in, and
    how many words each guided screen makes them listen to.
 
@@ -539,6 +544,127 @@
     try { const f4 = fitSaved({ phase: 'runB', data: { A: [1, 2, 3], B: null } }); if (f4.phase !== 'runA' || f4.data.A.length) fitBad.push('a damaged save was not reset to Test 1'); }
     catch (e) { fitBad.push('a damaged save crashed: ' + e.message); }
     rec('C24', 'A lesson saved before the pushes changed is made to fit when it is picked up', fitBad.length === 0, fitBad.slice(0, 5).join(' | '));
+  }
+
+  /* C25 — THE NAME PAGE, coming back on Day 2 and Day 3. Every student passes
+     through it with saved pushes. Until 10/10 the big button there read
+     "Start over from the beginning" and cleared them on one tap, no PIN.
+     The preview never picks a name, so this does: a planted save, then the
+     buttons pressed the way a student would press them. app.go is held, so
+     nothing starts; the preview is on, so nothing is saved or sent. */
+  {
+    const nameBad = [];
+    const sel = document.getElementById('name-select'), sec = document.getElementById('start-screen');
+    const begin = document.getElementById('begin-btn'), resume = document.getElementById('resume-btn');
+    const small = document.getElementById('teacher-btn');          /* a small button, to measure against */
+    const box = document.getElementById('resume-box'), modal = document.getElementById('pin-modal');
+    const me = sel.options[2].value, other = sel.options[3].value;
+    const R = el => el.getBoundingClientRect();
+    const look = el => { const cs = getComputedStyle(el); return { size: parseFloat(cs.fontSize), ink: cs.color }; };
+    /* the big button is bigger than a small one and filled in, not outlined */
+    const big = el => shown(el) && look(el).size > look(small).size && look(el).ink !== look(small).ink;
+    const quiet = el => shown(el) && look(el).size === look(small).size && look(el).ink === look(small).ink;
+    const pinUp = () => !modal.classList.contains('hidden');
+    const stored = () => localStorage.getItem(KEY);
+    const pick = async n => { sel.value = n; sel.dispatchEvent(new Event('change')); await wait(60); };
+    const cancel = async () => { document.getElementById('pin-cancel').click(); await wait(30); };
+    /* two saved lessons. `save`: from when each setup had one push fewer,
+       stopped at the end of Day 1. `saveNow`: the lesson as it is today,
+       stopped partway through Test 2. */
+    const rowsOf = runs => runs.map(r => Object.assign({}, r, { cm: distanceCm(r, true) }));
+    const top = k => invOf(k).runs.reduce((m, r) => Math.max(m, r.trial), 1);
+    const partB = Math.min(4, invOf('B').runs.length);
+    const save = JSON.stringify({ studentName: me, phase: 'daygate', timerSeconds: 900, score: 2, heard: { vocab: 12, graphA: 7 },
+      data: { A: rowsOf(invOf('A').runs.filter(r => r.trial < top('A'))), B: [], C: [], D: [] } });
+    const saveNow = JSON.stringify({ studentName: me, phase: 'runB', timerSeconds: 1500, score: 2, heard: { vocab: 12, graphA: 7 },
+      data: { A: rowsOf(invOf('A').runs), B: rowsOf(invOf('B').runs.slice(0, partB)), C: [], D: [] } });
+    const pushes = JSON.parse(save).data.A.length;
+    const plant = () => localStorage.setItem(KEY, save);
+    /* the note about saved work is on screen, can be heard, and follows the wording rules */
+    const noteOk = tag => {
+      const blk = speech.readable(sec).find(b => b.el === box);
+      const spk = box.querySelector(':scope > .mini-spk');
+      if (!blk) { nameBad.push(tag + ': no note about the saved work'); return ''; }
+      if (!spk || getComputedStyle(spk).display === 'none') nameBad.push(tag + ': the note cannot be read aloud');
+      if (parseFloat(getComputedStyle(box).fontSize) < MIN_FS) nameBad.push(tag + ': the note is small');
+      lintIt(blk.text, 'name page, ' + tag);
+      [begin, resume].filter(shown).forEach(b => lintIt(b.textContent, 'name page, ' + tag + ' (button)'));
+      return blk.text;
+    };
+
+    const FIELDS = ['studentName', 'phase', 'score', 'missedQuestions', 'events', 'startedAt', 'finishedAt', 'timerSeconds',
+      'labStart', 'labEnd', 'qIndex', 'vocabAns', 'analysisAns', 'claimsAns', 'exitAns', 'written', 'predictions',
+      'data', 'runIndex', 'heard', 'refit'];
+    const keep = {}; FIELDS.forEach(f => { keep[f] = JSON.stringify(app[f]); });
+    const keepTabs = tabSwitchCount, keepChip = document.getElementById('who-chip').textContent;
+    const realGo = app.go, realTimer = app.startTimer;
+    let went = '';
+    app.go = p => { went = p; }; app.startTimer = () => {};
+    try {
+      await jump(stops.findIndex(s => s.phase === 'start')); await wait(120);
+
+      /* nothing saved: one tap starts the lesson, as before */
+      localStorage.removeItem(KEY); await pick(me);
+      if (!big(begin) || shown(resume) || shown(box)) nameBad.push('nothing saved: "Start the lesson" is not the one big button');
+      went = ''; begin.click(); await wait(40);
+      if (pinUp() || went !== 'vocab') nameBad.push('nothing saved: one tap did not start the lesson');
+      await cancel();
+
+      /* this student's own saved work */
+      plant(); await pick(me);
+      if (!big(resume)) nameBad.push('saved work: "Pick up where I left off" is not the big button');
+      if (shown(begin) && !quiet(begin)) nameBad.push('saved work: starting over is not a small button ("' + begin.textContent.trim() + '")');
+      if (shown(begin) && shown(resume) && (R(begin).top < R(resume).top - 1 ||
+          (Math.abs(R(begin).top - R(resume).top) <= 1 && R(begin).left < R(resume).left)))
+        nameBad.push('saved work: starting over comes before "Pick up where I left off"');
+      noteOk('saved work');
+      went = ''; begin.click(); await wait(40);
+      if (!pinUp()) nameBad.push('saved work: starting over did not ask for the teacher PIN');
+      if (stored() !== save || went) nameBad.push('saved work: one tap on starting over cleared ' + pushes + ' saved pushes');
+      document.getElementById('pin-input').value = TEACHER_PIN + '0'; document.getElementById('pin-ok').click(); await wait(40);
+      if (stored() !== save || went) nameBad.push('saved work: a wrong PIN cleared the saved pushes');
+      await cancel();
+      if (pinUp() || stored() !== save || went) nameBad.push('saved work: Cancel did not leave the saved pushes alone');
+
+      /* the saved work is under another name: a wrong pick, or a shared computer */
+      plant(); await pick(other);
+      if (shown(resume)) nameBad.push('work under another name: it can be picked up under the wrong name');
+      if (big(begin)) nameBad.push('work under another name: a big button starts a new lesson over the saved work');
+      noteOk('work under another name');
+      if (!shown(box) || box.textContent.indexOf(me) === -1) nameBad.push('work under another name: the page does not say whose work is saved');
+      went = ''; begin.click(); await wait(40);
+      if (!pinUp() || stored() !== save || went) nameBad.push('work under another name: one tap cleared the saved pushes');
+      await cancel();
+
+      /* with the PIN, Mr. O can still clear the saved work and start the lesson */
+      plant(); await pick(me);
+      went = ''; begin.click(); await wait(40);
+      document.getElementById('pin-input').value = TEACHER_PIN; document.getElementById('pin-ok').click(); await wait(40);
+      if (pinUp() || stored() !== null || went !== 'vocab') nameBad.push('the teacher PIN did not clear the saved work and start the lesson');
+      await cancel();
+
+      /* and the big button picks a saved lesson up, pushes and all: the lesson
+         as it is today goes on where the student stopped; the older lesson
+         goes back to Test 1 with the pushes that still line up (see C24) */
+      for (const [what, sv, phase, nA, nB] of [
+        ['a lesson saved as the lesson is today', saveNow, 'runB', invOf('A').runs.length, partB],
+        ['a lesson saved before the pushes changed', save, 'runA', top('A') - 1, 0]]) {
+        localStorage.setItem(KEY, sv); await pick(''); await pick(me);
+        went = ''; resume.click(); await wait(40);
+        if (went !== phase || app.studentName !== me || app.data.A.length !== nA || app.data.B.length !== nB || app.score !== 2)
+          nameBad.push('"Pick up where I left off" did not bring back ' + what + ' (went to "' + went + '" with ' +
+            app.data.A.length + ' and ' + app.data.B.length + ' pushes, not "' + phase + '" with ' + nA + ' and ' + nB + ')');
+        if (stored() !== sv) nameBad.push('"Pick up where I left off" changed ' + what + ' before the student did anything');
+      }
+    } catch (e) { nameBad.push('the check itself broke: ' + e.message); }
+    app.go = realGo; app.startTimer = realTimer;
+    await cancel();
+    FIELDS.forEach(f => { if (keep[f] === undefined) delete app[f]; else app[f] = JSON.parse(keep[f]); });
+    tabSwitchCount = keepTabs; document.getElementById('who-chip').textContent = keepChip; app.tickTimer();
+    if (KEY in original) localStorage.setItem(KEY, original[KEY]); else localStorage.removeItem(KEY);
+    await pick(''); await jump(0); await wait(150);
+    rec('C25', 'On the name page, saved work is never cleared by one tap', nameBad.length === 0,
+        nameBad.length + ' problems. ' + nameBad.slice(0, 6).join(' | '));
   }
 
   const vagueList = Object.keys(vague);
