@@ -12,7 +12,7 @@
 
    What it checks:
      C1  closing the tab on the cover does not wipe a saved lesson
-     C2  the opening path goes cover → why → care → summary → cart → plan → goals → start
+     C2  the opening path goes cover → why → care → summary → cart → cartq → plan → goals → start
      C3  nothing starts talking on its own when a page opens
      C4  every preview stop shows exactly one screen, in the right phase
      C5  every visible piece of text belongs to a block that can be read aloud
@@ -53,6 +53,13 @@
          picked up with its pushes
      C26 the name page asks only for a name: almost nothing to read on it,
          and every "I can" line is inside a step of the locked page before it
+     C27 frequent understanding checks: Meet your cart, the six words and
+         every test's results page are each followed at once by a check of
+         two or three questions about that thing; every scored question is
+         asked exactly once, with feedback and a skill; the cart check is
+         answered on the way in and its answers go with the student who then
+         picks a name; a lesson saved before a check existed is sent to that
+         check and then back to where the student was
    It also lists how many words each screen asks a student to take in, and
    how many words each guided screen makes them listen to.
 
@@ -165,7 +172,7 @@
   }
 
   /* C2, C3, C14 (opening pages) — the student's own path, through the lock */
-  const path = [app.phase], talked = [];
+  const path = [app.phase], talked = [], checkWalk = [];
   for (const id of ['cover-go', 'why-next', 'care-next', 'sum-next', 'cart-next', 'ra-next', 'goals-next']) {
     const b = document.getElementById(id);
     if (!b) { path.push('(no #' + id + ')'); break; }
@@ -173,8 +180,23 @@
     b.click(); await wait(1200);
     if (speechSynthesis.speaking || speechSynthesis.pending) talked.push(app.phase);
     hush(); path.push(app.phase);
+    /* a check between two opening pages (the cart check): answer every
+       question the way a student does, then carry on from where that leads */
+    if (isQPhase(app.phase)) {
+      const here = app.phase, n = bankFor(here).length;
+      let guard = 0, sawTable = false;
+      while (app.phase === here && guard++ < 20) {
+        if (shown(document.getElementById('q-data'))) sawTable = true;
+        const opt = [...document.querySelectorAll('#q-opts .opt')].find(o => !o.disabled);
+        const nx = document.getElementById('q-next');
+        if (shown(nx)) { nx.click(); await wait(300); } else if (opt) { opt.click(); await wait(80); }
+      }
+      checkWalk.push({ phase: here, asked: n, answered: bankFor(here).filter(x => answersFor(here)[x.id] != null).length, then: app.phase });
+      if (speechSynthesis.speaking || speechSynthesis.pending) talked.push(app.phase);
+      hush(); path.push(app.phase);
+    }
   }
-  const wantPath = ['cover', 'why', 'care', 'summary', 'cart', 'plan', 'goals', 'start'];
+  const wantPath = ['cover', 'why', 'care', 'summary', 'cart', 'cartq', 'plan', 'goals', 'start'];
   rec('C2', 'Opening path in order', JSON.stringify(path) === JSON.stringify(wantPath), path.join(' → '));
 
   /* C26 — THE NAME PAGE ASKS FOR A NAME AND NOTHING ELSE. Marcos 10/10: "are
@@ -458,7 +480,7 @@
      explained push size and the newest questions had none. This catches a
      missing or copy-pasted explanation (matching it to the right question
      still needs a human read — see the list in the commit). */
-  const bank = [].concat(VOCAB_Q, ANALYSIS_Q, CLAIMS_Q, EXIT_Q).filter(q => !q.adaptive);
+  const bank = [].concat(CART_Q, VOCAB_Q, ANALYSIS_Q, CLAIMS_Q, EXIT_Q).filter(q => !q.adaptive);
   const fb = bank.map(q => ({ id: q.id, t: whyRight(q) }));
   const empty = fb.filter(f => !f.t).map(f => f.id);
   const seenT = {}, dupes = [];
@@ -536,27 +558,41 @@
         pushBad.length + ' problems. ' + [...new Set(pushBad)].slice(0, 6).join(' | '));
   }
 
+  /* the answers a student who has reached `phase` has given: every question
+     of every question screen before it (so a planted save is one the lesson
+     as it is today could have written) */
+  const answeredBefore = phase => {
+    const out = {};
+    PHASES.slice(0, PHASES.indexOf(phase)).filter(isQPhase).forEach(p => {
+      const k = Q_PHASE[p].ans; out[k] = out[k] || {};
+      bankFor(p).forEach(x => { out[k][x.id] = 0; });
+    });
+    return out;
+  };
+
   /* C24 — picking up a lesson that was saved before the runs changed. */
   {
     const fitBad = [];
     const rowsOf = (k, runs) => runs.map(r => Object.assign({}, r, { cm: distanceCm(r, true) }));
     /* a save that fits: every test full, the student on the last questions */
-    const full = { phase: 'exit', heard: { runA0: 2, graphA: 7, vocab: 12 },
-      data: { A: rowsOf('A', invOf('A').runs), B: rowsOf('B', invOf('B').runs), C: rowsOf('C', invOf('C').runs), D: rowsOf('D', invOf('D').runs) } };
+    const full = Object.assign({ phase: 'exit', heard: { runA0: 2, graphA: 7, vocab: 12 },
+      data: { A: rowsOf('A', invOf('A').runs), B: rowsOf('B', invOf('B').runs), C: rowsOf('C', invOf('C').runs), D: rowsOf('D', invOf('D').runs) } },
+      answeredBefore('exit'));
     const f1 = fitSaved(full);
-    if (f1.redo || f1.phase !== 'exit') fitBad.push('a save that fits was sent back to ' + f1.phase);
+    if (f1.redo || f1.catchUp || f1.phase !== 'exit') fitBad.push('a save that fits was sent back to ' + f1.phase);
     ['A', 'B', 'C', 'D'].forEach(k => { if (f1.data[k].length !== invOf(k).runs.length || f1.runIndex[k] !== invOf(k).runs.length) fitBad.push('a save that fits lost pushes in ' + k); });
     if (f1.heard.runA0 !== 2 || f1.heard.graphA !== 7) fitBad.push('a save that fits lost what was heard');
     /* partway through a test, nothing wrong with it */
-    const mid = { phase: 'runA', data: { A: rowsOf('A', invOf('A').runs.slice(0, 5)) } };
+    const mid = Object.assign({ phase: 'runA', data: { A: rowsOf('A', invOf('A').runs.slice(0, 5)) } }, answeredBefore('runA'));
     const f2 = fitSaved(mid);
-    if (f2.redo || f2.phase !== 'runA' || f2.runIndex.A !== 5) fitBad.push('a save in the middle of Test 1 was changed');
+    if (f2.redo || f2.catchUp || f2.phase !== 'runA' || f2.runIndex.A !== 5) fitBad.push('a save in the middle of Test 1 was changed');
     /* a save from a lesson with one push fewer per setup: the same runs with
        the last trial of every setup left out */
     const top = k => invOf(k).runs.reduce((m, r) => Math.max(m, r.trial), 1);
-    const old = { phase: 'analysis', heard: { runA0: 2, runA3: 1, graphA: 7, runB0: 1 }, analysisAns: { L05: 1 },
+    const old = Object.assign({ phase: 'analysis', heard: { runA0: 2, runA3: 1, graphA: 7, runB0: 1 },
       data: { A: rowsOf('A', invOf('A').runs.filter(r => r.trial < top('A'))), B: rowsOf('B', invOf('B').runs.filter(r => r.trial < top('B'))),
-              C: rowsOf('C', invOf('C').runs.filter(r => r.trial < top('C'))), D: rowsOf('D', invOf('D').runs.filter(r => r.trial < top('D'))) } };
+              C: rowsOf('C', invOf('C').runs.filter(r => r.trial < top('C'))), D: rowsOf('D', invOf('D').runs.filter(r => r.trial < top('D'))) } },
+      answeredBefore('analysis'));
     const f3 = fitSaved(old);
     if (top('A') > 1) {
       if (f3.redo !== 'A' || f3.phase !== 'runA') fitBad.push('an older save was not sent back to Test 1 (went to ' + f3.phase + ')');
@@ -569,7 +605,7 @@
       if (f3.heard.graphA !== 7) fitBad.push('an older save lost a page that was heard');
     }
     /* rows that are not rows at all (a damaged save) must not crash */
-    try { const f4 = fitSaved({ phase: 'runB', data: { A: [1, 2, 3], B: null } }); if (f4.phase !== 'runA' || f4.data.A.length) fitBad.push('a damaged save was not reset to Test 1'); }
+    try { const f4 = fitSaved({ phase: 'runB', data: { A: [1, 2, 3], B: null } }); if ((f4.resumeAt || f4.phase) !== 'runA' || f4.data.A.length) fitBad.push('a damaged save was not reset to Test 1'); }
     catch (e) { fitBad.push('a damaged save crashed: ' + e.message); }
     rec('C24', 'A lesson saved before the pushes changed is made to fit when it is picked up', fitBad.length === 0, fitBad.slice(0, 5).join(' | '));
   }
@@ -602,13 +638,14 @@
     const rowsOf = runs => runs.map(r => Object.assign({}, r, { cm: distanceCm(r, true) }));
     const top = k => invOf(k).runs.reduce((m, r) => Math.max(m, r.trial), 1);
     const partB = Math.min(4, invOf('B').runs.length);
-    const save = JSON.stringify({ studentName: me, phase: 'daygate', timerSeconds: 900, score: 2, heard: { vocab: 12, graphA: 7 },
-      data: { A: rowsOf(invOf('A').runs.filter(r => r.trial < top('A'))), B: [], C: [], D: [] } });
-    const saveNow = JSON.stringify({ studentName: me, phase: 'runB', timerSeconds: 1500, score: 2, heard: { vocab: 12, graphA: 7 },
-      data: { A: rowsOf(invOf('A').runs), B: rowsOf(invOf('B').runs.slice(0, partB)), C: [], D: [] } });
+    const save = JSON.stringify(Object.assign({ studentName: me, phase: 'daygate', timerSeconds: 900, score: 2, heard: { vocab: 12, graphA: 7 },
+      data: { A: rowsOf(invOf('A').runs.filter(r => r.trial < top('A'))), B: [], C: [], D: [] } }, answeredBefore('daygate')));
+    const saveNow = JSON.stringify(Object.assign({ studentName: me, phase: 'runB', timerSeconds: 1500, score: 2, heard: { vocab: 12, graphA: 7 },
+      data: { A: rowsOf(invOf('A').runs), B: rowsOf(invOf('B').runs.slice(0, partB)), C: [], D: [] } }, answeredBefore('runB')));
     const saveDone = JSON.stringify({ studentName: me, phase: 'end', timerSeconds: 3000, score: 11, finishedAt: '2026-10-09T14:00:00.000Z',
       data: { A: rowsOf(invOf('A').runs), B: rowsOf(invOf('B').runs), C: rowsOf(invOf('C').runs), D: rowsOf(invOf('D').runs) } });
     const pushes = JSON.parse(save).data.A.length;
+    const STARTS = ['cartq', 'vocab'];
     const plant = () => localStorage.setItem(KEY, save);
     /* the note about saved work is on screen, can be heard, and follows the wording rules */
     const noteOk = tag => {
@@ -623,8 +660,8 @@
     };
 
     const FIELDS = ['studentName', 'phase', 'score', 'missedQuestions', 'events', 'startedAt', 'finishedAt', 'timerSeconds',
-      'labStart', 'labEnd', 'qIndex', 'vocabAns', 'analysisAns', 'claimsAns', 'exitAns', 'written', 'predictions',
-      'data', 'runIndex', 'heard', 'refit'];
+      'labStart', 'labEnd', 'qIndex', 'checkAns', 'vocabAns', 'analysisAns', 'claimsAns', 'exitAns', 'written', 'predictions',
+      'data', 'runIndex', 'heard', 'refit', 'resumeAt'];
     const keep = {}; FIELDS.forEach(f => { keep[f] = JSON.stringify(app[f]); });
     const keepTabs = tabSwitchCount, keepChip = document.getElementById('who-chip').textContent;
     const realGo = app.go, realTimer = app.startTimer;
@@ -637,7 +674,8 @@
       localStorage.removeItem(KEY); await pick(me);
       if (!big(begin) || shown(resume) || shown(box)) nameBad.push('nothing saved: "Start the lesson" is not the one big button');
       went = ''; begin.click(); await wait(40);
-      if (pinUp() || went !== 'vocab') nameBad.push('nothing saved: one tap did not start the lesson');
+      /* the lesson starts at the cart check when the opening pages were not walked, else at the first word */
+      if (pinUp() || STARTS.indexOf(went) === -1) nameBad.push('nothing saved: one tap did not start the lesson');
       await cancel();
 
       /* this student's own saved work */
@@ -686,7 +724,7 @@
         localStorage.setItem(KEY, sv); await pick(''); await pick(me);
         went = ''; begin.click(); await wait(40);
         document.getElementById('pin-input').value = TEACHER_PIN; document.getElementById('pin-ok').click(); await wait(40);
-        if (pinUp() || stored() !== null || went !== 'vocab') nameBad.push('the teacher PIN did not clear ' + tag + ' and start the lesson');
+        if (pinUp() || stored() !== null || STARTS.indexOf(went) === -1) nameBad.push('the teacher PIN did not clear ' + tag + ' and start the lesson');
         await cancel();
       }
 
@@ -712,6 +750,138 @@
     await pick(''); await jump(0); await wait(150);
     rec('C25', 'On the name page, saved work is never cleared by one tap', nameBad.length === 0,
         nameBad.length + ' problems. ' + nameBad.slice(0, 6).join(' | '));
+  }
+
+  /* C27 — FREQUENT UNDERSTANDING CHECKS. Marcos 10/11, asking for questions
+     before the End of Day 1 page and after Meet your cart: "I want the
+     pattern for all Science lessons to have frequent understanding checks."
+     A check is two or three questions asked RIGHT AFTER the thing the
+     questions are about. This holds the pattern, so a later lesson built
+     from this one cannot quietly drop a check or pile the questions up at
+     the end again. */
+  {
+    const chk = [];
+    const next = a => PHASES[PHASES.indexOf(a) + 1];
+    const tN = { A: 1, B: 2, C: 3, D: 4 };
+    if (next('cart') !== 'cartq') chk.push('Meet your cart is followed by "' + next('cart') + '", not the cart check');
+    if (next('vocab') !== 'vq') chk.push('the six words are followed by "' + next('vocab') + '", not the word check');
+    ['A', 'B', 'C', 'D'].forEach(k => {
+      if (next('graph' + k) !== 'check' + k) chk.push('the results page of Test ' + tN[k] + ' is followed by "' + next('graph' + k) + '", not its check');
+      if (bankFor('check' + k).some(x => x.inv !== k)) chk.push('the check after Test ' + tN[k] + ' asks about another test');
+    });
+    /* each check: two or three questions */
+    Object.keys(window.CHECKS).concat(['vq', 'analysis']).forEach(p => {
+      const n = bankFor(p).length;
+      if (n < 2 || n > 3) chk.push(p + ' has ' + n + ' question' + (n === 1 ? '' : 's') + ', not 2 or 3');
+    });
+    /* every scored question is asked on exactly one screen, with feedback and a skill */
+    const where = {};
+    Object.keys(Q_PHASE).forEach(p => {
+      if (PHASES.indexOf(p) === -1) chk.push('"' + p + '" is not a screen of the lesson');
+      bankFor(p).forEach(x => {
+        if (where[x.id]) chk.push(x.id + ' is asked on "' + where[x.id] + '" and again on "' + p + '"');
+        where[x.id] = p;
+        if (!x.adaptive && !whyRight(x)) chk.push(x.id + ' has no feedback');
+        if (!(window.SKILLS || {})[x.id]) chk.push(x.id + ' has no skill');
+      });
+    });
+    [].concat(CART_Q, VOCAB_Q, ANALYSIS_Q, CLAIMS_Q, EXIT_Q).forEach(x => { if (!where[x.id]) chk.push(x.id + ' is never asked'); });
+    if (app.totalItems() !== Object.keys(where).length)
+      chk.push('the score is out of ' + app.totalItems() + ' but ' + Object.keys(where).length + ' questions are asked');
+    /* the answer key the teacher dashboard reads (data/form_l.js, not loaded by
+       the lesson) has every question that is asked */
+    try {
+      const key = await (await fetch('data/form_l.js?qa=' + Date.now())).text();
+      const lost = Object.keys(where).filter(id => key.indexOf('id:"' + id + '"') === -1);
+      if (lost.length) chk.push('not in the dashboard answer key (form_l.js): ' + lost.join(' '));
+    } catch (e) { chk.push('could not read data/form_l.js: ' + e.message); }
+    /* the cart check was really answered on the way in, and led on to the plan */
+    const cw = checkWalk.find(c => c.phase === 'cartq');
+    if (!cw) chk.push('the opening pages never reached the cart check');
+    else if (cw.answered !== cw.asked || cw.then !== 'plan')
+      chk.push('the cart check: ' + cw.answered + ' of ' + cw.asked + ' answered, then went to "' + cw.then + '"');
+
+    /* STARTING THE LESSON keeps the cart check: the answers were given before
+       the name was picked. And a student who starts without having had the
+       cart check is asked it first. app.go is held, so nothing starts. */
+    {
+      const F = ['studentName', 'phase', 'score', 'missedQuestions', 'events', 'startedAt', 'finishedAt', 'timerSeconds', 'labStart',
+        'labEnd', 'qIndex', 'checkAns', 'vocabAns', 'analysisAns', 'claimsAns', 'exitAns', 'written', 'predictions', 'data',
+        'runIndex', 'heard', 'refit', 'resumeAt'];
+      const keep = {}; F.forEach(f => { keep[f] = JSON.stringify(app[f]); });
+      const keepChip = document.getElementById('who-chip').textContent, hadSave = localStorage.getItem(KEY);
+      const realGo = app.go, realTimer = app.startTimer;
+      let went = '';
+      app.go = p => { went = p; }; app.startTimer = () => {};
+      try {
+        const sel = document.getElementById('name-select'), begin = document.getElementById('begin-btn');
+        const ids = CART_Q.map(x => x.id);
+        await jump(stops.findIndex(s => s.phase === 'start')); await wait(100);
+        localStorage.removeItem(KEY);
+        sel.value = sel.options[2].value; sel.dispatchEvent(new Event('change')); await wait(40);
+        /* one right, one wrong, the way a student might have answered on the way in */
+        app.checkAns = { [ids[0]]: CART_Q[0].a, [ids[1]]: (CART_Q[1].a + 1) % 4 };
+        app.missedQuestions = [{ id: ids[1], q: 'x', yourAnswer: 'x', correct: 'x', skill: 'x' }, { id: 'L99', q: 'someone else' }];
+        app.events = [{ e: 'answer', id: ids[0], ok: true }, { e: 'answer', id: ids[1], ok: false }, { e: 'cover_go' }];
+        app.score = 9;
+        went = ''; begin.click(); await wait(40);
+        if (went !== 'vocab') chk.push('with the cart check answered, the lesson started at "' + went + '", not the first word');
+        if (Object.keys(app.checkAns).length !== 2 || app.score !== 1 || app.missedQuestions.length !== 1 || app.missedQuestions[0].id !== ids[1])
+          chk.push('starting the lesson did not keep the cart check as answered (score ' + app.score + ', ' + app.missedQuestions.length + ' misses)');
+        if (app.events.filter(e => e.e === 'answer').length !== 2 || app.events.some(e => e.e === 'cover_go'))
+          chk.push('starting the lesson did not keep exactly the cart check answers in the record');
+        /* no cart check yet: asked first */
+        app.checkAns = {}; app.missedQuestions = []; app.events = []; app.score = 0;
+        went = ''; begin.click(); await wait(40);
+        if (went !== 'cartq') chk.push('a student who never had the cart check started at "' + went + '", not the cart check');
+
+        /* A LESSON SAVED BEFORE A CHECK EXISTED. At the end of Day 1, every
+           push done, but no cart check and no Test 1 check in the save. */
+        const rowsOf = runs => runs.map(r => Object.assign({}, r, { cm: distanceCm(r, true) }));
+        const sv = Object.assign(answeredBefore('daygate'), { studentName: 'x', phase: 'daygate', score: 2,
+          data: { A: rowsOf(invOf('A').runs), B: [], C: [], D: [] } });
+        const mine = Object.assign({}, sv, { checkAns: {}, analysisAns: {} });
+        const fit = fitSaved(mine);
+        if (fit.phase !== 'cartq' || fit.resumeAt !== 'daygate' || fit.redo)
+          chk.push('a lesson saved before the checks existed went to "' + fit.phase + '" (back to "' + fit.resumeAt + '"), not the cart check and then the end of Day 1');
+        if (fitSaved(sv).catchUp || fitSaved(sv).phase !== 'daygate') chk.push('a lesson with every check answered was sent back to "' + fitSaved(sv).phase + '"');
+        /* ...and walking it: cart check, then the Test 1 check, then back */
+        app.restore(JSON.parse(JSON.stringify(mine)));      /* a copy: restore() keeps the objects handed to it */
+        const walked = [app.phase];
+        for (let hop = 0; hop < 4 && app.resumeAt; hop++) {
+          bankFor(app.phase).forEach(x => { answersFor(app.phase)[x.id] = 0; });
+          went = ''; app.next(); app.phase = went; walked.push(went);
+        }
+        if (walked.join(' > ') !== 'cartq > checkA > daygate' || app.resumeAt)
+          chk.push('catching up walked ' + walked.join(' > ') + ', not cartq > checkA > daygate');
+        /* stopped halfway through catching up: picked up again, the real place is not lost */
+        const half = fitSaved(Object.assign({}, mine, { phase: 'cartq', resumeAt: 'daygate', checkAns: answeredBefore('plan').checkAns }));
+        if (half.phase !== 'checkA' || half.resumeAt !== 'daygate') chk.push('a lesson saved halfway through catching up went to "' + half.phase + '" (back to "' + half.resumeAt + '")');
+      } catch (e) { chk.push('the check itself broke: ' + e.message); }
+      app.go = realGo; app.startTimer = realTimer;
+      F.forEach(f => { if (keep[f] === undefined) delete app[f]; else app[f] = JSON.parse(keep[f]); });
+      document.getElementById('who-chip').textContent = keepChip;
+      if (hadSave == null) localStorage.removeItem(KEY); else localStorage.setItem(KEY, hadSave);
+      const sel2 = document.getElementById('name-select'); sel2.value = ''; sel2.dispatchEvent(new Event('change'));
+      await jump(0); await wait(150);
+    }
+
+    /* How long a student listens between two questions. Not a pass or fail
+       yet (no number has been agreed) — reported, so the longest stretch is
+       known. Counted in lesson order from the locked steps measured above. */
+    const heardOn = {}, recaps = listen.filter(l => /recap/.test(l.screen)).map(l => l.words);
+    listen.forEach(l => { if (!/recap/.test(l.screen)) heardOn[l.screen] = l.words; });
+    let run = 0, from = '', worst = { words: 0, from: '', to: '' };
+    PHASES.forEach(p => {
+      if (isQPhase(p)) { if (run > worst.words) worst = { words: run, from, to: p }; run = 0; from = ''; return; }
+      const w = (heardOn[p] || 0) + (/^daygate/.test(p) ? (recaps.shift() || 0) : 0);
+      if (w && !from) from = p;
+      run += w;
+    });
+    window.__qaStretch = worst;
+    rec('C27', 'Understanding checks: after Meet your cart, the six words and every test, 2 or 3 questions each (' +
+        Object.keys(where).length + ' scored questions)', chk.length === 0,
+        chk.slice(0, 6).join(' | '));
   }
 
   const vagueList = Object.keys(vague);

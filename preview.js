@@ -36,14 +36,14 @@
   };
 
   const NAMES = {
-    cover: 'Cover', why: 'The big question', care: 'Why should you care', cart: 'Meet your cart', summary: 'What we just talked about', plan: 'Here is the plan',
+    cover: 'Cover', why: 'The big question', care: 'Why should you care', cart: 'Meet your cart', cartq: 'Cart check', summary: 'What we just talked about', plan: 'Here is the plan',
     goals: 'By the end you can', start: 'Pick your name', vocab: 'Six words', vq: 'Word check',
-    predictA: 'Test 1 · predict', runA: 'Test 1 · push (surfaces)', graphA: 'Test 1 · graph',
-    predictB: 'Test 2 · predict', runB: 'Test 2 · push (push size)', graphB: 'Test 2 · graph',
+    predictA: 'Test 1 · predict', runA: 'Test 1 · push (surfaces)', graphA: 'Test 1 · graph', checkA: 'Test 1 · questions',
+    predictB: 'Test 2 · predict', runB: 'Test 2 · push (push size)', graphB: 'Test 2 · graph', checkB: 'Test 2 · questions',
     daygate:  'End of Day 1 · ask Mr. O', daygate2: 'End of Day 2 · ask Mr. O',
-    predictC: 'Test 3 · predict', runC: 'Test 3 · let go (ramp)', graphC: 'Test 3 · graph',
-    predictD: 'Test 4 · predict', runD: 'Test 4 · push (car vs truck)', graphD: 'Test 4 · graph',
-    analysis: 'Read my data', claims: 'Build the explanation', write: 'Written answer',
+    predictC: 'Test 3 · predict', runC: 'Test 3 · let go (ramp)', graphC: 'Test 3 · graph', checkC: 'Test 3 · questions',
+    predictD: 'Test 4 · predict', runD: 'Test 4 · push (car vs truck)', graphD: 'Test 4 · graph', checkD: 'Test 4 · questions',
+    analysis: 'Look back at your tests', claims: 'Build the explanation', write: 'Written answer',
     exit: 'Exit ticket', end: 'Finished'
   };
   const GROUP = p =>
@@ -52,18 +52,13 @@
     : PHASES.indexOf(p) <= PHASES.indexOf('daygate2') ? 'Day 2'
     : 'Day 3';
 
-  const BANK = {
-    vq: () => VOCAB_Q, analysis: () => ANALYSIS_Q,
-    claims: () => CLAIMS_Q, exit: () => EXIT_Q
-  };
-
   /* Every screen, and every question inside a question screen, as one list. */
   function buildStops() {
     const out = [];
     PHASES.forEach(p => {
       if (p === 'write' && !(window.WRITTEN_Q || []).length) return;   /* skipped in this lesson */
-      if (BANK[p]) {
-        const qs = BANK[p]();
+      if (isQPhase(p)) {                       /* every question screen, the checks included */
+        const qs = bankFor(p);
         qs.forEach((q, i) => out.push({ phase: p, q: i,
           label: NAMES[p] + ' · ' + (i + 1) + ' of ' + qs.length }));
       } else {
@@ -107,8 +102,8 @@
     const chip = document.getElementById('who-chip');
     if (chip) chip.textContent = 'Teacher preview';
     fillAll();
-    app.vocabAns = {}; app.analysisAns = {}; app.claimsAns = {}; app.exitAns = {};
-    app.missedQuestions = [];
+    app.checkAns = {}; app.vocabAns = {}; app.analysisAns = {}; app.claimsAns = {}; app.exitAns = {};
+    app.missedQuestions = []; app.resumeAt = '';
     const m = /^run([ABCD])$/.exec(stop.phase);
     if (m) { app.data[m[1]] = []; app.runIndex[m[1]] = 0; }
     if (stop.phase === 'end') {

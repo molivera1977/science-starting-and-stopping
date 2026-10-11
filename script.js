@@ -98,6 +98,12 @@ function submitWritten() {
 function post(done) {
   /* Teacher preview must never write a student's save or a sheet row. */
   if (window.PREVIEW) return;
+  /* No name, no row. The cart check is answered before the name page, and
+     every change of screen posts progress: without this, each student sent
+     a row with nobody's name on it (qa C9 caught it before it shipped).
+     The answers are not lost — they go with the student at "Start the
+     lesson" and are in the first row sent after that. */
+  if (!app.studentName) return;
   try {
     fetch(SHEET_URL, {
       method: 'POST', mode: 'no-cors',
@@ -565,7 +571,7 @@ function joinLabels(root, els) {
    lesson has their name. One list, because six places need to know it (the
    rail, the help bar, the word button, the preview, the resume button, and
    PHASES itself) and a page added to five of them is a page that half works. */
-const OPENING = ['cover', 'why', 'care', 'summary', 'cart', 'plan', 'goals', 'start'];
+const OPENING = ['cover', 'why', 'care', 'summary', 'cart', 'cartq', 'plan', 'goals', 'start'];
 const WH_HIDE_ON = OPENING.concat(['vocab', 'end']);
 
 function buildWordHelp() {
@@ -700,12 +706,17 @@ function logEvent(kind, extra) {
 /* ══════════════════════════════════════════════════════
    PHASES
 ══════════════════════════════════════════════════════ */
-const PHASES = [...OPENING,'vocab','vq','predictA','runA','graphA',
+/* UNDERSTANDING CHECKS sit right after the thing they ask about (Marcos 10/11:
+   "frequent understanding checks", two or three questions at a time):
+   cartq after Meet your cart (in OPENING), vq after the six words, and
+   checkA-D after each test's results page. Which questions each one asks is
+   CHECKS in data/questions.js. */
+const PHASES = [...OPENING,'vocab','vq','predictA','runA','graphA','checkA',
                 'daygate',                              /* end of Day 1 */
-                'predictB','runB','graphB',
-                'predictC','runC','graphC',
+                'predictB','runB','graphB','checkB',
+                'predictC','runC','graphC','checkC',
                 'daygate2',                             /* end of Day 2 */
-                'predictD','runD','graphD','analysis','claims','write','exit','end'];
+                'predictD','runD','graphD','checkD','analysis','claims','write','exit','end'];
 
 /* Session 1 is the words and Test 1 — the only investigation that
    runs two trials, because averaging only needs teaching once. Session 2 is
@@ -723,10 +734,10 @@ const PHASES = [...OPENING,'vocab','vq','predictA','runA','graphA',
 
 const RAIL = [
   { key:'words', n:'Day 1', l:'Words',   phases:['vocab','vq'] },
-  { key:'invA',  n:'Day 1', l:'Surfaces',phases:['predictA','runA','graphA','daygate'] },
-  { key:'invB',  n:'Day 2', l:'Push',    phases:['predictB','runB','graphB'] },
-  { key:'invC',  n:'Day 2', l:'Ramp',    phases:['predictC','runC','graphC','daygate2'] },
-  { key:'invD',  n:'Day 3', l:'Truck',   phases:['predictD','runD','graphD'] },
+  { key:'invA',  n:'Day 1', l:'Surfaces',phases:['predictA','runA','graphA','checkA','daygate'] },
+  { key:'invB',  n:'Day 2', l:'Push',    phases:['predictB','runB','graphB','checkB'] },
+  { key:'invC',  n:'Day 2', l:'Ramp',    phases:['predictC','runC','graphC','checkC','daygate2'] },
+  { key:'invD',  n:'Day 3', l:'Truck',   phases:['predictD','runD','graphD','checkD'] },
   { key:'anal',  n:'Day 3', l:'Analyze', phases:['analysis'] },
   { key:'write', n:'Day 3', l:'Explain', phases:['claims','write'] },
   { key:'exit',  n:'Day 3', l:'Exit',    phases:['exit','end'] }
@@ -747,7 +758,7 @@ const app = {
   labStart:null, labEnd:null,
 
   qIndex:0, qLocked:false, qTry:1, firstPick:null,
-  vocabAns:{}, analysisAns:{}, claimsAns:{}, exitAns:{},
+  checkAns:{}, vocabAns:{}, analysisAns:{}, claimsAns:{}, exitAns:{}, resumeAt:'',
   written:{}, predictions:{},
   data:{ A:[], B:[], C:[], D:[] },
   runIndex:{ A:0, B:0, C:0, D:0 },
@@ -772,17 +783,17 @@ const app = {
   },
 
   phaseLabel() {
-    const m = { vocab:'Words', vq:'Word check',
-      predictA:'Surfaces predict', runA:'Surfaces runs', graphA:'Surfaces graph',
-      predictB:'Push predict',     runB:'Push runs',     graphB:'Push graph',
-      predictC:'Ramp predict',     runC:'Ramp runs',     graphC:'Ramp graph',
-      predictD:'Truck predict',    runD:'Truck runs',    graphD:'Truck graph',
+    const m = { cartq:'Cart check', vocab:'Words', vq:'Word check',
+      predictA:'Surfaces predict', runA:'Surfaces runs', graphA:'Surfaces graph', checkA:'Surfaces questions',
+      predictB:'Push predict',     runB:'Push runs',     graphB:'Push graph',     checkB:'Push questions',
+      predictC:'Ramp predict',     runC:'Ramp runs',     graphC:'Ramp graph',     checkC:'Ramp questions',
+      predictD:'Truck predict',    runD:'Truck runs',    graphD:'Truck graph',    checkD:'Truck questions',
       analysis:'Analyze data', claims:'Build the explanation', write:'Explain',
       daygate:'End of Day 1', daygate2:'End of Day 2', exit:'Exit ticket', end:'Done' };
     return m[this.phase] || this.phase;
   },
 
-  totalItems() { return VOCAB_Q.length + ANALYSIS_Q.length + CLAIMS_Q.length + EXIT_Q.length; },
+  totalItems() { return CART_Q.length + VOCAB_Q.length + ANALYSIS_Q.length + CLAIMS_Q.length + EXIT_Q.length; },
   labSeconds() {
     if (this.labStart == null) return 0;
     return Math.max(0, (this.labEnd == null ? this.timerSeconds : this.labEnd) - this.labStart);
@@ -824,7 +835,8 @@ const app = {
         missedQuestions:this.missedQuestions, events:this.events,
         startedAt:this.startedAt, finishedAt:this.finishedAt,
         timerSeconds:this.timerSeconds, labStart:this.labStart, labEnd:this.labEnd,
-        qIndex:this.qIndex, vocabAns:this.vocabAns, analysisAns:this.analysisAns, claimsAns:this.claimsAns,
+        qIndex:this.qIndex, checkAns:this.checkAns, resumeAt:this.resumeAt,
+        vocabAns:this.vocabAns, analysisAns:this.analysisAns, claimsAns:this.claimsAns,
         exitAns:this.exitAns, written:this.written, predictions:this.predictions,
         data:this.data, runIndex:this.runIndex, tabSwitches:tabSwitchCount,
         heard:this.heard,
@@ -855,6 +867,7 @@ const app = {
     this.labStart = (s.labStart == null ? null : s.labStart);
     this.labEnd   = (s.labEnd == null ? null : s.labEnd);
     this.qIndex = s.qIndex || 0;
+    this.checkAns = s.checkAns || {};
     this.vocabAns = s.vocabAns || {};
     this.analysisAns = s.analysisAns || {};
     this.claimsAns = s.claimsAns || {};
@@ -864,7 +877,8 @@ const app = {
     /* the saved pushes are made to fit today's lesson (see fitSaved) */
     const fit = fitSaved(s);
     this.data = fit.data; this.runIndex = fit.runIndex; this.heard = fit.heard; this.phase = fit.phase;
-    this.refit = fit.redo;
+    this.refit = fit.redo || fit.catchUp;
+    this.resumeAt = fit.resumeAt;
     tabSwitchCount = s.tabSwitches || 0;
   },
 
@@ -880,11 +894,8 @@ const app = {
        belong to which step from what is visible. */
     if (phase === 'vocab')    { this.startTimer(); renderVocab(); this.show('vocab-screen'); attachSpeakers(document.getElementById('vocab-screen'));
                                 guide.run(document.getElementById('vocab-screen'), { id: 'vocab' }); }
-    else if (phase === 'vq')       { this.qIndex = firstUnanswered(VOCAB_Q, this.vocabAns); renderQ(); }
-    else if (phase === 'analysis') { this.qIndex = firstUnanswered(ANALYSIS_Q, this.analysisAns); renderQ(); }
-    else if (phase === 'claims')   { this.qIndex = firstUnanswered(CLAIMS_Q, this.claimsAns); renderQ(); }
-    else if (phase === 'exit')     { if (this.labEnd == null) this.labEnd = this.timerSeconds;
-                                     this.qIndex = firstUnanswered(EXIT_Q, this.exitAns); renderQ(); }
+    else if (isQPhase(phase))      { if (phase === 'exit' && this.labEnd == null) this.labEnd = this.timerSeconds;
+                                     this.qIndex = firstUnanswered(bankFor(phase), answersFor(phase)); renderQ(); }
     else if (phase === 'predictA') { if (this.labStart == null) this.labStart = this.timerSeconds; renderPredict(LAB.invA); }
     else if (phase === 'predictB') { renderPredict(LAB.invB); }
     else if (phase === 'predictC') { renderPredict(LAB.invC); }
@@ -904,6 +915,24 @@ const app = {
   },
 
   next() {
+    /* CATCHING UP (see fitSaved): a lesson saved before a check existed is
+       sent to that check first. From there, go to the next check that still
+       has a question open, and then back to where the student was. */
+    if (this.resumeAt) {
+      const from = PHASES.indexOf(this.phase) + 1, to = PHASES.indexOf(this.resumeAt);
+      const open = PHASES.slice(from, to).find(p => isQPhase(p) && firstUnanswered(bankFor(p), answersFor(p)) < bankFor(p).length);
+      const target = open || this.resumeAt;
+      if (!open) this.resumeAt = '';
+      this.go(target);
+      return;
+    }
+    /* The cart check comes before the name page. A first-time student has
+       no name yet and goes on to the plan. A student who already has a name
+       (started over, or caught up) goes to the first word. */
+    if (this.phase === 'cartq') {
+      if (this.studentName && !window.PREVIEW) this.go('vocab'); else showPlan();
+      return;
+    }
     const i = PHASES.indexOf(this.phase);
     this.go(PHASES[Math.min(i + 1, PHASES.length - 1)]);
   }
@@ -1010,8 +1039,12 @@ function buildStart() {
         '</b> after ' + howLong + ' of work. ' +
         (fit.redo
           ? 'The lesson changed: you now do every push <b>' + (window.TIMES || 'more than once') + '</b>. You will go back to <b>Test ' +
-            ({ A:1, B:2, C:3, D:4 })[fit.redo] + '</b> to finish the pushes. Your answers are saved.'
-          : 'Nothing you finished will be asked again.');
+            ({ A:1, B:2, C:3, D:4 })[fit.redo] + '</b> to finish the pushes. Your answers are saved.' +
+            (fit.catchUp ? ' First you will answer some new questions.' : '')
+          : fit.catchUp
+            ? 'The lesson changed: there are new questions about what you already did. You will answer the new questions first. ' +
+              'Then you will go on from where you stopped. Your work is saved.'
+            : 'Nothing you finished will be asked again.');
       begin.textContent = 'Start over (teacher PIN)';
     } else if (finished) {
       document.getElementById('resume-text').textContent =
@@ -1032,9 +1065,22 @@ function buildStart() {
 
   /* Clears what is saved on this device and starts the lesson at the first word. */
   const startFresh = () => {
+    /* THE CART CHECK IS ANSWERED BEFORE THIS PAGE, when the lesson does not
+       know whose answers they are yet. Whoever just walked the opening pages
+       on this device is the student now picking a name, so those answers,
+       their points, their misses and their record go with this student.
+       (Nothing else from before the name is kept, as before.) */
+    const cartIds = CART_Q.map(q => q.id);
+    const cart = {
+      ans: Object.fromEntries(Object.entries(app.checkAns || {}).filter(([id]) => cartIds.indexOf(id) !== -1)),
+      missed: (app.missedQuestions || []).filter(m => cartIds.indexOf(m.id) !== -1),
+      events: (app.events || []).filter(e => e.e === 'answer' && cartIds.indexOf(e.id) !== -1)
+    };
     app.studentName = sel.value;
     app.clearSaved();
-    app.score = 0; app.missedQuestions = []; app.events = [];
+    app.checkAns = cart.ans; app.missedQuestions = cart.missed; app.events = cart.events;
+    app.score = Object.keys(cart.ans).length - cart.missed.length;
+    app.resumeAt = '';
     app.vocabAns = {}; app.analysisAns = {}; app.claimsAns = {}; app.exitAns = {};
     app.written = {}; app.predictions = {};
     app.data = { A:[], B:[], C:[], D:[] }; app.runIndex = { A:0, B:0, C:0, D:0 };
@@ -1043,7 +1089,9 @@ function buildStart() {
     app.startedAt = new Date().toISOString();
     logEvent('start', { name:app.studentName });
     document.getElementById('who-chip').textContent = app.studentName;
-    app.go('vocab');
+    /* a student who did not come through the opening pages this time (the
+       lesson was started over) has not had the cart check: ask it first */
+    app.go(firstUnanswered(CART_Q, app.checkAns) < CART_Q.length ? 'cartq' : 'vocab');
   };
 
   /* Asked again here, from what is saved right now and not from how the
@@ -1062,7 +1110,7 @@ function buildStart() {
     if (app.refit) logEvent('refit', { to:app.phase });
     document.getElementById('who-chip').textContent = app.studentName;
     app.startTimer(); app.tickTimer();
-    app.go(OPENING.indexOf(app.phase) !== -1 ? 'vocab' : app.phase);
+    app.go(isQPhase(app.phase) ? app.phase : OPENING.indexOf(app.phase) !== -1 ? 'vocab' : app.phase);
   });
 
   /* No whole-page reader anywhere now. Marcos 10/9: "I don't like the read to
@@ -1174,7 +1222,10 @@ function showCart() {
     '</div></div>').join('');
   app.show('cart-screen');
   guide.run(document.getElementById('cart-screen'), { id: 'cart' });
-  document.getElementById('cart-next').onclick = () => { speech.stop(); showPlan(); };
+  /* the button says what comes next: the questions about the cart */
+  const nCart = CART_Q.length;
+  if (nCart) document.getElementById('cart-next').innerHTML = 'Answer ' + nCart + ' question' + (nCart === 1 ? '' : 's') + ' about the cart &rarr;';
+  document.getElementById('cart-next').onclick = () => { speech.stop(); if (nCart) app.go('cartq'); else showPlan(); };
 }
 
 function showPlan() {
@@ -1234,14 +1285,26 @@ function renderVocab() {
 /* ══════════════════════════════════════════════════════
    QUESTION ENGINE — vocabulary check, data analysis, exit ticket
 ══════════════════════════════════════════════════════ */
-function bankFor(phase) {
-  return phase === 'vq' ? VOCAB_Q : phase === 'analysis' ? ANALYSIS_Q
-       : phase === 'claims' ? CLAIMS_Q : EXIT_Q;
-}
-function answersFor(phase) {
-  return phase === 'vq' ? app.vocabAns : phase === 'analysis' ? app.analysisAns
-       : phase === 'claims' ? app.claimsAns : app.exitAns;
-}
+/* Which questions a question screen asks, and where its answers are kept.
+   A check after a test asks that test's questions out of ANALYSIS_Q (CHECKS,
+   data/questions.js) and keeps the answers with the other data answers;
+   Day 3's 'analysis' asks the data questions no check has. */
+const CHECK_IDS = () => Object.values(window.CHECKS || {}).reduce((all, c) => all.concat(c.ids || []), []);
+const Q_PHASE = {
+  cartq:    { bank: () => CART_Q,     ans: 'checkAns' },
+  vq:       { bank: () => VOCAB_Q,    ans: 'vocabAns' },
+  analysis: { bank: () => ANALYSIS_Q.filter(q => CHECK_IDS().indexOf(q.id) === -1), ans: 'analysisAns' },
+  claims:   { bank: () => CLAIMS_Q,   ans: 'claimsAns' },
+  exit:     { bank: () => EXIT_Q,     ans: 'exitAns' }
+};
+Object.keys(window.CHECKS || {}).forEach(p => {
+  if (Q_PHASE[p]) return;
+  const ids = window.CHECKS[p].ids || [];
+  Q_PHASE[p] = { bank: () => ids.map(id => ANALYSIS_Q.find(q => q.id === id)).filter(Boolean), ans: 'analysisAns' };
+});
+const isQPhase = phase => Object.prototype.hasOwnProperty.call(Q_PHASE, phase);
+function bankFor(phase) { return isQPhase(phase) ? Q_PHASE[phase].bank() : []; }
+function answersFor(phase) { return isQPhase(phase) ? (app[Q_PHASE[phase].ans] || (app[Q_PHASE[phase].ans] = {})) : {}; }
 function firstUnanswered(bank, ans) {
   for (let i = 0; i < bank.length; i++) if (ans[bank[i].id] == null) return i;
   return bank.length; /* all done */
@@ -1303,8 +1366,9 @@ function adaptiveOpts() {
   return { opts:opts, correct:slot };
 }
 
-const PHASE_TITLE = { vq:'Word check', analysis:'What does my data say?',
+const PHASE_TITLE = { vq:'Word check', analysis:'Look back at your tests',
                       claims:'Build the explanation', exit:'Exit ticket' };
+Object.keys(window.CHECKS || {}).forEach(p => { PHASE_TITLE[p] = window.CHECKS[p].title; });
 
 function renderQ() {
   const bank = bankFor(app.phase), ans = answersFor(app.phase);
@@ -1327,7 +1391,7 @@ function renderQ() {
      screen means the question tests the science, not their memory of a table
      from two screens back. */
   const dataBox = document.getElementById('q-data');
-  if (app.phase === 'analysis') {
+  if (app.phase === 'analysis' || /^check[A-D]$/.test(app.phase)) {
     const which = ['A','B','C','D'].includes(q.inv) ? q.inv : null;
     dataBox.className = '';
     dataBox.innerHTML = '<div class="qdata"><div class="qdata-h">' +
@@ -1387,6 +1451,7 @@ function answerQ(q, picked, bank, ans) {
       'Read the question again and pick from the choices that are left.';
     logEvent('answer', { id:q.id, ok:false, t:1 });
     app.save();
+    attachSpeakers(document.getElementById('q-screen'));   /* "try once more" can be heard too */
     const again = btns.find(b => !b.disabled);
     if (again) again.focus();
     return;
@@ -2191,7 +2256,8 @@ function fitSaved(s) {
   const data = Object.assign({ A:[], B:[], C:[], D:[] }, s.data || {});
   const heard = Object.assign({}, s.heard || {});
   const runIndex = {};
-  let phase = s.phase || 'vocab', redo = '';
+  /* `resumeAt` is where a student who was catching up was really up to */
+  let phase = s.resumeAt || s.phase || 'vocab', redo = '';
   ['A', 'B', 'C', 'D'].forEach(k => {
     const runs = invOf(k).runs, rows = Array.isArray(data[k]) ? data[k] : [];
     let n = 0;
@@ -2205,7 +2271,18 @@ function fitSaved(s) {
     if (!redo && n < runs.length && PHASES.indexOf(phase) > PHASES.indexOf('run' + k)) redo = k;
   });
   if (redo) phase = 'run' + redo;
-  return { data, runIndex, heard, phase, redo };
+
+  /* THE QUESTIONS, by the same rule. A check that was added (or moved
+     earlier) after this lesson was saved sits BEHIND the student, never
+     asked. Those questions count toward the score, so the student is sent
+     to the first such check, and from there next() walks the rest and then
+     returns the student to `resumeAt`, the place worked out above. */
+  let resumeAt = '', catchUp = '';
+  const saidTo = p => s[Q_PHASE[p].ans] || {};
+  const behind = PHASES.slice(0, Math.max(0, PHASES.indexOf(phase)))
+    .find(p => isQPhase(p) && bankFor(p).some(q => saidTo(p)[q.id] == null));
+  if (behind) { catchUp = behind; resumeAt = phase; phase = behind; }
+  return { data, runIndex, heard, phase, redo, catchUp, resumeAt };
 }
 
 function groupsFor(invKey) {
@@ -2386,9 +2463,11 @@ function renderGraph(invKey) {
   /* What the button leads to, by name. After Test 2 comes the end of
      Day 1, not Test 3 — the label still said C from before the day
      split moved. */
+  const nQ = bankFor('check' + invKey).length, tN = { A:1, B:2, C:3, D:4 }[invKey];
   const NEXT = { A:'Go to the end of Day 1 →', B:'Start Test 3 →',
                  C:'Go to the end of Day 2 →', D:'Answer questions about my data →' };
-  document.getElementById('gr-next').textContent = NEXT[invKey];
+  document.getElementById('gr-next').textContent = nQ
+    ? 'Answer ' + nQ + ' question' + (nQ === 1 ? '' : 's') + ' about Test ' + tN + ' →' : NEXT[invKey];
 }
 
 /* ══════════════════════════════════════════════════════

@@ -4,7 +4,8 @@
    can rank skills (Focus next / Strongest).
    Every skill rolls up to NGSS 4-PS3-1 and 4-PS3-3.
 ═══════════════════════════════════════════════════════ */
-/* L01-L05 word check  |  L06-L13 data analysis  |  L20-L25 exit ticket */
+/* L01-L05 word check  |  L06-L19 data questions  |  L20-L22, L29-L31 explanation
+   L23-L28 exit ticket  |  L32-L33 cart check */
 /* FEEDBACK lives on each question as `why` (a sentence, or a function of the
    student's own averages). It used to sit in a separate table in script.js
    keyed by question number; when the bank was renumbered on 10/8 that table
@@ -39,7 +40,10 @@ window.SKILLS = {
   L23: 'Identify forces',       L24: 'Friction slows motion',
   L25: 'More force = more distance', L26: 'Friction slows motion',
   L27: 'Objects keep moving unless a force acts',
-  L28: 'Energy and work'
+  L28: 'Energy and work',
+
+  /* the cart check, right after Meet your cart */
+  L32: 'What the distance tells us', L33: 'What the distance tells us'
 };
 
 /* ── VOCABULARY CHECK ──────────────────────────────────
@@ -61,6 +65,44 @@ window.VOCAB_Q = [
     why: "Gravity pulls things down toward Earth. That is why a dropped pencil falls down, not up.", q:'What is <b>gravity</b>?',
     opts:['The force that pulls objects down toward Earth','A force that pushes objects up','A rough surface','The speed of an object'], a:0 }
 ];
+
+/* ── UNDERSTANDING CHECKS ──────────────────────────────
+   Marcos 10/11: "I want the pattern for all Science lessons to have frequent
+   understanding checks." A student should never go far past something they
+   were taught without being asked about that thing.
+
+   So a check is a short set of questions, two or three, asked RIGHT AFTER
+   the thing the questions are about:
+     cartq    after Meet your cart        (CART_Q, below)
+     vq       after the six words         (VOCAB_Q)
+     checkA-D after each test's results   (that test's questions, from ANALYSIS_Q)
+   The questions about a test used to wait in one block of fourteen on Day 3,
+   two days after Test 1. Now each test is followed by its own. What is left
+   for Day 3's "What does my data say?" are the look-back questions.
+
+   CHECKS says which questions belong to which check. A question listed here
+   is asked there and nowhere else; an ANALYSIS_Q question not listed in any
+   check is asked on Day 3. The place each check sits is its name in PHASES
+   (script.js). qa.js C27 holds the pattern. */
+window.CART_Q = [
+  { id:'L32',
+    why: "After every push we measure the distance. The distance is how far the cart travels, from START to the spot where the cart stops.",
+    q:'What do we <b>measure</b> after every push?',
+    opts:['The distance the cart travels','The color of the cart','How loud the cart is','How heavy the cart is'], a:0 },
+  { id:'L33',
+    why: "A short distance means something stopped the cart fast. A long distance means not much slowed the cart down.",
+    q:'The cart travels a <b>short distance</b>. What does a short distance tell us?',
+    opts:['Nothing slowed the cart down','Something stopped the cart fast','The cart is broken','The push was too big'], a:1 }
+];
+
+window.CHECKS = {
+  cartq:  { title:'Cart check',            about:'the cart' },
+  /* each test: first read the data table, then say what the test showed */
+  checkA: { title:'What did Test 1 show?', about:'Test 1', inv:'A', ids:['L06','L08','L09'] },
+  checkB: { title:'What did Test 2 show?', about:'Test 2', inv:'B', ids:['L11','L10'] },
+  checkC: { title:'What did Test 3 show?', about:'Test 3', inv:'C', ids:['L12','L14'] },
+  checkD: { title:'What did Test 4 show?', about:'Test 4', inv:'D', ids:['L15','L16'] }
+};
 
 /* ── DATA ANALYSIS ─────────────────────────────────────
    These questions are answered from the student's OWN data table.
@@ -106,12 +148,12 @@ window.ANALYSIS_Q = [
   { id:'L13',
     why: "You did not push, and the car and the wood stayed the same. Only the height of the ramp changed, so that made the difference.", inv:'C',
     q:'In Test 3 the car and the surface never changed. You did not push the car at all &mdash; you let the car go. So what made the car travel different distances?',
-    opts:['How tall the ramp was','How hard you pushed','The colour of the car','The surface'], a:0 },
+    opts:['How tall the ramp was','How hard you pushed','The color of the car','The surface'], a:0 },
 
   { id:'L14',
     why: "Starting higher gives the car more energy. Think of a slide: the taller the slide, the faster you go at the bottom.", inv:'C',
     q:'A taller ramp means the car starts higher up. Starting higher gives the car more &hellip;',
-    opts:['energy','friction','mass','colour'], a:0 },
+    opts:['energy','friction','surface','color'], a:0 },
 
   { id:'L15',
     why: d => "Your table shows " + d.fartherD.toLowerCase() + " went farther with the very same push. A lighter thing goes farther with the same push.", inv:'D',
@@ -294,35 +336,36 @@ window.EXIT_Q = [
 ];
 
 /* ═══════════════════════════════════════════════════════
-   THE CORE SET — what fits two thirty-minute sessions.
+   THE CORE SET — which questions of the bank above are asked.
 
-   The bank above is the whole lesson. It is 28 scored items across
-   11 skills, and 17 of those 28 are the second-or-later ask of a
-   skill already tested: friction is asked six times, reading the
-   data table five. Asking a Level-1 reader the same thing six times
-   is not rigour, it is the reason the lesson did not fit.
+   The bank is the whole lesson. When the lesson had to fit two
+   thirty-minute sessions it was cut to ONE ask per skill, fifteen
+   questions, most of them in a block on the last day.
 
-   CORE keeps ONE ask per skill — the one tied to the investigation
-   the student has just run, so their own numbers are still on the
-   screen when they answer. Nine of the eleven skills are tested.
-   The two that are not, "motion and position" and "gravity", are
-   still TAUGHT on the vocabulary screen and are reinforced on IXL
-   (XPH, 8GH) — see the lesson plan.
+   10/11, three days now, and Marcos: "I want the pattern for all
+   Science lessons to have frequent understanding checks", two or three
+   questions at a time. So every check has at least two: the question
+   that reads the data table and the question that says what the test
+   showed. That brought five questions back (L08 L11 L12 L15 L19) and
+   added the two about the cart (L32 L33): 22 scored questions.
 
-   Everything cut stays in the file. Set CORE_ONLY to false and the
-   full bank comes back for the take-anywhere tail: WIN block, home,
-   a sub day.
+   Day 1  cart check L32 L33 · word check L01 L02 · Test 1 check L06 L08 L09
+   Day 2  Test 2 check L11 L10 · Test 3 check L12 L14
+   Day 3  Test 4 check L15 L16 · look back L18 L19 ·
+          explanation L20 L21 L29 L30 L31 · exit ticket L26 L28
 
-   Session 1   vocab + Test 1   -> L01 L02 L06 L09   (8 runs)
-   Session 2   Investigations B, C, D    -> L10 L14 L16 L18
-                                            L20 L21 W01 L26 L28  (8 runs)
+   Still cut, still in the file: L03 L04 L05 L07 L13 L17 L22-L25 L27.
+   "Motion and position" and "gravity" are taught on the word pages and
+   are reinforced on IXL (XPH, 8GH) — see the lesson plan.
+   Set CORE_ONLY to false and the full bank comes back.
 ═══════════════════════════════════════════════════════ */
 window.CORE_ONLY = true;
-window.CORE_IDS = ['L01','L02','L06','L09','L10','L14','L16','L18',
+window.CORE_IDS = ['L32','L33','L01','L02','L06','L08','L09','L11','L10','L12','L14','L15','L16','L18','L19',
                    'L20','L21','L29','L30','L31','L26','L28'];
 
 if (window.CORE_ONLY) {
   const keep = a => a.filter(q => window.CORE_IDS.indexOf(q.id) !== -1);
+  window.CART_Q     = keep(window.CART_Q);
   window.VOCAB_Q    = keep(window.VOCAB_Q);
   window.ANALYSIS_Q = keep(window.ANALYSIS_Q);
   window.CLAIMS_Q   = keep(window.CLAIMS_Q);
