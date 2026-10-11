@@ -12,7 +12,7 @@
 
    What it checks:
      C1  closing the tab on the cover does not wipe a saved lesson
-     C2  the opening path goes cover → why → care → summary → cart → plan → start
+     C2  the opening path goes cover → why → care → summary → cart → plan → goals → start
      C3  nothing starts talking on its own when a page opens
      C4  every preview stop shows exactly one screen, in the right phase
      C5  every visible piece of text belongs to a block that can be read aloud
@@ -51,6 +51,8 @@
          name, and also when the saved lesson is finished), a student with
          nothing saved still starts with one tap, and a saved lesson is
          picked up with its pushes
+     C26 the name page asks only for a name: almost nothing to read on it,
+         and every "I can" line is inside a step of the locked page before it
    It also lists how many words each screen asks a student to take in, and
    how many words each guided screen makes them listen to.
 
@@ -164,7 +166,7 @@
 
   /* C2, C3, C14 (opening pages) — the student's own path, through the lock */
   const path = [app.phase], talked = [];
-  for (const id of ['cover-go', 'why-next', 'care-next', 'sum-next', 'cart-next', 'ra-next']) {
+  for (const id of ['cover-go', 'why-next', 'care-next', 'sum-next', 'cart-next', 'ra-next', 'goals-next']) {
     const b = document.getElementById(id);
     if (!b) { path.push('(no #' + id + ')'); break; }
     if (id !== 'cover-go') await gateCheck(app.phase, visible()[0], b);
@@ -172,8 +174,33 @@
     if (speechSynthesis.speaking || speechSynthesis.pending) talked.push(app.phase);
     hush(); path.push(app.phase);
   }
-  const wantPath = ['cover', 'why', 'care', 'summary', 'cart', 'plan', 'start'];
+  const wantPath = ['cover', 'why', 'care', 'summary', 'cart', 'plan', 'goals', 'start'];
   rec('C2', 'Opening path in order', JSON.stringify(path) === JSON.stringify(wantPath), path.join(' → '));
+
+  /* C26 — THE NAME PAGE ASKS FOR A NAME AND NOTHING ELSE. Marcos 10/10: "are
+     the students forced to read this page?" It held 143 words above the name
+     picker, each with a small speaker, and Start woke up as soon as a name
+     was chosen. Anything a student has to take in belongs on a locked page
+     BEFORE this one. So, standing on the name page the way a first-time
+     student arrives: there is almost nothing to read here, and every "I can"
+     line was inside a step of the locked page that came just before. */
+  {
+    const st = document.getElementById('start-screen');
+    const lines = (window.LESSON.icanKid || []).map(t => t.replace(/\s+/g, ' ').slice(0, 30));
+    const here = speech.readable(st).filter(b => shown(b.el));
+    const nameWords = here.reduce((n, b) => n + wordsIn(b.text), 0);
+    const steps = [...document.querySelectorAll('#goals-screen .gstep')].map(e => e.textContent.replace(/\s+/g, ' '));
+    const notLocked = lines.filter(t => !steps.some(x => x.includes(t)));
+    const stillHere = lines.filter(t => st.textContent.replace(/\s+/g, ' ').includes(t));
+    const prose = [...st.querySelectorAll('p, li, h3')].filter(shown).map(e => e.textContent.trim().slice(0, 30));
+    rec('C26', 'The name page asks only for a name; every "I can" line is heard on a locked page first',
+        app.phase === 'start' && visible().length === 1 && nameWords <= 20 && !notLocked.length && !stillHere.length && !prose.length,
+        nameWords + ' words to read on the name page. ' +
+        (visible().length !== 1 ? visible().length + ' screens showing at once: ' + visible().map(x => x.id).join(', ') + '. ' : '') +
+        (notLocked.length ? 'Not in a locked step: ' + notLocked.join(' | ') + '. ' : '') +
+        (stillHere.length ? 'Still on the name page: ' + stillHere.join(' | ') + '. ' : '') +
+        (prose.length ? 'Paragraphs on the name page: ' + prose.join(' | ') : ''));
+  }
 
   /* C11 — a thing is introduced before it is talked about. Marcos: "You start
      talking about a cart and the kids have no idea why you are talking about

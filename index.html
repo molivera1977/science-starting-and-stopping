@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232E7D6B'/%3E%3Ccircle cx='11' cy='21' r='3' fill='%23fff'/%3E%3Ccircle cx='22' cy='21' r='3' fill='%23fff'/%3E%3Crect x='7' y='11' width='18' height='7' rx='2' fill='%23fff'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="style.css?v=resume2">
+<link rel="stylesheet" href="style.css?v=goals1">
 </head>
 <body>
 <div class="wrap">
@@ -110,7 +110,7 @@
        What the teacher just taught, before anyone types a name. It reads
        itself out loud the moment it appears. -->
   <section id="summary-screen" class="card hidden">
-    <div class="eyebrow">Before you start &middot; 1 of 2</div>
+    <div class="eyebrow">Before you start &middot; 1 of 4</div>
     <h2>What we just talked about</h2>
     <div id="recap-host"></div>
     <div class="btnrow" data-gafter>
@@ -121,7 +121,7 @@
   <!-- ══════════════ 1a · MEET YOUR CART ══════════════
        The cart is introduced here and nowhere earlier. -->
   <section id="cart-screen" class="card hidden">
-    <div class="eyebrow">Before you start</div>
+    <div class="eyebrow">Before you start &middot; 2 of 4</div>
     <h2>Meet your cart</h2>
     <div id="cart-pages"></div>
     <div class="btnrow" data-gafter>
@@ -133,11 +133,31 @@
        Its own page, so the summary is not a wall: which test happens which
        day, each with a picture, then the three things they do every time. -->
   <section id="plan-screen" class="card hidden">
-    <div class="eyebrow">Before you start &middot; 2 of 2</div>
+    <div class="eyebrow">Before you start &middot; 3 of 4</div>
     <h2>Here is the plan</h2>
     <div id="ra-text"></div>
     <div class="btnrow" data-gafter>
-      <button class="btn" id="ra-next" type="button">I am ready &mdash; let me start &rarr;</button>
+      <button class="btn" id="ra-next" type="button">Next &rarr;</button>
+    </div>
+  </section>
+
+  <!-- ══════════════ 1c · BY THE END YOU CAN ══════════════
+       Marcos 10/10, about the name page: "are the students forced to read
+       this page?" They were not. The four "I can" lines sat above the name
+       picker with a small speaker each, and the Start button woke up the
+       moment a name was chosen — so the one place the lesson says what a
+       student will be able to do was the one place nobody had to hear.
+       Now the four lines are a guided page of their own (guide.js): one
+       line open at a time, a picture beside each, and the button below does
+       not exist until all four were heard. A student coming back on Day 2 or
+       Day 3 goes from the cover straight to the name page and does not sit
+       through this again. -->
+  <section id="goals-screen" class="card hidden">
+    <div class="eyebrow">Before you start &middot; 4 of 4</div>
+    <h2>By the end of these three days you can say:</h2>
+    <div id="goals-list" class="cart-list"></div>
+    <div class="btnrow" data-gafter>
+      <button class="btn" id="goals-next" type="button">I am ready &mdash; let me start &rarr;</button>
     </div>
   </section>
 
@@ -147,22 +167,13 @@
          footer). A student met the word "Motion" here before it was taught. -->
     <div class="eyebrow">Grade 4 Science &middot; Lesson 1.1</div>
     <h2>Starting and Stopping</h2>
-    <p class="lead" id="st-lead">Today you are a scientist who studies how things move. You will push a cart and roll a car down
-    a ramp. Every time, you will measure how far the cart or the car travels. Then you will use the distances you measured to figure out
-    what makes a moving object stop.</p>
-
-    <div class="dq">
-      <span class="lb">Driving question</span>
-      <p>What causes some objects to stop and other objects to keep moving?</p>
-    </div>
-
-    <h3 id="st-ican-head">By the end you can &hellip;</h3>
-    <ul class="objlist" id="ican-list"></ul>
-    <div class="btnrow" style="margin-top:.2rem">
-    </div>
-
-    <hr class="hr">
-
+    <!-- THIS PAGE ASKS FOR ONE THING: a name. It used to carry a paragraph,
+         the driving question, the four "I can" lines and a note about three
+         days — 143 words nobody had to hear. Each of those is on a locked
+         page before this one now (the question and the scientist on page
+         two, the tests and the three days on the plan, the "I can" lines on
+         their own page), so nothing was lost by taking them off here.
+         qa.js C26 keeps the page this small. -->
     <label class="fld">
       <span class="lb">Pick your name</span>
       <select id="name-select"><option value="">&mdash; choose your name &mdash;</option></select>
@@ -181,7 +192,6 @@
       <button class="btn" id="begin-btn" type="button" disabled>Start the lesson</button>
       <button class="btn ghost small" id="teacher-btn" type="button">Teacher</button>
     </div>
-    <p class="counter">This lesson takes three days. You will not finish the whole lesson today, and that is the plan.</p>
   </section>
 
   <!-- ══════════════ 2 · READ ALOUD ══════════════ -->
@@ -419,14 +429,14 @@
   </p>
 </div>
 
-<script src="data/art.js?v=resume2"></script>
-<script src="data/lesson.js?v=resume2"></script>
-<script src="data/questions.js?v=resume2"></script>
-<script src="guide.js?v=resume2"></script>
-<script src="script.js?v=resume2"></script>
-<script src="preview.js?v=resume2"></script>
+<script src="data/art.js?v=goals1"></script>
+<script src="data/lesson.js?v=goals1"></script>
+<script src="data/questions.js?v=goals1"></script>
+<script src="guide.js?v=goals1"></script>
+<script src="script.js?v=goals1"></script>
+<script src="preview.js?v=goals1"></script>
 <!-- The pre-push check. Runs only when the address has ?qa in it. -->
-<script>if (/[?&]qa\b/.test(location.search)) { var q = document.createElement('script'); q.src = 'qa.js?v=resume2'; document.body.appendChild(q); }</script>
+<script>if (/[?&]qa\b/.test(location.search)) { var q = document.createElement('script'); q.src = 'qa.js?v=goals1'; document.body.appendChild(q); }</script>
 
 <!-- ══════════════ WORD HELP — on every working screen ══════════════
      Marcos 10/9: "add reminders of those definitions. Don't expect them to

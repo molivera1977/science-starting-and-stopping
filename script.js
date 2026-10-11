@@ -561,7 +561,12 @@ function joinLabels(root, els) {
    method words (trial, average, claim…) come from METHOD_WORDS, because
    those were used on screen dozens of times and never defined once.
 ══════════════════════════════════════════════════════ */
-const WH_HIDE_ON = ['cover', 'why', 'care', 'summary', 'cart', 'plan', 'start', 'vocab', 'end'];
+/* THE OPENING PAGES, in order: everything a student goes through before the
+   lesson has their name. One list, because six places need to know it (the
+   rail, the help bar, the word button, the preview, the resume button, and
+   PHASES itself) and a page added to five of them is a page that half works. */
+const OPENING = ['cover', 'why', 'care', 'summary', 'cart', 'plan', 'goals', 'start'];
+const WH_HIDE_ON = OPENING.concat(['vocab', 'end']);
 
 function buildWordHelp() {
   const row = document.getElementById('wh-words');
@@ -680,7 +685,7 @@ function syncWordHelp(phase) {
   if (wb) {
     const q = document.getElementById('wb-q');
     if (q && !q.innerHTML) { q.innerHTML = LESSON.driving; attachSpeakers(wb); }
-    wb.classList.toggle('hidden', ['cover', 'why', 'care', 'summary', 'cart', 'plan', 'start', 'end'].indexOf(phase) !== -1);
+    wb.classList.toggle('hidden', OPENING.concat(['end']).indexOf(phase) !== -1);
   }
 }
 
@@ -695,7 +700,7 @@ function logEvent(kind, extra) {
 /* ══════════════════════════════════════════════════════
    PHASES
 ══════════════════════════════════════════════════════ */
-const PHASES = ['cover','why','care','summary','cart','plan','start','vocab','vq','predictA','runA','graphA',
+const PHASES = [...OPENING,'vocab','vq','predictA','runA','graphA',
                 'daygate',                              /* end of Day 1 */
                 'predictB','runB','graphB',
                 'predictC','runC','graphC',
@@ -751,9 +756,10 @@ const app = {
 
   /* ── screens ── */
   show(id) {
-    ['cover-screen','why-screen','care-screen','summary-screen','cart-screen','plan-screen','start-screen','vocab-screen','q-screen','lab-screen',
-     'daygate-screen','write-screen','end-screen']
-      .forEach(s => { const el = document.getElementById(s); if (el) el.classList.add('hidden'); });
+    /* Every screen is a <section id="...-screen">. Hide them all by that
+       rule, not from a list: a list here once left out a new page, and that
+       page then stayed on screen under every page after it. */
+    document.querySelectorAll('section[id$="-screen"]').forEach(s => s.classList.add('hidden'));
     const el = document.getElementById(id); if (el) el.classList.remove('hidden');
     window.scrollTo({ top:0, behavior:'smooth' });
     /* Speakers attach when a screen is SHOWN, not when the page loads.
@@ -913,7 +919,7 @@ function drawRail() {
     const cls = on ? 'step on' : (at > last ? 'step done' : 'step');
     return '<div class="' + cls + '"><span class="n">' + st.n + '</span><span class="l">' + st.l + '</span></div>';
   }).join('');
-  rail.classList.toggle('hidden', ['cover','why','care','summary','cart','plan','start'].indexOf(app.phase) !== -1);
+  rail.classList.toggle('hidden', OPENING.indexOf(app.phase) !== -1);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -956,9 +962,6 @@ function buildCover() {
 }
 
 function buildStart() {
-  document.getElementById('ican-list').innerHTML =
-    LESSON.icanKid.map(s => '<li>I can ' + s + '</li>').join('');
-
   const sel = document.getElementById('name-select');
   ROSTER.forEach(r => {
     const o = document.createElement('option');
@@ -1059,7 +1062,7 @@ function buildStart() {
     if (app.refit) logEvent('refit', { to:app.phase });
     document.getElementById('who-chip').textContent = app.studentName;
     app.startTimer(); app.tickTimer();
-    app.go(['cover','why','care','summary','cart','plan','start'].indexOf(app.phase) !== -1 ? 'vocab' : app.phase);
+    app.go(OPENING.indexOf(app.phase) !== -1 ? 'vocab' : app.phase);
   });
 
   /* No whole-page reader anywhere now. Marcos 10/9: "I don't like the read to
@@ -1181,8 +1184,26 @@ function showPlan() {
   app.show('plan-screen');
   attachSpeakers(document.getElementById('plan-screen'));
   guide.run(document.getElementById('plan-screen'), { id: 'plan' });
-  /* Plan -> the name picker, not straight into the lesson. */
-  document.getElementById('ra-next').onclick = () => {
+  document.getElementById('ra-next').onclick = () => { speech.stop(); showGoals(); };
+}
+
+/* BY THE END YOU CAN — the four "I can" lines, each one heard before the
+   name page exists. They used to sit on the name page, where a student could
+   pick a name and press Start without hearing one of them (Marcos 10/10:
+   "are the students forced to read this page?"). One line to a step, a
+   picture beside each; the page title is read with the first line. */
+function showGoals() {
+  app.phase = 'goals'; drawRail();
+  const pics = Object.assign({}, window.WORD_ART || {}, window.THING_ART || {}, { push: INV_ART.B });
+  const which = LESSON.icanArt || [];
+  document.getElementById('goals-list').innerHTML = LESSON.icanKid.map((line, i) =>
+    '<div class="ptile crow" data-step>' + art(pics[which[i]], 'ptart') +
+    '<div><b class="pt">I can ' + line + '</b></div></div>').join('');
+  app.show('goals-screen');
+  attachSpeakers(document.getElementById('goals-screen'));
+  guide.run(document.getElementById('goals-screen'), { id: 'goals' });
+  /* ...and then the name picker, not straight into the lesson. */
+  document.getElementById('goals-next').onclick = () => {
     speech.stop(); app.phase = 'start'; app.show('start-screen'); drawRail();
   };
 }

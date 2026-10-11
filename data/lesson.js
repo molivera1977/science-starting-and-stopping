@@ -317,6 +317,9 @@ window.LESSON = {
     'show that a bigger push sends the cart farther.',
     'use the distances in my data table to back up what I say.'
   ],
+  /* one picture for each "I can" line, in the same order (the keys are the
+     picture names in data/art.js; "push" is the picture of Test 2) */
+  icanArt: ['force', 'surface', 'push', 'data table'],
 
   icanDistrict: [
     'explain and model what causes objects to change motion.',
