@@ -36,7 +36,7 @@
   };
 
   const NAMES = {
-    cover: 'Cover', why: 'The big question', care: 'Why should you care', cart: 'Meet your cart', cartq: 'Cart check', summary: 'What we just talked about', plan: 'Here is the plan',
+    cover: 'Cover', why: 'The big question', care: 'Why should you care', cart: 'Meet your cart', cartq: 'Cart check', summary: 'What we just talked about', sumq: 'What we talked about · questions', plan: 'Here is the plan', planq: 'Plan check',
     goals: 'By the end you can', start: 'Pick your name', vocab: 'Six words', vq: 'Word check',
     predictA: 'Test 1 · predict', runA: 'Test 1 · push (surfaces)', graphA: 'Test 1 · graph', checkA: 'Test 1 · questions',
     predictB: 'Test 2 · predict', runB: 'Test 2 · push (push size)', graphB: 'Test 2 · graph', checkB: 'Test 2 · questions',

@@ -5,7 +5,8 @@
    Every skill rolls up to NGSS 4-PS3-1 and 4-PS3-3.
 ═══════════════════════════════════════════════════════ */
 /* L01-L05 word check  |  L06-L19 data questions  |  L20-L22, L29-L31 explanation
-   L23-L28 exit ticket  |  L32-L33 cart check */
+   L23-L28 exit ticket  |  L32-L33 cart check  |  L34-L36 what we talked about
+   L37-L38 plan check */
 /* FEEDBACK lives on each question as `why` (a sentence, or a function of the
    student's own averages). It used to sit in a separate table in script.js
    keyed by question number; when the bank was renumbered on 10/8 that table
@@ -43,7 +44,14 @@ window.SKILLS = {
   L28: 'Energy and work',
 
   /* the cart check, right after Meet your cart */
-  L32: 'What the distance tells us', L33: 'What the distance tells us'
+  L32: 'What the distance tells us', L33: 'What the distance tells us',
+
+  /* the check after What we just talked about: one question for each of the
+     three things Mr. O showed */
+  L34: 'Identify forces', L35: 'Friction slows motion', L36: 'Friction slows motion',
+
+  /* the check after Here is the plan */
+  L37: 'Plan a fair test', L38: 'Plan a fair test'
 };
 
 /* ── VOCABULARY CHECK ──────────────────────────────────
@@ -73,17 +81,56 @@ window.VOCAB_Q = [
 
    So a check is a short set of questions, two or three, asked RIGHT AFTER
    the thing the questions are about:
-     cartq    after Meet your cart        (CART_Q, below)
-     vq       after the six words         (VOCAB_Q)
-     checkA-D after each test's results   (that test's questions, from ANALYSIS_Q)
+     sumq     after What we just talked about  (SUM_Q, below)
+     cartq    after Meet your cart             (CART_Q)
+     planq    after Here is the plan           (PLAN_Q)
+     vq       after the six words              (VOCAB_Q)
+     checkA-D after each test's results        (that test's questions, from ANALYSIS_Q)
    The questions about a test used to wait in one block of fourteen on Day 3,
    two days after Test 1. Now each test is followed by its own. What is left
    for Day 3's "What does my data say?" are the look-back questions.
 
-   CHECKS says which questions belong to which check. A question listed here
-   is asked there and nowhere else; an ANALYSIS_Q question not listed in any
-   check is asked on Day 3. The place each check sits is its name in PHASES
-   (script.js). qa.js C27 holds the pattern. */
+   CHECKS says which questions belong to which check and which page the
+   check comes right `after`. A check with a `bank` asks that whole list; a
+   check with `ids` asks those questions out of ANALYSIS_Q, and an ANALYSIS_Q
+   question listed in no check is asked on Day 3. The place each check sits
+   is its name in PHASES (script.js). qa.js C27 holds the pattern.
+
+   The three checks before the name page (sumq, cartq, planq) are answered
+   before the lesson knows who the student is; the answers go with the
+   student at "Start the lesson". */
+
+/* Marcos 10/11: "add a check after what we talked about and the plan."
+   What we just talked about shows three things; one question for each.
+   Nothing here may mention the cart: the cart is not met until the next page. */
+window.SUM_Q = [
+  { id:'L34',
+    why: "Pulling a chair is a pull. A pull is a force. A color, a name and an age are not pushes or pulls.",
+    q:'A <b>force</b> is a push or a pull. Which one is a force?',
+    opts:['Pulling a chair','The color of a chair','The name of a chair','How old a chair is'], a:0 },
+  { id:'L35',
+    why: "That rubbing is friction. Friction pushes back on anything that moves.",
+    q:'You rub your hands together. Your hands get warm. What is that rubbing called?',
+    opts:['A pull','Friction','A surface','A color'], a:1 },
+  { id:'L36',
+    why: "A rougher surface has more friction. Your sleeve was harder to slide on than your desk. More friction stops things sooner.",
+    q:'Which surface has <b>more friction</b>?',
+    opts:['A smooth surface, like your desk','A rough surface, like your sleeve','Both surfaces have the same friction','No surface has friction'], a:1 }
+];
+
+/* Here is the plan: what changes in the first test, and what a student does
+   every single time. */
+window.PLAN_Q = [
+  { id:'L37',
+    why: "In Test 1 you push the cart on ice, wood, carpet and sand. Only the surface changes.",
+    q:'What changes in <b>Test 1</b>?',
+    opts:['How hard the push is','The surface the cart rolls on','How tall the ramp is','The color of the cart'], a:1 },
+  { id:'L38',
+    why: "Every single time, you measure the distance the cart traveled. Then you write the distance in your data table.",
+    q:'What do you do <b>every single time</b> the cart stops?',
+    opts:['Measure the distance and write the distance in my data table','Pick a new name','Start the lesson over','Guess the distance'], a:0 }
+];
+
 window.CART_Q = [
   { id:'L32',
     why: "After every push we measure the distance. The distance is how far the cart travels, from START to the spot where the cart stops.",
@@ -96,12 +143,14 @@ window.CART_Q = [
 ];
 
 window.CHECKS = {
-  cartq:  { title:'Cart check',            about:'the cart' },
+  sumq:   { title:'What we talked about',  about:'what we talked about', after:'summary', bank:'SUM_Q' },
+  cartq:  { title:'Cart check',            about:'the cart',             after:'cart',    bank:'CART_Q' },
+  planq:  { title:'Plan check',            about:'the plan',             after:'plan',    bank:'PLAN_Q' },
   /* each test: first read the data table, then say what the test showed */
-  checkA: { title:'What did Test 1 show?', about:'Test 1', inv:'A', ids:['L06','L08','L09'] },
-  checkB: { title:'What did Test 2 show?', about:'Test 2', inv:'B', ids:['L11','L10'] },
-  checkC: { title:'What did Test 3 show?', about:'Test 3', inv:'C', ids:['L12','L14'] },
-  checkD: { title:'What did Test 4 show?', about:'Test 4', inv:'D', ids:['L15','L16'] }
+  checkA: { title:'What did Test 1 show?', about:'Test 1', after:'graphA', inv:'A', ids:['L06','L08','L09'] },
+  checkB: { title:'What did Test 2 show?', about:'Test 2', after:'graphB', inv:'B', ids:['L11','L10'] },
+  checkC: { title:'What did Test 3 show?', about:'Test 3', after:'graphC', inv:'C', ids:['L12','L14'] },
+  checkD: { title:'What did Test 4 show?', about:'Test 4', after:'graphD', inv:'D', ids:['L15','L16'] }
 };
 
 /* ── DATA ANALYSIS ─────────────────────────────────────
@@ -347,9 +396,11 @@ window.EXIT_Q = [
    questions at a time. So every check has at least two: the question
    that reads the data table and the question that says what the test
    showed. That brought five questions back (L08 L11 L12 L15 L19) and
-   added the two about the cart (L32 L33): 22 scored questions.
+   added the two about the cart (L32 L33). Then "add a check after what
+   we talked about and the plan" added L34-L38: 27 scored questions.
 
-   Day 1  cart check L32 L33 · word check L01 L02 · Test 1 check L06 L08 L09
+   Day 1  what we talked about L34 L35 L36 · cart check L32 L33 ·
+          plan check L37 L38 · word check L01 L02 · Test 1 check L06 L08 L09
    Day 2  Test 2 check L11 L10 · Test 3 check L12 L14
    Day 3  Test 4 check L15 L16 · look back L18 L19 ·
           explanation L20 L21 L29 L30 L31 · exit ticket L26 L28
@@ -360,12 +411,14 @@ window.EXIT_Q = [
    Set CORE_ONLY to false and the full bank comes back.
 ═══════════════════════════════════════════════════════ */
 window.CORE_ONLY = true;
-window.CORE_IDS = ['L32','L33','L01','L02','L06','L08','L09','L11','L10','L12','L14','L15','L16','L18','L19',
+window.CORE_IDS = ['L34','L35','L36','L32','L33','L37','L38','L01','L02','L06','L08','L09','L11','L10','L12','L14','L15','L16','L18','L19',
                    'L20','L21','L29','L30','L31','L26','L28'];
 
 if (window.CORE_ONLY) {
   const keep = a => a.filter(q => window.CORE_IDS.indexOf(q.id) !== -1);
+  window.SUM_Q      = keep(window.SUM_Q);
   window.CART_Q     = keep(window.CART_Q);
+  window.PLAN_Q     = keep(window.PLAN_Q);
   window.VOCAB_Q    = keep(window.VOCAB_Q);
   window.ANALYSIS_Q = keep(window.ANALYSIS_Q);
   window.CLAIMS_Q   = keep(window.CLAIMS_Q);

@@ -12,7 +12,8 @@
 
    What it checks:
      C1  closing the tab on the cover does not wipe a saved lesson
-     C2  the opening path goes cover → why → care → summary → cart → cartq → plan → goals → start
+     C2  the opening path goes cover → why → care → summary → sumq → cart → cartq → plan →
+         planq → goals → start
      C3  nothing starts talking on its own when a page opens
      C4  every preview stop shows exactly one screen, in the right phase
      C5  every visible piece of text belongs to a block that can be read aloud
@@ -53,13 +54,14 @@
          picked up with its pushes
      C26 the name page asks only for a name: almost nothing to read on it,
          and every "I can" line is inside a step of the locked page before it
-     C27 frequent understanding checks: Meet your cart, the six words and
-         every test's results page are each followed at once by a check of
-         two or three questions about that thing; every scored question is
-         asked exactly once, with feedback and a skill; the cart check is
-         answered on the way in and its answers go with the student who then
-         picks a name; a lesson saved before a check existed is sent to that
-         check and then back to where the student was
+     C27 frequent understanding checks: What we just talked about, Meet your
+         cart, Here is the plan, the six words and every test's results page
+         are each followed at once by a check of two or three questions about
+         that thing; every scored question is asked exactly once, with
+         feedback and a skill; the checks before the name page are answered
+         on the way in and their answers go with the student who then picks
+         a name; a lesson saved before a check existed is sent to that check
+         and then back to where the student was
    It also lists how many words each screen asks a student to take in, and
    how many words each guided screen makes them listen to.
 
@@ -196,7 +198,7 @@
       hush(); path.push(app.phase);
     }
   }
-  const wantPath = ['cover', 'why', 'care', 'summary', 'cart', 'cartq', 'plan', 'goals', 'start'];
+  const wantPath = ['cover', 'why', 'care', 'summary', 'sumq', 'cart', 'cartq', 'plan', 'planq', 'goals', 'start'];
   rec('C2', 'Opening path in order', JSON.stringify(path) === JSON.stringify(wantPath), path.join(' → '));
 
   /* C26 — THE NAME PAGE ASKS FOR A NAME AND NOTHING ELSE. Marcos 10/10: "are
@@ -229,6 +231,10 @@
      it." No page before Meet your cart may mention the cart. */
   const early = ['cover-screen', 'why-screen', 'care-screen', 'summary-screen']
     .filter(id => /\bcarts?\b/i.test((document.getElementById(id) || {}).textContent || ''));
+  /* ...and no question asked before that page may mention the cart either */
+  PHASES.slice(0, PHASES.indexOf('cart')).filter(isQPhase).forEach(p => bankFor(p).forEach(x => {
+    if (/\bcarts?\b/i.test([x.q, (x.opts || []).join(' '), typeof x.why === 'string' ? x.why : ''].join(' '))) early.push(x.id + ' (asked on "' + p + '")');
+  }));
   rec('C11', 'Nothing mentions the cart before Meet your cart introduces it', early.length === 0, early.join(', '));
 
   /* enter the preview */
@@ -480,7 +486,7 @@
      explained push size and the newest questions had none. This catches a
      missing or copy-pasted explanation (matching it to the right question
      still needs a human read — see the list in the commit). */
-  const bank = [].concat(CART_Q, VOCAB_Q, ANALYSIS_Q, CLAIMS_Q, EXIT_Q).filter(q => !q.adaptive);
+  const bank = Object.keys(Q_PHASE).reduce((all, p) => all.concat(bankFor(p)), []).filter(q => !q.adaptive);
   const fb = bank.map(q => ({ id: q.id, t: whyRight(q) }));
   const empty = fb.filter(f => !f.t).map(f => f.id);
   const seenT = {}, dupes = [];
@@ -645,7 +651,7 @@
     const saveDone = JSON.stringify({ studentName: me, phase: 'end', timerSeconds: 3000, score: 11, finishedAt: '2026-10-09T14:00:00.000Z',
       data: { A: rowsOf(invOf('A').runs), B: rowsOf(invOf('B').runs), C: rowsOf(invOf('C').runs), D: rowsOf(invOf('D').runs) } });
     const pushes = JSON.parse(save).data.A.length;
-    const STARTS = ['cartq', 'vocab'];
+    const STARTS = OPENING.filter(isQPhase).concat(['vocab']);   /* the first opening check, or the first word */
     const plant = () => localStorage.setItem(KEY, save);
     /* the note about saved work is on screen, can be heard, and follows the wording rules */
     const noteOk = tag => {
@@ -763,10 +769,18 @@
     const chk = [];
     const next = a => PHASES[PHASES.indexOf(a) + 1];
     const tN = { A: 1, B: 2, C: 3, D: 4 };
-    if (next('cart') !== 'cartq') chk.push('Meet your cart is followed by "' + next('cart') + '", not the cart check');
+    /* every check sits right after the page CHECKS says it is about */
+    Object.keys(window.CHECKS).forEach(p => {
+      const page = window.CHECKS[p].after;
+      if (!page) chk.push('"' + p + '" does not say which page it comes after');
+      else if (next(page) !== p) chk.push('"' + page + '" is followed by "' + next(page) + '", not its check "' + p + '"');
+    });
+    /* the pages Marcos named, and the tests, each have one */
+    ['summary', 'cart', 'plan', 'graphA', 'graphB', 'graphC', 'graphD'].forEach(page => {
+      if (!Object.keys(window.CHECKS).some(p => window.CHECKS[p].after === page)) chk.push('no check comes after "' + page + '"');
+    });
     if (next('vocab') !== 'vq') chk.push('the six words are followed by "' + next('vocab') + '", not the word check');
     ['A', 'B', 'C', 'D'].forEach(k => {
-      if (next('graph' + k) !== 'check' + k) chk.push('the results page of Test ' + tN[k] + ' is followed by "' + next('graph' + k) + '", not its check');
       if (bankFor('check' + k).some(x => x.inv !== k)) chk.push('the check after Test ' + tN[k] + ' asks about another test');
     });
     /* each check: two or three questions */
@@ -785,7 +799,7 @@
         if (!(window.SKILLS || {})[x.id]) chk.push(x.id + ' has no skill');
       });
     });
-    [].concat(CART_Q, VOCAB_Q, ANALYSIS_Q, CLAIMS_Q, EXIT_Q).forEach(x => { if (!where[x.id]) chk.push(x.id + ' is never asked'); });
+    [].concat(SUM_Q, CART_Q, PLAN_Q, VOCAB_Q, ANALYSIS_Q, CLAIMS_Q, EXIT_Q).forEach(x => { if (!where[x.id]) chk.push(x.id + ' is never asked'); });
     if (app.totalItems() !== Object.keys(where).length)
       chk.push('the score is out of ' + app.totalItems() + ' but ' + Object.keys(where).length + ' questions are asked');
     /* the answer key the teacher dashboard reads (data/form_l.js, not loaded by
@@ -796,10 +810,12 @@
       if (lost.length) chk.push('not in the dashboard answer key (form_l.js): ' + lost.join(' '));
     } catch (e) { chk.push('could not read data/form_l.js: ' + e.message); }
     /* the cart check was really answered on the way in, and led on to the plan */
-    const cw = checkWalk.find(c => c.phase === 'cartq');
-    if (!cw) chk.push('the opening pages never reached the cart check');
-    else if (cw.answered !== cw.asked || cw.then !== 'plan')
-      chk.push('the cart check: ' + cw.answered + ' of ' + cw.asked + ' answered, then went to "' + cw.then + '"');
+    OPENING.filter(isQPhase).forEach(p => {
+      const cw = checkWalk.find(c => c.phase === p), want = OPENING[OPENING.indexOf(p) + 1];
+      if (!cw) chk.push('the opening pages never reached the check "' + p + '"');
+      else if (cw.answered !== cw.asked || cw.then !== want)
+        chk.push('the check "' + p + '": ' + cw.answered + ' of ' + cw.asked + ' answered, then went to "' + cw.then + '", not "' + want + '"');
+    });
 
     /* STARTING THE LESSON keeps the cart check: the answers were given before
        the name was picked. And a student who starts without having had the
@@ -815,25 +831,32 @@
       app.go = p => { went = p; }; app.startTimer = () => {};
       try {
         const sel = document.getElementById('name-select'), begin = document.getElementById('begin-btn');
-        const ids = CART_Q.map(x => x.id);
+        const openQ = OPENING.filter(isQPhase).reduce((all, p) => all.concat(bankFor(p)), []);
+        const ids = openQ.map(x => x.id);
         await jump(stops.findIndex(s => s.phase === 'start')); await wait(100);
         localStorage.removeItem(KEY);
         sel.value = sel.options[2].value; sel.dispatchEvent(new Event('change')); await wait(40);
         /* one right, one wrong, the way a student might have answered on the way in */
-        app.checkAns = { [ids[0]]: CART_Q[0].a, [ids[1]]: (CART_Q[1].a + 1) % 4 };
+        /* every opening question answered, the second one wrong */
+        app.checkAns = Object.fromEntries(openQ.map((x, k) => [x.id, k === 1 ? (x.a + 1) % 4 : x.a]));
         app.missedQuestions = [{ id: ids[1], q: 'x', yourAnswer: 'x', correct: 'x', skill: 'x' }, { id: 'L99', q: 'someone else' }];
-        app.events = [{ e: 'answer', id: ids[0], ok: true }, { e: 'answer', id: ids[1], ok: false }, { e: 'cover_go' }];
-        app.score = 9;
+        app.events = openQ.map((x, k) => ({ e: 'answer', id: x.id, ok: k !== 1 })).concat([{ e: 'cover_go' }]);
+        app.score = 99;
         went = ''; begin.click(); await wait(40);
-        if (went !== 'vocab') chk.push('with the cart check answered, the lesson started at "' + went + '", not the first word');
-        if (Object.keys(app.checkAns).length !== 2 || app.score !== 1 || app.missedQuestions.length !== 1 || app.missedQuestions[0].id !== ids[1])
-          chk.push('starting the lesson did not keep the cart check as answered (score ' + app.score + ', ' + app.missedQuestions.length + ' misses)');
-        if (app.events.filter(e => e.e === 'answer').length !== 2 || app.events.some(e => e.e === 'cover_go'))
-          chk.push('starting the lesson did not keep exactly the cart check answers in the record');
-        /* no cart check yet: asked first */
+        if (went !== 'vocab') chk.push('with the opening checks answered, the lesson started at "' + went + '", not the first word');
+        if (Object.keys(app.checkAns).length !== ids.length || app.score !== ids.length - 1 || app.missedQuestions.length !== 1 || app.missedQuestions[0].id !== ids[1])
+          chk.push('starting the lesson did not keep the opening checks as answered (score ' + app.score + ', ' + app.missedQuestions.length + ' misses)');
+        if (app.events.filter(e => e.e === 'answer').length !== ids.length || app.events.some(e => e.e === 'cover_go'))
+          chk.push('starting the lesson did not keep exactly the opening check answers in the record');
+        /* only the first check answered: the lesson starts at the next one */
+        const firstOpen = OPENING.filter(isQPhase);
+        app.checkAns = Object.fromEntries(bankFor(firstOpen[0]).map(x => [x.id, 0])); app.missedQuestions = []; app.events = []; app.score = 0;
+        went = ''; begin.click(); await wait(40);
+        if (firstOpen[1] && went !== firstOpen[1]) chk.push('a student with only the first check answered started at "' + went + '", not "' + firstOpen[1] + '"');
+        /* no opening check yet: the first one is asked first */
         app.checkAns = {}; app.missedQuestions = []; app.events = []; app.score = 0;
         went = ''; begin.click(); await wait(40);
-        if (went !== 'cartq') chk.push('a student who never had the cart check started at "' + went + '", not the cart check');
+        if (went !== firstOpen[0]) chk.push('a student who never had the opening checks started at "' + went + '", not "' + firstOpen[0] + '"');
 
         /* A LESSON SAVED BEFORE A CHECK EXISTED. At the end of Day 1, every
            push done, but no cart check and no Test 1 check in the save. */
@@ -842,20 +865,23 @@
           data: { A: rowsOf(invOf('A').runs), B: [], C: [], D: [] } });
         const mine = Object.assign({}, sv, { checkAns: {}, analysisAns: {} });
         const fit = fitSaved(mine);
-        if (fit.phase !== 'cartq' || fit.resumeAt !== 'daygate' || fit.redo)
-          chk.push('a lesson saved before the checks existed went to "' + fit.phase + '" (back to "' + fit.resumeAt + '"), not the cart check and then the end of Day 1');
+        /* every check before the end of Day 1 whose answers are missing, in order, then back */
+        const owed = PHASES.slice(0, PHASES.indexOf('daygate')).filter(p => isQPhase(p) && ['checkAns', 'analysisAns'].indexOf(Q_PHASE[p].ans) !== -1);
+        if (fit.phase !== owed[0] || fit.resumeAt !== 'daygate' || fit.redo)
+          chk.push('a lesson saved before the checks existed went to "' + fit.phase + '" (back to "' + fit.resumeAt + '"), not "' + owed[0] + '" and then the end of Day 1');
         if (fitSaved(sv).catchUp || fitSaved(sv).phase !== 'daygate') chk.push('a lesson with every check answered was sent back to "' + fitSaved(sv).phase + '"');
         /* ...and walking it: cart check, then the Test 1 check, then back */
         app.restore(JSON.parse(JSON.stringify(mine)));      /* a copy: restore() keeps the objects handed to it */
         const walked = [app.phase];
-        for (let hop = 0; hop < 4 && app.resumeAt; hop++) {
+        for (let hop = 0; hop < 12 && app.resumeAt; hop++) {
           bankFor(app.phase).forEach(x => { answersFor(app.phase)[x.id] = 0; });
           went = ''; app.next(); app.phase = went; walked.push(went);
         }
-        if (walked.join(' > ') !== 'cartq > checkA > daygate' || app.resumeAt)
-          chk.push('catching up walked ' + walked.join(' > ') + ', not cartq > checkA > daygate');
-        /* stopped halfway through catching up: picked up again, the real place is not lost */
-        const half = fitSaved(Object.assign({}, mine, { phase: 'cartq', resumeAt: 'daygate', checkAns: answeredBefore('plan').checkAns }));
+        if (walked.join(' > ') !== owed.concat(['daygate']).join(' > ') || app.resumeAt)
+          chk.push('catching up walked ' + walked.join(' > ') + ', not ' + owed.concat(['daygate']).join(' > '));
+        /* stopped halfway through catching up (the opening checks done, the
+           Test 1 check not): picked up again, the real place is not lost */
+        const half = fitSaved(Object.assign({}, mine, { phase: owed[0], resumeAt: 'daygate', checkAns: answeredBefore('goals').checkAns }));
         if (half.phase !== 'checkA' || half.resumeAt !== 'daygate') chk.push('a lesson saved halfway through catching up went to "' + half.phase + '" (back to "' + half.resumeAt + '")');
       } catch (e) { chk.push('the check itself broke: ' + e.message); }
       app.go = realGo; app.startTimer = realTimer;
@@ -879,7 +905,7 @@
       run += w;
     });
     window.__qaStretch = worst;
-    rec('C27', 'Understanding checks: after Meet your cart, the six words and every test, 2 or 3 questions each (' +
+    rec('C27', 'Understanding checks after every block, 2 or 3 questions each (' + Object.keys(window.CHECKS).length + ' checks + the word check, ' +
         Object.keys(where).length + ' scored questions)', chk.length === 0,
         chk.slice(0, 6).join(' | '));
   }

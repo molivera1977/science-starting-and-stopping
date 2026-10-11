@@ -571,7 +571,7 @@ function joinLabels(root, els) {
    lesson has their name. One list, because six places need to know it (the
    rail, the help bar, the word button, the preview, the resume button, and
    PHASES itself) and a page added to five of them is a page that half works. */
-const OPENING = ['cover', 'why', 'care', 'summary', 'cart', 'cartq', 'plan', 'goals', 'start'];
+const OPENING = ['cover', 'why', 'care', 'summary', 'sumq', 'cart', 'cartq', 'plan', 'planq', 'goals', 'start'];
 const WH_HIDE_ON = OPENING.concat(['vocab', 'end']);
 
 function buildWordHelp() {
@@ -708,9 +708,9 @@ function logEvent(kind, extra) {
 ══════════════════════════════════════════════════════ */
 /* UNDERSTANDING CHECKS sit right after the thing they ask about (Marcos 10/11:
    "frequent understanding checks", two or three questions at a time):
-   cartq after Meet your cart (in OPENING), vq after the six words, and
-   checkA-D after each test's results page. Which questions each one asks is
-   CHECKS in data/questions.js. */
+   sumq, cartq and planq after three of the opening pages (in OPENING), vq
+   after the six words, and checkA-D after each test's results page. Which
+   questions each one asks is CHECKS in data/questions.js. */
 const PHASES = [...OPENING,'vocab','vq','predictA','runA','graphA','checkA',
                 'daygate',                              /* end of Day 1 */
                 'predictB','runB','graphB','checkB',
@@ -783,7 +783,7 @@ const app = {
   },
 
   phaseLabel() {
-    const m = { cartq:'Cart check', vocab:'Words', vq:'Word check',
+    const m = { sumq:'First questions', cartq:'Cart check', planq:'Plan check', vocab:'Words', vq:'Word check',
       predictA:'Surfaces predict', runA:'Surfaces runs', graphA:'Surfaces graph', checkA:'Surfaces questions',
       predictB:'Push predict',     runB:'Push runs',     graphB:'Push graph',     checkB:'Push questions',
       predictC:'Ramp predict',     runC:'Ramp runs',     graphC:'Ramp graph',     checkC:'Ramp questions',
@@ -793,7 +793,8 @@ const app = {
     return m[this.phase] || this.phase;
   },
 
-  totalItems() { return CART_Q.length + VOCAB_Q.length + ANALYSIS_Q.length + CLAIMS_Q.length + EXIT_Q.length; },
+  /* every question of every question screen (each is asked on exactly one: qa C27) */
+  totalItems() { return Object.keys(Q_PHASE).reduce((n, p) => n + bankFor(p).length, 0); },
   labSeconds() {
     if (this.labStart == null) return 0;
     return Math.max(0, (this.labEnd == null ? this.timerSeconds : this.labEnd) - this.labStart);
@@ -926,11 +927,20 @@ const app = {
       this.go(target);
       return;
     }
-    /* The cart check comes before the name page. A first-time student has
-       no name yet and goes on to the plan. A student who already has a name
-       (started over, or caught up) goes to the first word. */
-    if (this.phase === 'cartq') {
-      if (this.studentName && !window.PREVIEW) this.go('vocab'); else showPlan();
+    /* A CHECK AMONG THE OPENING PAGES comes before the name page. A first-time
+       student has no name yet and goes on to the next opening page. A student
+       who already has a name (started over without walking the opening
+       pages) goes to the next opening check not yet answered, then to the
+       first word. */
+    const at = OPENING.indexOf(this.phase);
+    if (at !== -1 && isQPhase(this.phase)) {
+      if (this.studentName && !window.PREVIEW) {
+        this.go(OPENING.slice(at + 1).find(p => isQPhase(p) && firstUnanswered(bankFor(p), answersFor(p)) < bankFor(p).length) || 'vocab');
+      } else {
+        const page = OPENING[at + 1];
+        if (isQPhase(page)) this.go(page);
+        else ({ why: showWhy, care: showCare, summary: showSummary, cart: showCart, plan: showPlan, goals: showGoals })[page]();
+      }
       return;
     }
     const i = PHASES.indexOf(this.phase);
@@ -1065,12 +1075,13 @@ function buildStart() {
 
   /* Clears what is saved on this device and starts the lesson at the first word. */
   const startFresh = () => {
-    /* THE CART CHECK IS ANSWERED BEFORE THIS PAGE, when the lesson does not
-       know whose answers they are yet. Whoever just walked the opening pages
-       on this device is the student now picking a name, so those answers,
-       their points, their misses and their record go with this student.
-       (Nothing else from before the name is kept, as before.) */
-    const cartIds = CART_Q.map(q => q.id);
+    /* THE OPENING CHECKS ARE ANSWERED BEFORE THIS PAGE, when the lesson does
+       not know whose answers they are yet. Whoever just walked the opening
+       pages on this device is the student now picking a name, so those
+       answers, their points, their misses and their record go with this
+       student. (Nothing else from before the name is kept, as before.) */
+    const openChecks = OPENING.filter(isQPhase);
+    const cartIds = openChecks.reduce((all, p) => all.concat(bankFor(p).map(q => q.id)), []);
     const cart = {
       ans: Object.fromEntries(Object.entries(app.checkAns || {}).filter(([id]) => cartIds.indexOf(id) !== -1)),
       missed: (app.missedQuestions || []).filter(m => cartIds.indexOf(m.id) !== -1),
@@ -1090,8 +1101,8 @@ function buildStart() {
     logEvent('start', { name:app.studentName });
     document.getElementById('who-chip').textContent = app.studentName;
     /* a student who did not come through the opening pages this time (the
-       lesson was started over) has not had the cart check: ask it first */
-    app.go(firstUnanswered(CART_Q, app.checkAns) < CART_Q.length ? 'cartq' : 'vocab');
+       lesson was started over) has not had the opening checks: ask them first */
+    app.go(openChecks.find(p => firstUnanswered(bankFor(p), answersFor(p)) < bankFor(p).length) || 'vocab');
   };
 
   /* Asked again here, from what is saved right now and not from how the
@@ -1198,7 +1209,7 @@ function showSummary() {
   guide.run(document.getElementById('summary-screen'), { id: 'summary' });
   /* Nothing on these pages speaks on its own. Marcos 10/9: "this read on its
      own. It shouldn't." Twenty-two devices would all start talking at once. */
-  document.getElementById('sum-next').onclick = () => { speech.stop(); showCart(); };
+  nextOrCheck('sum-next', 'summary', showCart);
 }
 
 /* The plan gets its own page. Marcos 10/9: the summary was one long screen,
@@ -1222,10 +1233,7 @@ function showCart() {
     '</div></div>').join('');
   app.show('cart-screen');
   guide.run(document.getElementById('cart-screen'), { id: 'cart' });
-  /* the button says what comes next: the questions about the cart */
-  const nCart = CART_Q.length;
-  if (nCart) document.getElementById('cart-next').innerHTML = 'Answer ' + nCart + ' question' + (nCart === 1 ? '' : 's') + ' about the cart &rarr;';
-  document.getElementById('cart-next').onclick = () => { speech.stop(); if (nCart) app.go('cartq'); else showPlan(); };
+  nextOrCheck('cart-next', 'cart', showPlan);     /* the button says what comes next: the questions about the cart */
 }
 
 function showPlan() {
@@ -1235,7 +1243,7 @@ function showPlan() {
   app.show('plan-screen');
   attachSpeakers(document.getElementById('plan-screen'));
   guide.run(document.getElementById('plan-screen'), { id: 'plan' });
-  document.getElementById('ra-next').onclick = () => { speech.stop(); showGoals(); };
+  nextOrCheck('ra-next', 'plan', showGoals);
 }
 
 /* BY THE END YOU CAN — the four "I can" lines, each one heard before the
@@ -1291,7 +1299,6 @@ function renderVocab() {
    Day 3's 'analysis' asks the data questions no check has. */
 const CHECK_IDS = () => Object.values(window.CHECKS || {}).reduce((all, c) => all.concat(c.ids || []), []);
 const Q_PHASE = {
-  cartq:    { bank: () => CART_Q,     ans: 'checkAns' },
   vq:       { bank: () => VOCAB_Q,    ans: 'vocabAns' },
   analysis: { bank: () => ANALYSIS_Q.filter(q => CHECK_IDS().indexOf(q.id) === -1), ans: 'analysisAns' },
   claims:   { bank: () => CLAIMS_Q,   ans: 'claimsAns' },
@@ -1299,9 +1306,20 @@ const Q_PHASE = {
 };
 Object.keys(window.CHECKS || {}).forEach(p => {
   if (Q_PHASE[p]) return;
-  const ids = window.CHECKS[p].ids || [];
-  Q_PHASE[p] = { bank: () => ids.map(id => ANALYSIS_Q.find(q => q.id === id)).filter(Boolean), ans: 'analysisAns' };
+  const c = window.CHECKS[p], ids = c.ids || [];
+  Q_PHASE[p] = c.bank
+    ? { bank: () => window[c.bank] || [], ans: 'checkAns' }                 /* a list of its own (the opening checks) */
+    : { bank: () => ids.map(id => ANALYSIS_Q.find(q => q.id === id)).filter(Boolean), ans: 'analysisAns' };
 });
+/* The Next button of a page that is followed by a check says so, and leads
+   there: "Answer 3 questions about what we talked about". With no check
+   after the page, the button keeps its own words and `goOn` runs. */
+function nextOrCheck(btnId, page, goOn) {
+  const b = document.getElementById(btnId), nx = PHASES[PHASES.indexOf(page) + 1];
+  const n = isQPhase(nx) ? bankFor(nx).length : 0;
+  if (n) b.innerHTML = 'Answer ' + n + ' question' + (n === 1 ? '' : 's') + ' about ' + ((window.CHECKS[nx] || {}).about || 'this page') + ' &rarr;';
+  b.onclick = () => { speech.stop(); if (n) app.go(nx); else goOn(); };
+}
 const isQPhase = phase => Object.prototype.hasOwnProperty.call(Q_PHASE, phase);
 function bankFor(phase) { return isQPhase(phase) ? Q_PHASE[phase].bank() : []; }
 function answersFor(phase) { return isQPhase(phase) ? (app[Q_PHASE[phase].ans] || (app[Q_PHASE[phase].ans] = {})) : {}; }

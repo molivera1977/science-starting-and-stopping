@@ -2,7 +2,8 @@
    FORM L — every scored item in Lesson 1.1: L01–L05 word check,
    L06–L19 data questions (asked after each test, see CHECKS in
    questions.js), L20–L22 and L29–L31 explanation, L23–L28 exit
-   ticket, L32–L33 cart check.
+   ticket, L32–L33 cart check, L34–L36 what we talked about,
+   L37–L38 plan check.
 
    The teacher dashboard fetches this file to show the answer choices
    behind a missed question. It is NOT loaded by the lesson itself.
@@ -51,5 +52,14 @@ window.FORM_L = [
 
   /* The cart check, asked right after Meet your cart (before the six words). */
   { id:"L32", section:"Cart check", q:"What do we <b>measure</b> after every push?", choices:["The distance the cart travels","The color of the cart","How loud the cart is","How heavy the cart is"], answer:"The distance the cart travels", explanation:"After every push we measure the distance: how far the cart travels from START to the spot where the cart stops." },
-  { id:"L33", section:"Cart check", q:"The cart travels a <b>short distance</b>. What does a short distance tell us?", choices:["Nothing slowed the cart down","Something stopped the cart fast","The cart is broken","The push was too big"], answer:"Something stopped the cart fast", explanation:"A short distance means something stopped the cart fast. A long distance means not much slowed the cart down." }
+  { id:"L33", section:"Cart check", q:"The cart travels a <b>short distance</b>. What does a short distance tell us?", choices:["Nothing slowed the cart down","Something stopped the cart fast","The cart is broken","The push was too big"], answer:"Something stopped the cart fast", explanation:"A short distance means something stopped the cart fast. A long distance means not much slowed the cart down." },
+
+  /* The check after What we just talked about: one question for each of the three things shown. */
+  { id:"L34", section:"What we talked about", q:"A <b>force</b> is a push or a pull. Which one is a force?", choices:["Pulling a chair","The color of a chair","The name of a chair","How old a chair is"], answer:"Pulling a chair", explanation:"Pulling a chair is a pull. A pull is a force. A color, a name and an age are not pushes or pulls." },
+  { id:"L35", section:"What we talked about", q:"You rub your hands together. Your hands get warm. What is that rubbing called?", choices:["A pull","Friction","A surface","A color"], answer:"Friction", explanation:"That rubbing is friction. Friction pushes back on anything that moves." },
+  { id:"L36", section:"What we talked about", q:"Which surface has <b>more friction</b>?", choices:["A smooth surface, like your desk","A rough surface, like your sleeve","Both surfaces have the same friction","No surface has friction"], answer:"A rough surface, like your sleeve", explanation:"A rougher surface has more friction. More friction stops things sooner." },
+
+  /* The check after Here is the plan. */
+  { id:"L37", section:"Plan check", q:"What changes in <b>Test 1</b>?", choices:["How hard the push is","The surface the cart rolls on","How tall the ramp is","The color of the cart"], answer:"The surface the cart rolls on", explanation:"In Test 1 you push the cart on ice, wood, carpet and sand. Only the surface changes." },
+  { id:"L38", section:"Plan check", q:"What do you do <b>every single time</b> the cart stops?", choices:["Measure the distance and write the distance in my data table","Pick a new name","Start the lesson over","Guess the distance"], answer:"Measure the distance and write the distance in my data table", explanation:"Every single time, you measure the distance the cart traveled. Then you write the distance in your data table." }
 ];
