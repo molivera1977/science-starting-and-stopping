@@ -48,8 +48,9 @@
      C25 the name page never clears saved work on one tap: with saved work
          "Pick up where I left off" is the big button, starting over asks
          for the teacher PIN (also when the saved work is under another
-         name), a student with nothing saved still starts with one tap, and
-         a saved lesson is picked up with its pushes
+         name, and also when the saved lesson is finished), a student with
+         nothing saved still starts with one tap, and a saved lesson is
+         picked up with its pushes
    It also lists how many words each screen asks a student to take in, and
    how many words each guided screen makes them listen to.
 
@@ -568,9 +569,9 @@
     const stored = () => localStorage.getItem(KEY);
     const pick = async n => { sel.value = n; sel.dispatchEvent(new Event('change')); await wait(60); };
     const cancel = async () => { document.getElementById('pin-cancel').click(); await wait(30); };
-    /* two saved lessons. `save`: from when each setup had one push fewer,
+    /* three saved lessons. `save`: from when each setup had one push fewer,
        stopped at the end of Day 1. `saveNow`: the lesson as it is today,
-       stopped partway through Test 2. */
+       stopped partway through Test 2. `saveDone`: a finished lesson. */
     const rowsOf = runs => runs.map(r => Object.assign({}, r, { cm: distanceCm(r, true) }));
     const top = k => invOf(k).runs.reduce((m, r) => Math.max(m, r.trial), 1);
     const partB = Math.min(4, invOf('B').runs.length);
@@ -578,6 +579,8 @@
       data: { A: rowsOf(invOf('A').runs.filter(r => r.trial < top('A'))), B: [], C: [], D: [] } });
     const saveNow = JSON.stringify({ studentName: me, phase: 'runB', timerSeconds: 1500, score: 2, heard: { vocab: 12, graphA: 7 },
       data: { A: rowsOf(invOf('A').runs), B: rowsOf(invOf('B').runs.slice(0, partB)), C: [], D: [] } });
+    const saveDone = JSON.stringify({ studentName: me, phase: 'end', timerSeconds: 3000, score: 11, finishedAt: '2026-10-09T14:00:00.000Z',
+      data: { A: rowsOf(invOf('A').runs), B: rowsOf(invOf('B').runs), C: rowsOf(invOf('C').runs), D: rowsOf(invOf('D').runs) } });
     const pushes = JSON.parse(save).data.A.length;
     const plant = () => localStorage.setItem(KEY, save);
     /* the note about saved work is on screen, can be heard, and follows the wording rules */
@@ -636,12 +639,29 @@
       if (!pinUp() || stored() !== save || went) nameBad.push('work under another name: one tap cleared the saved pushes');
       await cancel();
 
+      /* a FINISHED lesson is kept the same way. The end screen asks for the
+         PIN before it starts over; the name page let the same student, or
+         the next student on that computer, do it with one tap on "Start the
+         lesson". Marcos 10/10: "PIN it". */
+      for (const [tag, who] of [['finished lesson', me], ['finished lesson under another name', other]]) {
+        localStorage.setItem(KEY, saveDone); await pick(''); await pick(who);
+        if (shown(resume)) nameBad.push(tag + ': a finished lesson is offered to pick up');
+        if (big(begin)) nameBad.push(tag + ': a big button starts a new lesson over the finished one');
+        noteOk(tag);
+        if (who !== me && (!shown(box) || box.textContent.indexOf(me) === -1)) nameBad.push(tag + ': the page does not say whose work is saved');
+        went = ''; begin.click(); await wait(40);
+        if (!pinUp() || stored() !== saveDone || went) nameBad.push(tag + ': one tap cleared the finished lesson');
+        await cancel();
+      }
+
       /* with the PIN, Mr. O can still clear the saved work and start the lesson */
-      plant(); await pick(me);
-      went = ''; begin.click(); await wait(40);
-      document.getElementById('pin-input').value = TEACHER_PIN; document.getElementById('pin-ok').click(); await wait(40);
-      if (pinUp() || stored() !== null || went !== 'vocab') nameBad.push('the teacher PIN did not clear the saved work and start the lesson');
-      await cancel();
+      for (const [tag, sv] of [['saved work', save], ['a finished lesson', saveDone]]) {
+        localStorage.setItem(KEY, sv); await pick(''); await pick(me);
+        went = ''; begin.click(); await wait(40);
+        document.getElementById('pin-input').value = TEACHER_PIN; document.getElementById('pin-ok').click(); await wait(40);
+        if (pinUp() || stored() !== null || went !== 'vocab') nameBad.push('the teacher PIN did not clear ' + tag + ' and start the lesson');
+        await cancel();
+      }
 
       /* and the big button picks a saved lesson up, pushes and all: the lesson
          as it is today goes on where the student stopped; the older lesson

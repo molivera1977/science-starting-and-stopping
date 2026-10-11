@@ -830,11 +830,11 @@ const app = {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (e) { return null; }
   },
   clearSaved() { try { localStorage.removeItem(STORAGE_KEY); } catch (e) {} },
-  /* The lesson a student began on this device and has not finished, or null.
-     The same test the cover uses before it offers its shortcut. */
-  unfinished() {
+  /* The lesson a student saved on this device, finished or not, or null.
+     A save with no student in it is nobody's work. */
+  kept() {
     const s = this.loadSaved();
-    return (s && s.studentName && s.phase && s.phase !== 'end') ? s : null;
+    return (s && s.studentName && s.phase) ? s : null;
   },
 
   restore(s) {
@@ -973,23 +973,29 @@ function buildStart() {
      days, so on Day 2 and Day 3 every student comes back through this page
      with saved pushes. The big button here used to turn into "Start over
      from the beginning" and clear them on one tap, with the real way back a
-     small button beside it. Now, while this device holds an unfinished
-     lesson: "Pick up where I left off" is the big button, and the button
-     that clears the saved lesson is the small one and asks for the teacher
-     PIN — also when the saved lesson is under another name (a wrong pick
-     in the list, or a shared computer), where one tap on "Start the lesson"
-     cleared the other student's pushes just the same. */
+     small button beside it. Now, while this device holds a saved lesson:
+     "Pick up where I left off" is the big button, and the button that
+     clears the saved lesson is the small one and asks for the teacher PIN.
+     The same holds when the saved lesson is under another name (a wrong
+     pick in the list, or a shared computer), where one tap on "Start the
+     lesson" cleared the other student's pushes just the same. And the same
+     holds when the saved lesson is FINISHED: the end screen asks for the
+     PIN before it starts over, and this page did not. Marcos 10/10: "PIN
+     it". A student doing a make-up on a classmate's computer needs Mr. O. */
   sel.addEventListener('change', () => {
     begin.disabled = !sel.value;
-    const s = app.unfinished();
-    const resumable = !!s && s.studentName === sel.value;
-    const notMine = !!s && !!sel.value && !resumable;      /* the saved lesson is under another name */
-    resumeBox.classList.toggle('hidden', !resumable && !notMine);
+    const s = app.kept();
+    const mine = !!s && s.studentName === sel.value;
+    const resumable = mine && s.phase !== 'end';
+    const finished = mine && !resumable;
+    const notMine = !!s && !!sel.value && !mine;         /* the saved lesson is under another name */
+    resumeBox.classList.toggle('hidden', !mine && !notMine);
     resumeBtn.classList.toggle('hidden', !resumable);
-    begin.classList.toggle('ghost', resumable || notMine);
-    begin.classList.toggle('small', resumable || notMine);
+    begin.classList.toggle('ghost', mine || notMine);
+    begin.classList.toggle('small', mine || notMine);
     resumeBox.querySelector('.lb').textContent =
-      notMine ? 'This computer has saved work.' : 'You already started this lesson.';
+      notMine ? 'This computer has saved work.'
+      : finished ? 'You already finished this lesson.' : 'You already started this lesson.';
     if (resumable) {
       const m = Math.floor((s.timerSeconds || 0) / 60);
       const howLong = m < 1 ? 'less than a minute' : m + ' minute' + (m === 1 ? '' : 's');
@@ -1003,6 +1009,10 @@ function buildStart() {
           ? 'The lesson changed: you now do every push <b>' + (window.TIMES || 'more than once') + '</b>. You will go back to <b>Test ' +
             ({ A:1, B:2, C:3, D:4 })[fit.redo] + '</b> to finish the pushes. Your answers are saved.'
           : 'Nothing you finished will be asked again.');
+      begin.textContent = 'Start over (teacher PIN)';
+    } else if (finished) {
+      document.getElementById('resume-text').textContent =
+        'Your work is saved. Ask Mr. O before you start the lesson again.';
       begin.textContent = 'Start over (teacher PIN)';
     } else if (notMine) {
       const who = '<b>' + String(s.studentName).replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</b>';
@@ -1034,10 +1044,10 @@ function buildStart() {
   };
 
   /* Asked again here, from what is saved right now and not from how the
-     buttons look: however a student gets to this press, an unfinished lesson
-     is cleared only with the PIN. Nothing saved: one tap starts, as before. */
+     buttons look: however a student gets to this press, a saved lesson is
+     cleared only with the PIN. Nothing saved: one tap starts, as before. */
   begin.addEventListener('click', () => {
-    const s = app.unfinished();
+    const s = app.kept();
     if (s) askPin('Enter the teacher PIN to clear the saved work for ' + s.studentName + ' and start the lesson from the beginning.', startFresh);
     else startFresh();
   });
