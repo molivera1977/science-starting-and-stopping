@@ -81,7 +81,7 @@
 ═══════════════════════════════════════════════════════ */
 (async function () {
   const wait = ms => new Promise(r => setTimeout(r, ms));
-  const KEY = 'sci_startstop_session_v1';
+  const KEY = 'sci_startstop_session_v2';   // must match STORAGE_KEY in script.js
   const results = [];
   const rec = (id, label, pass, detail) => results.push({ id, label, pass, detail: detail || '' });
   const errors = [];

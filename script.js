@@ -17,9 +17,18 @@
 ═══════════════════════════════════════════════════════════════ */
 
 /* ── CONFIG ─────────────────────────────────────────── */
-const STORAGE_KEY  = 'sci_startstop_session_v1';
-const SCORES_KEY   = 'sci_startstop_scores_v1';
-const SESSION_ID_KEY = 'sci_startstop_session_id_v1';
+/* A FRESH START FOR THE 3-DAY LESSON (Marcos 10/12: "save the old scores and
+   force a restart to the new version"). These three names are where a device
+   keeps a student's lesson. They ended in _v1 while the lesson was two days
+   long; changing them to _v2 means a lesson saved on the old version is no
+   longer picked up — it is left exactly where it is in the browser, nothing
+   is deleted — and every student begins the 3-day lesson from the start with
+   a new session id, so a new row in the sheet. The old rows stay in the sheet
+   untouched, and the teacher dashboard shows them as the "earlier 2-day
+   version". fitSaved() below still makes a _v2 save fit any later change. */
+const STORAGE_KEY  = 'sci_startstop_session_v2';
+const SCORES_KEY   = 'sci_startstop_scores_v2';
+const SESSION_ID_KEY = 'sci_startstop_session_id_v2';
 const TEACHER_PIN  = '9377';
 const GAME_KEY     = 'startstop-lesson';
 const WRITTEN_KEY  = 'startstop_written';
