@@ -1017,6 +1017,15 @@ function buildStart() {
     const o = document.createElement('option');
     o.value = r.name; o.textContent = r.name; sel.appendChild(o);
   });
+  /* Guest view (share.js, a colleague's link): no class list — one name, "Guest". */
+  if (window.SHARE_MODE) {
+    sel.innerHTML = '<option value="Guest">Guest</option>';
+    sel.value = 'Guest';
+    const lb = sel.closest('.fld') && sel.closest('.fld').querySelector('.lb');
+    if (lb) lb.textContent = 'Guest view';
+    const teacherBtn = document.getElementById('teacher-btn');   /* the lesson preview already opened for a guest */
+    if (teacherBtn) teacherBtn.classList.add('hidden');
+  }
 
   const begin = document.getElementById('begin-btn');
   const resumeBox = document.getElementById('resume-box');
@@ -1115,6 +1124,8 @@ function buildStart() {
        lesson was started over) has not had the opening checks: ask them first */
     app.go(openChecks.find(p => firstUnanswered(bankFor(p), answersFor(p)) < bankFor(p).length) || 'vocab');
   };
+
+  if (window.SHARE_MODE) sel.dispatchEvent(new Event('change'));   /* "Guest" is already picked */
 
   /* Asked again here, from what is saved right now and not from how the
      buttons look: however a student gets to this press, a saved lesson is

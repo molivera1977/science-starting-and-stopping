@@ -150,8 +150,9 @@
     const bar = document.createElement('div');
     bar.id = 'tpbar';
     bar.setAttribute('data-noread', '');
+    const guest = !!window.SHARE_MODE;   /* a colleague's link (share.js): no PIN, and a way into the student path */
     bar.innerHTML =
-      '<span class="tp-tag">Teacher preview</span>' +
+      '<span class="tp-tag">' + (guest ? 'Lesson preview' : 'Teacher preview') + '</span>' +
       '<span class="tp-note">nothing is saved or sent</span>' +
       '<button type="button" id="tp-prev">&#9664; Back</button>' +
       '<select id="tp-jump" aria-label="Jump to a screen">' +
@@ -159,15 +160,21 @@
       '</select>' +
       '<span id="tp-pos"></span>' +
       '<button type="button" id="tp-next">Next &#9654;</button>' +
-      '<button type="button" id="tp-exit">Exit</button>';
+      (guest ? '<button type="button" id="tp-exit">Try it as a student &#9654;</button>'
+             : '<button type="button" id="tp-exit">Exit</button>');
     document.body.prepend(bar);
+    /* the Guest view strip (share.js) sits at the very top; this bar goes just under it */
+    const strip = document.querySelector('.share-banner');
+    if (strip) bar.style.top = strip.offsetHeight + 'px';
     document.body.classList.add('tp-on');
     document.getElementById('tp-prev').onclick = () => show(at - 1);
     document.getElementById('tp-next').onclick = () => show(at + 1);
     document.getElementById('tp-jump').onchange = e => show(parseInt(e.target.value, 10));
     document.getElementById('tp-exit').onclick = () => {
       try { speech.stop(); } catch (e) {}
-      location.href = location.pathname;          /* reload clean, preview off */
+      location.href = guest                       /* a guest goes on to the student path, still as a guest */
+        ? location.pathname + '?share=' + encodeURIComponent(new URLSearchParams(location.search).get('share') || '') + '&student'
+        : location.pathname;                      /* reload clean, preview off */
     };
     document.addEventListener('keydown', e => {
       if (!window.PREVIEW) return;
@@ -197,5 +204,7 @@
   const link = document.getElementById('cv-teacher');
   if (link) link.onclick = e => { e.preventDefault(); window.startTeacherPreview(); };
 
-  if (/[?&]teacher\b/.test(location.search)) window.startTeacherPreview();
+  /* A guest (share.js) lands in the preview with no PIN; "Try it as a student" reloads with &student. */
+  if (window.SHARE_MODE && !/[?&]student\b/.test(location.search)) begin();
+  else if (/[?&]teacher\b/.test(location.search)) window.startTeacherPreview();
 })();
