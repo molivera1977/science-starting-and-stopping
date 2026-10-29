@@ -165,6 +165,25 @@ const ROSTER = [
    reads at 0.82, the pace he had already approved for screens that speak
    themselves. The other sites still read on demand at 0.92. */
 const READ_RATE  = 0.82;
+/* THE SAME VOICE AS QPS (Marcos 10/28, on Parts of Speech HQ: "why can't this site talk like QPS" · "the reading
+   speed also sounds different on QPS"; after the fix: "i like the sound and pacing of the read aloud"): every reading
+   asks for English and uses the device's own default English voice, picked the way the QPS Literacy Hub picks it
+   (qps-literacy-hub/readaloud.js). Asking only for "en-US" let the browser choose a different voice, which sounds
+   different at the same 0.82. A device that lists no voices yet still gets English. */
+let _enVoice = null;
+function englishVoice() {
+  if (_enVoice) return _enVoice;
+  const all = (window.speechSynthesis && speechSynthesis.getVoices && speechSynthesis.getVoices()) || [];
+  const isEn = v => /^en([-_]|$)/i.test((v && v.lang) || ''), us = v => /^en[-_]US$/i.test(v.lang || '');
+  _enVoice = all.find(v => v.default && isEn(v)) || all.find(v => us(v) && v.localService) || all.find(us) || all.find(isEn) || null;
+  return _enVoice;                         // null until the device lists its voices (Chrome lists them late): asked again next time
+}
+function english(u) {
+  u.lang = 'en-US';
+  const v = englishVoice();
+  if (v) { try { u.voice = v; } catch (e) { /* a voice the browser won't take: en-US still asks for English */ } }
+  return u;
+}
 const INTRO_RATE = 0.82;
 /* The 58 ms-a-letter figure that paces the highlight on voices with no word
    events was measured at 0.92. It is scaled from THAT, not from READ_RATE,
@@ -191,7 +210,7 @@ const speech = {
     if (!text && !tail) { if (onEnd) onEnd(); return; }
 
     const u = new SpeechSynthesisUtterance(text + (tail || ''));
-    u.lang = 'en-US'; u.rate = rate || READ_RATE;
+    english(u); u.rate = rate || READ_RATE;
 
     let spoken = false;
     u.onboundary = (e) => {
@@ -417,7 +436,7 @@ const speech = {
     };
 
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'en-US'; u.rate = rate || READ_RATE;
+    english(u); u.rate = rate || READ_RATE;
 
     let spoken = false;
     u.onboundary = e => {
