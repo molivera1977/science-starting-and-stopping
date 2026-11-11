@@ -1573,6 +1573,10 @@ function answerQ(q, picked, bank, ans) {
 
   logEvent('answer', { id:q.id, ok:earned, t:firstTry ? 1 : 2 });
   app.save();
+  /* a row at every answer (Marcos 11/11: "science does not have the frequent updates of progress"):
+     the dashboard's Right Now heard only screen changes and the 2-minute timer, so a check of
+     several questions showed nothing until the student left it */
+  submitPartial();
 
   attachSpeakers(document.getElementById('q-screen'));
 
