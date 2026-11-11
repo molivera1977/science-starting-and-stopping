@@ -12,8 +12,9 @@
 
    What it checks:
      C1  closing the tab on the cover does not wipe a saved lesson
-     C2  the opening path goes cover → why → care → summary → sumq → cart → cartq → plan →
-         planq → goals → start
+     C2  the opening path goes cover → start (the name page) → why → care → summary →
+         sumq → cart → cartq → plan → planq → goals, then the words (11/11: the name
+         first, so the dashboard sees a student from the start)
      C3  nothing starts talking on its own when a page opens
      C4  every preview stop shows exactly one screen, in the right phase
      C5  every visible piece of text belongs to a block that can be read aloud
@@ -53,7 +54,7 @@
          nothing saved still starts with one tap, and a saved lesson is
          picked up with its pushes
      C26 the name page asks only for a name: almost nothing to read on it,
-         and every "I can" line is inside a step of the locked page before it
+         and every "I can" line is inside a step of a locked page (goals)
      C28 Day 1 previews the later days and does not walk through their plan:
          the plan page shows today's test in full and the later days in one
          short step; the End of Day 1 page says one short thing about next time
@@ -68,9 +69,10 @@
          cart, Here is the plan, the six words and every test's results page
          are each followed at once by a check of two or three questions about
          that thing; every scored question is asked exactly once, with
-         feedback and a skill; the checks before the name page are answered
-         on the way in and their answers go with the student who then picks
-         a name; a lesson saved before a check existed is sent to that check
+         feedback and a skill; the checks among the opening pages are
+         answered on the way in and each leads on to the next opening page;
+         Start on the name page begins clean at the first page after it;
+         a lesson saved before a check existed is sent to that check
          and then back to where the student was
    It also lists how many words each screen asks a student to take in, and
    how many words each guided screen makes them listen to.
@@ -185,10 +187,30 @@
 
   /* C2, C3, C14 (opening pages) — the student's own path, through the lock */
   const path = [app.phase], talked = [], checkWalk = [];
-  for (const id of ['cover-go', 'why-next', 'care-next', 'sum-next', 'cart-next', 'ra-next', 'goals-next']) {
+  /* C26, the name page as a first-time student finds it (right after the cover) */
+  const icanLines = (window.LESSON.icanKid || []).map(t => t.replace(/\s+/g, ' ').slice(0, 30));
+  const nameLook = () => {
+    const st = document.getElementById('start-screen');
+    return { phase: app.phase, screens: visible().map(x => x.id),
+      words: speech.readable(st).filter(b => shown(b.el)).reduce((n, b) => n + wordsIn(b.text), 0),
+      stillHere: icanLines.filter(t => st.textContent.replace(/\s+/g, ' ').includes(t)),
+      prose: [...st.querySelectorAll('p, li, h3')].filter(shown).map(e => e.textContent.trim().slice(0, 30)) };
+  };
+  let nameShot = null;
+  for (const id of ['cover-go', 'begin-btn', 'why-next', 'care-next', 'sum-next', 'cart-next', 'ra-next', 'goals-next']) {
     const b = document.getElementById(id);
     if (!b) { path.push('(no #' + id + ')'); break; }
-    if (id !== 'cover-go') await gateCheck(app.phase, visible()[0], b);
+    if (id === 'begin-btn') {
+      /* THE NAME PAGE. Looked at first, then a name is picked and Start is
+         pressed, the way a student does. From here on the preview flag is up,
+         so the lesson's own guards save nothing and send nothing (C9, C10),
+         and guide.testGate keeps the lock on for the pages after it. */
+      nameShot = nameLook();
+      localStorage.removeItem(KEY);
+      window.PREVIEW = true; guide.testGate = true; guide.testHeard = {};
+      const sel = document.getElementById('name-select');
+      sel.value = sel.options[2].value; sel.dispatchEvent(new Event('change')); await wait(60);
+    } else if (id !== 'cover-go') await gateCheck(app.phase, visible()[0], b);
     b.click(); await wait(1200);
     if (speechSynthesis.speaking || speechSynthesis.pending) talked.push(app.phase);
     hush(); path.push(app.phase);
@@ -208,8 +230,13 @@
       hush(); path.push(app.phase);
     }
   }
-  const wantPath = ['cover', 'why', 'care', 'summary', 'sumq', 'cart', 'cartq', 'plan', 'planq', 'goals', 'start'];
-  rec('C2', 'Opening path in order', JSON.stringify(path) === JSON.stringify(wantPath), path.join(' → '));
+  /* the walk is over: put the page back the way nobody has started it */
+  window.PREVIEW = false; guide.testGate = false; guide.testHeard = {};
+  app.stopTimer(); app.studentName = '';
+  if (KEY in original) localStorage.setItem(KEY, original[KEY]); else localStorage.removeItem(KEY);
+  const wantPath = ['cover', 'start', 'why', 'care', 'summary', 'sumq', 'cart', 'cartq', 'plan', 'planq', 'goals'];
+  rec('C2', 'Opening path in order', JSON.stringify(path) === JSON.stringify(wantPath.concat(['vocab'])) && JSON.stringify(OPENING) === JSON.stringify(wantPath),
+      path.join(' → ') + (JSON.stringify(OPENING) === JSON.stringify(wantPath) ? '' : ' | the lesson lists: ' + OPENING.join(' → ')));
 
   /* C26 — THE NAME PAGE ASKS FOR A NAME AND NOTHING ELSE. Marcos 10/10: "are
      the students forced to read this page?" It held 143 words above the name
@@ -217,20 +244,19 @@
      was chosen. Anything a student has to take in belongs on a locked page
      BEFORE this one. So, standing on the name page the way a first-time
      student arrives: there is almost nothing to read here, and every "I can"
-     line was inside a step of the locked page that came just before. */
+     line was inside a step of the locked page that came just before. Since
+     11/11 the name page comes right after the cover and the "I can" page
+     comes later, still locked: what is looked at is the same. */
   {
-    const st = document.getElementById('start-screen');
-    const lines = (window.LESSON.icanKid || []).map(t => t.replace(/\s+/g, ' ').slice(0, 30));
-    const here = speech.readable(st).filter(b => shown(b.el));
-    const nameWords = here.reduce((n, b) => n + wordsIn(b.text), 0);
+    const lines = icanLines;
+    const n = nameShot || { phase: '(the walk never reached the name page)', screens: [], words: 0, stillHere: [], prose: [] };
+    const nameWords = n.words, stillHere = n.stillHere, prose = n.prose;
     const steps = [...document.querySelectorAll('#goals-screen .gstep')].map(e => e.textContent.replace(/\s+/g, ' '));
     const notLocked = lines.filter(t => !steps.some(x => x.includes(t)));
-    const stillHere = lines.filter(t => st.textContent.replace(/\s+/g, ' ').includes(t));
-    const prose = [...st.querySelectorAll('p, li, h3')].filter(shown).map(e => e.textContent.trim().slice(0, 30));
-    rec('C26', 'The name page asks only for a name; every "I can" line is heard on a locked page first',
-        app.phase === 'start' && visible().length === 1 && nameWords <= 20 && !notLocked.length && !stillHere.length && !prose.length,
-        nameWords + ' words to read on the name page. ' +
-        (visible().length !== 1 ? visible().length + ' screens showing at once: ' + visible().map(x => x.id).join(', ') + '. ' : '') +
+    rec('C26', 'The name page asks only for a name; every "I can" line is heard on a locked page',
+        n.phase === 'start' && n.screens.length === 1 && nameWords <= 20 && lines.length > 0 && !notLocked.length && !stillHere.length && !prose.length,
+        nameWords + ' words to read on the name page. ' + (n.phase !== 'start' ? 'Stood on "' + n.phase + '", not the name page. ' : '') +
+        (n.screens.length !== 1 ? n.screens.length + ' screens showing at once: ' + n.screens.join(', ') + '. ' : '') +
         (notLocked.length ? 'Not in a locked step: ' + notLocked.join(' | ') + '. ' : '') +
         (stillHere.length ? 'Still on the name page: ' + stillHere.join(' | ') + '. ' : '') +
         (prose.length ? 'Paragraphs on the name page: ' + prose.join(' | ') : ''));
@@ -712,7 +738,7 @@
     const saveDone = JSON.stringify({ studentName: me, phase: 'end', timerSeconds: 3000, score: 11, finishedAt: '2026-10-09T14:00:00.000Z',
       data: { A: rowsOf(invOf('A').runs), B: rowsOf(invOf('B').runs), C: rowsOf(invOf('C').runs), D: rowsOf(invOf('D').runs) } });
     const pushes = JSON.parse(save).data.A.length;
-    const STARTS = OPENING.filter(isQPhase).concat(['vocab']);   /* the first opening check, or the first word */
+    const STARTS = [FIRST_AFTER_NAME];   /* the first page after the name page (11/11: the name comes right after the cover) */
     const plant = () => localStorage.setItem(KEY, save);
     /* the note about saved work is on screen, can be heard, and follows the wording rules */
     const noteOk = tag => {
@@ -878,9 +904,10 @@
         chk.push('the check "' + p + '": ' + cw.answered + ' of ' + cw.asked + ' answered, then went to "' + cw.then + '", not "' + want + '"');
     });
 
-    /* STARTING THE LESSON keeps the cart check: the answers were given before
-       the name was picked. And a student who starts without having had the
-       cart check is asked it first. app.go is held, so nothing starts. */
+    /* STARTING THE LESSON (11/11: the name page comes right after the cover).
+       Nothing can have been answered before the name, so Start begins clean
+       at the first page after the name page, whatever an earlier student
+       left in this page's memory. app.go is held, so nothing starts. */
     {
       const F = ['studentName', 'phase', 'score', 'missedQuestions', 'events', 'startedAt', 'finishedAt', 'timerSeconds', 'labStart',
         'labEnd', 'qIndex', 'checkAns', 'vocabAns', 'analysisAns', 'claimsAns', 'exitAns', 'written', 'predictions', 'data',
@@ -892,32 +919,19 @@
       app.go = p => { went = p; }; app.startTimer = () => {};
       try {
         const sel = document.getElementById('name-select'), begin = document.getElementById('begin-btn');
-        const openQ = OPENING.filter(isQPhase).reduce((all, p) => all.concat(bankFor(p)), []);
-        const ids = openQ.map(x => x.id);
+        const someQ = bankFor(OPENING.filter(isQPhase)[0])[0] || { id: 'L99' };
         await jump(stops.findIndex(s => s.phase === 'start')); await wait(100);
         localStorage.removeItem(KEY);
         sel.value = sel.options[2].value; sel.dispatchEvent(new Event('change')); await wait(40);
-        /* one right, one wrong, the way a student might have answered on the way in */
-        /* every opening question answered, the second one wrong */
-        app.checkAns = Object.fromEntries(openQ.map((x, k) => [x.id, k === 1 ? (x.a + 1) % 4 : x.a]));
-        app.missedQuestions = [{ id: ids[1], q: 'x', yourAnswer: 'x', correct: 'x', skill: 'x' }, { id: 'L99', q: 'someone else' }];
-        app.events = openQ.map((x, k) => ({ e: 'answer', id: x.id, ok: k !== 1 })).concat([{ e: 'cover_go' }]);
-        app.score = 99;
+        app.checkAns = { [someQ.id]: 0 }; app.missedQuestions = [{ id: someQ.id, q: 'x' }];
+        app.events = [{ e: 'answer', id: someQ.id, ok: false }, { e: 'cover_go' }]; app.score = 99;
         went = ''; begin.click(); await wait(40);
-        if (went !== 'vocab') chk.push('with the opening checks answered, the lesson started at "' + went + '", not the first word');
-        if (Object.keys(app.checkAns).length !== ids.length || app.score !== ids.length - 1 || app.missedQuestions.length !== 1 || app.missedQuestions[0].id !== ids[1])
-          chk.push('starting the lesson did not keep the opening checks as answered (score ' + app.score + ', ' + app.missedQuestions.length + ' misses)');
-        if (app.events.filter(e => e.e === 'answer').length !== ids.length || app.events.some(e => e.e === 'cover_go'))
-          chk.push('starting the lesson did not keep exactly the opening check answers in the record');
-        /* only the first check answered: the lesson starts at the next one */
-        const firstOpen = OPENING.filter(isQPhase);
-        app.checkAns = Object.fromEntries(bankFor(firstOpen[0]).map(x => [x.id, 0])); app.missedQuestions = []; app.events = []; app.score = 0;
-        went = ''; begin.click(); await wait(40);
-        if (firstOpen[1] && went !== firstOpen[1]) chk.push('a student with only the first check answered started at "' + went + '", not "' + firstOpen[1] + '"');
-        /* no opening check yet: the first one is asked first */
-        app.checkAns = {}; app.missedQuestions = []; app.events = []; app.score = 0;
-        went = ''; begin.click(); await wait(40);
-        if (went !== firstOpen[0]) chk.push('a student who never had the opening checks started at "' + went + '", not "' + firstOpen[0] + '"');
+        if (FIRST_AFTER_NAME !== OPENING[OPENING.indexOf('start') + 1] || isQPhase(FIRST_AFTER_NAME))
+          chk.push('the first page after the name page is "' + FIRST_AFTER_NAME + '", not the page that follows it in the opening');
+        if (went !== FIRST_AFTER_NAME) chk.push('Start on the name page went to "' + went + '", not "' + FIRST_AFTER_NAME + '"');
+        if (Object.keys(app.checkAns).length || app.score !== 0 || app.missedQuestions.length)
+          chk.push('Start kept answers from before the name (score ' + app.score + ', ' + app.missedQuestions.length + ' misses)');
+        if (app.events.length !== 1 || app.events[0].e !== 'start') chk.push('Start did not begin a clean record: ' + app.events.map(e => e.e).join(', '));
 
         /* A LESSON SAVED BEFORE A CHECK EXISTED. At the end of Day 1, every
            push done, but no cart check and no Test 1 check in the save. */

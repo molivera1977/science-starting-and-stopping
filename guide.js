@@ -212,6 +212,15 @@
       setTimeout(paint, ms + 60);
     }
 
+    /* Where the student is on this screen, for the teacher's dashboard (11/11):
+       the lesson's guide.onProgress logs it and sends a row. A student only:
+       never in the teacher preview, never under test. `opened` = the screen
+       just opened, and the lesson sends that row itself. */
+    function tell(opened) {
+      if (!gate || guide.testGate || !guide.onProgress) return;
+      try { guide.onProgress({ s: id, page: page + 1, pages: pages.length, heard, steps: total }, !!opened); } catch (e) {}
+    }
+
     function mark(k) {
       if (k + 1 > heard) {
         heard = k + 1;
@@ -220,6 +229,7 @@
           try { app.save(); } catch (e) {}
           if (heard === total) logEvent('heard_all', { s: id, n: total });
         }
+        tell(false);
         if (heard === total && opts.onDone) { paint(); opts.onDone(); return; }
       }
       paint(); reveal();
@@ -272,7 +282,9 @@
 
     function goto(p) {
       try { speech.stop(); } catch (e) {}
+      const was = page;
       page = Math.max(0, Math.min(pages.length - 1, p));
+      if (page !== was) tell(false);
       paint();
       window.scrollTo({ top: 0, behavior: guide.instant ? 'instant' : 'smooth' });
       later(reveal);
@@ -292,6 +304,7 @@
       goto
     };
     guide.current = ctrl;
+    tell(true);
     later(reveal);
     return ctrl;
   }
