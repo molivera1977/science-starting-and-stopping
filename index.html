@@ -410,6 +410,19 @@
     </div>
   </section>
 
+  <!-- ARE YOU SURE? (Marcos 11/11): before "Start over" asks for the teacher PIN, the student hears what starting
+       over means. Filled in by script.js (askSure); only for the student's own work. -->
+  <div class="modal hidden" id="sure-modal" role="dialog" aria-modal="true" aria-labelledby="sure-title">
+    <div class="box">
+      <h3 id="sure-title" style="font-size:26px">Are you sure?</h3>
+      <p class="lead" style="font-size:21px" id="sure-text"></p>
+      <div class="btnrow">
+        <button class="btn" id="sure-keep" type="button">No. Pick up where I left off</button>
+        <button class="btn ghost small" id="sure-over" type="button">Yes, start over</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal hidden" id="pin-modal">
     <div class="box">
       <h3 style="font-size:24px">Teacher PIN</h3>
@@ -436,10 +449,10 @@
 <script src="data/lesson.js?v=data6"></script>
 <script src="data/questions.js?v=data6"></script>
 <script src="guide.js?v=data6-rows2"></script>
-<script src="script.js?v=data6-gv-voice1-roster24-pick1"></script>
+<script src="script.js?v=data6-gv-voice1-roster24-sure1"></script>
 <script src="preview.js?v=data6-gv"></script>
 <!-- The pre-push check. Runs only when the address has ?qa in it. -->
-<script>if (/[?&]qa\b/.test(location.search)) { var q = document.createElement('script'); q.src = 'qa.js?v=data6-rows2'; document.body.appendChild(q); }</script>
+<script>if (/[?&]qa\b/.test(location.search)) { var q = document.createElement('script'); q.src = 'qa.js?v=data6-sure1'; document.body.appendChild(q); }</script>
 
 <!-- ══════════════ WORD HELP — on every working screen ══════════════
      Marcos 10/9: "add reminders of those definitions. Don't expect them to

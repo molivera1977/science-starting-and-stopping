@@ -1324,10 +1324,31 @@ function buildStart() {
   /* Asked again here, from what is saved right now and not from how the
      buttons look: however a student gets to this press, a saved lesson is
      cleared only with the PIN. Nothing saved: one tap starts, as before. */
+  /* ARE YOU SURE? (Marcos 11/11: "if the kids hit start over, instead of Continue Where I Left Off, there should be a
+     Are You Sure warning so they know what it might mean"). Starting over writes a new lesson over this student's work:
+     the attempt keeps its Session ID, so the row on Mr. O's sheet is replaced too. Before the teacher PIN, the student
+     is told so in words that can be heard (a speaker on every line), and the big button picks the work up instead.
+     Only for the student's OWN work; another student's saved work goes straight to the PIN, as before. */
+  const sureBox = document.getElementById('sure-modal');
+  const askSure = (finished, go) => {
+    document.getElementById('sure-text').textContent = finished
+      ? 'You already finished this lesson. Starting over erases your finished lesson. You do every page and every question again.'
+      : 'Starting over erases the work you did in this lesson. You go back to the first page. You do every page and every question again.';
+    const keep = document.getElementById('sure-keep');
+    keep.textContent = finished ? 'No. Keep my work' : 'No. Pick up where I left off';
+    keep.onclick = () => { speech.stop(); sureBox.classList.add('hidden'); if (!finished) resumeBtn.click(); };
+    document.getElementById('sure-over').onclick = () => { speech.stop(); sureBox.classList.add('hidden'); go(); };
+    sureBox.classList.remove('hidden');
+    attachSpeakers(sureBox);
+    keep.focus();
+  };
   begin.addEventListener('click', () => {
     const s = app.kept() || (offered && offered.fromSheet ? offered : null);   /* work on the sheet: a new start needs the PIN too */
-    if (s) askPin('Enter the teacher PIN to clear the saved work for ' + s.studentName + ' and start the lesson from the beginning.', startFresh);
-    else startFresh();
+    const own = !!s && s.studentName === sel.value;                            /* this student's own work */
+    const pin = () => askPin('Enter the teacher PIN to clear the saved work for ' + s.studentName + ' and start the lesson from the beginning.', startFresh);
+    if (!s) startFresh();
+    else if (own) askSure(s.phase === 'end', pin);
+    else pin();
   });
 
   resumeBtn.addEventListener('click', () => {

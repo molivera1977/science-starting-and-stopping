@@ -724,7 +724,12 @@
     const pinUp = () => !modal.classList.contains('hidden');
     const stored = () => localStorage.getItem(KEY);
     const pick = async n => { sel.value = n; sel.dispatchEvent(new Event('change')); await wait(60); };
-    const cancel = async () => { document.getElementById('pin-cancel').click(); await wait(30); };
+    /* "Are you sure?" (Marcos 11/11) comes before the PIN when a student starts over their OWN work */
+    const sure = document.getElementById('sure-modal');
+    const sureUp = () => !!sure && !sure.classList.contains('hidden');
+    const cancel = async () => { if (sureUp()) sure.classList.add('hidden'); document.getElementById('pin-cancel').click(); await wait(30); };
+    const startOver = async () => { begin.click(); await wait(40); const asked = sureUp();
+      if (asked) { document.getElementById('sure-over').click(); await wait(40); } return asked; };
     /* three saved lessons. `save`: from when each setup had one push fewer,
        stopped at the end of Day 1. `saveNow`: the lesson as it is today,
        stopped partway through Test 2. `saveDone`: a finished lesson. */
@@ -779,8 +784,24 @@
           (Math.abs(R(begin).top - R(resume).top) <= 1 && R(begin).left < R(resume).left)))
         nameBad.push('saved work: starting over comes before "Pick up where I left off"');
       noteOk('saved work');
+      /* "Are you sure?" first: it says the work is erased, every line can be heard, and its big button picks
+         the work up (Marcos 11/11: "so they know what it might mean") */
       went = ''; begin.click(); await wait(40);
-      if (!pinUp()) nameBad.push('saved work: starting over did not ask for the teacher PIN');
+      if (!sureUp() || pinUp()) nameBad.push('saved work: starting over did not ask "Are you sure?" first');
+      else {
+        const txt = (document.getElementById('sure-text') || {}).textContent || '';
+        if (!/erases the work/i.test(txt)) nameBad.push('saved work: "Are you sure?" does not say the work is erased');
+        const heard = speech.readable(sure).filter(b => b.el.querySelector(':scope > .mini-spk')).map(b => b.text).join(' ');
+        if (heard.indexOf('Are you sure') === -1 || heard.indexOf('erases the work') === -1) nameBad.push('saved work: "Are you sure?" cannot be read aloud');
+        if (!big(document.getElementById('sure-keep')) || !quiet(document.getElementById('sure-over')))
+          nameBad.push('saved work: on "Are you sure?" picking the work up is not the big button');
+        if (parseFloat(getComputedStyle(document.getElementById('sure-text')).fontSize) < 21) nameBad.push('saved work: "Are you sure?" text is small');
+        lintIt(txt, 'are you sure');
+        document.getElementById('sure-keep').click(); await wait(40);
+        if (sureUp() || !went || stored() !== save) nameBad.push('saved work: "No" on "Are you sure?" did not pick the work up');
+      }
+      went = ''; await startOver();
+      if (!pinUp()) nameBad.push('saved work: "Yes, start over" did not ask for the teacher PIN');
       if (stored() !== save || went) nameBad.push('saved work: one tap on starting over cleared ' + pushes + ' saved pushes');
       document.getElementById('pin-input').value = TEACHER_PIN + '0'; document.getElementById('pin-ok').click(); await wait(40);
       if (stored() !== save || went) nameBad.push('saved work: a wrong PIN cleared the saved pushes');
@@ -794,6 +815,7 @@
       noteOk('work under another name');
       if (!shown(box) || box.textContent.indexOf(me) === -1) nameBad.push('work under another name: the page does not say whose work is saved');
       went = ''; begin.click(); await wait(40);
+      if (sureUp()) nameBad.push('work under another name: "Are you sure?" shown for another student\'s work (the PIN is the guard there)');
       if (!pinUp() || stored() !== save || went) nameBad.push('work under another name: one tap cleared the saved pushes');
       await cancel();
 
@@ -807,7 +829,10 @@
         if (big(begin)) nameBad.push(tag + ': a big button starts a new lesson over the finished one');
         noteOk(tag);
         if (who !== me && (!shown(box) || box.textContent.indexOf(me) === -1)) nameBad.push(tag + ': the page does not say whose work is saved');
-        went = ''; begin.click(); await wait(40);
+        went = ''; const asked = await startOver();
+        if (who === me && (!asked || !/finished/i.test((document.getElementById('sure-text') || {}).textContent || '')))
+          nameBad.push(tag + ': no "Are you sure?" about the finished lesson before starting over');
+        if (who !== me && asked) nameBad.push(tag + ': "Are you sure?" shown for another student\'s work');
         if (!pinUp() || stored() !== saveDone || went) nameBad.push(tag + ': one tap cleared the finished lesson');
         await cancel();
       }
@@ -815,7 +840,7 @@
       /* with the PIN, Mr. O can still clear the saved work and start the lesson */
       for (const [tag, sv] of [['saved work', save], ['a finished lesson', saveDone]]) {
         localStorage.setItem(KEY, sv); await pick(''); await pick(me);
-        went = ''; begin.click(); await wait(40);
+        went = ''; await startOver();
         document.getElementById('pin-input').value = TEACHER_PIN; document.getElementById('pin-ok').click(); await wait(40);
         if (pinUp() || stored() !== null || STARTS.indexOf(went) === -1) nameBad.push('the teacher PIN did not clear ' + tag + ' and start the lesson');
         await cancel();
