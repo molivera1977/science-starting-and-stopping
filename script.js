@@ -33,7 +33,7 @@ const TEACHER_PIN  = '9377';
 const GAME_KEY     = 'startstop-lesson';
 const WRITTEN_KEY  = 'startstop_written';
 
-const SESSION_ID = (() => {
+let SESSION_ID = (() => {     /* `let`: picking a lesson up from the sheet carries on ITS attempt (11/11) */
   let id = localStorage.getItem(SESSION_ID_KEY);
   if (!id) { id = 'SS-' + Math.random().toString(36).slice(2, 9).toUpperCase(); localStorage.setItem(SESSION_ID_KEY, id); }
   return id;
@@ -87,6 +87,9 @@ function sheetBody(done) {
 function submitWritten() {
   /* Teacher preview must never write a student's save or a sheet row. */
   if (window.PREVIEW) return;
+  /* Never an empty explanation (11/11): a lesson picked up from the sheet on another computer does not have the
+     words the student wrote, and sending '' under the same attempt would wipe them from the sheet. */
+  if (!String((app.written || {}).W01 || '').trim()) return;
   try {
     fetch(SHEET_URL, {
       method: 'POST', mode: 'no-cors',
@@ -1060,6 +1063,131 @@ function buildCover() {
   attachSpeakers(document.getElementById('cover-screen'));
 }
 
+/* ══════════════════════════════════════════════════════
+   PICK UP ON ANY COMPUTER (Marcos 11/11: "Some of my kids have asked to
+   be able to use the website from home. I need their data to be in the
+   sheets." -> "Yes, science first")
+
+   Every step already reaches the sheet. What stayed on one computer was
+   the PLACE: a lesson begun at school started over at home, as a second
+   attempt. Now, when a student picks a name, the lesson asks the sheet for
+   that student's unfinished attempts ({ action:'progress', open:true }) and
+   rebuilds the furthest one into a save: every settled answer (a miss with
+   the choice the student picked, from the row's misses), the score, the
+   place, the parts heard, the time. When that is further along than what
+   this computer holds, "Pick up where I left off" carries on with it, as
+   the SAME attempt (its Session ID), not a new one.
+   Never: in the teacher preview or a guest link; when this computer holds
+   ANOTHER student's work (that still needs the teacher PIN, qa C25); from a
+   log that was cut short (its oldest answers would be missing, and the
+   lesson would send the student back to them). No answer within 8 seconds:
+   this computer's work, as before.
+══════════════════════════════════════════════════════ */
+const SHEET_WAIT_MS = 8000;
+const SESSION_PREFIX = 'SS-';            /* only this lesson's attempts */
+const PICKUP_SINCE = '2026-10-10T17:04:00Z';   /* rows before this are the 2-day lesson (the dashboard's LESSON_VERSIONS) */
+const sheetSaves = {};                   /* name -> a save rebuilt from the sheet, or null (nothing there) */
+const ANSWER_KEYS = () => [...new Set(Object.keys(Q_PHASE).map(p => Q_PHASE[p].ans))];
+function progressOf(sv) {
+  if (!sv) return -1;
+  if (sv.phase === 'end') return 1e9;
+  const answered = ANSWER_KEYS().reduce((n, k) => n + Object.keys(sv[k] || {}).length, 0);
+  const pushes = Object.keys(sv.data || {}).reduce((n, k) => n + ((sv.data || {})[k] || []).length, 0);
+  return answered * 1e4 + pushes * 100 + Math.max(0, PHASES.indexOf(sv.phase));
+}
+const plainText = h => stripTags(h).replace(/\s*\|\s*/g, ' / ').replace(/\s+/g, ' ').trim();
+function saveFromRow(row, name) {
+  let events = [];
+  try { events = JSON.parse(row.events || '[]'); } catch (e) { return null; }
+  if (!Array.isArray(events) || !events.length || events.length >= 295) return null;   /* nothing, or a log cut short */
+  /* a question is settled once it is right, or after its second try */
+  const settled = {};
+  events.forEach(e => { if (e && e.e === 'answer' && e.id && (Number(e.t) === 2 || (e.ok && Number(e.t) !== 2))) settled[e.id] = e; });
+  const missText = {};
+  String(row.wrongQuestions || '').split(' | ').forEach(t => {
+    const m = /^\[([^\]]+)\]\s*(?:\(([^)]*)\)\s*)?(.*?)(?:\s*\(picked: (.*)\))?$/.exec(t.trim());
+    if (m) missText[m[1]] = { skill: m[2] || '', picked: m[4] || '' };
+  });
+  const sv = { studentName: name, fromSheet: true, sheetAt: row.timestamp || '',
+    sessionId: String(row.sessionId || '').replace(/-F$/, ''), score: Number(row.score) || 0, events,
+    startedAt: row.startedAt || events[0].at || '', finishedAt: '', timerSeconds: Number(row.elapsed) || 0,
+    tabSwitches: Number(row.tabSwitches) || 0, qIndex: 0, resumeAt: '', heard: {}, missedQuestions: [] };
+  ANSWER_KEYS().forEach(k => { sv[k] = {}; });
+  /* Lesson 1.1: the data tables, from every push written in a table (in order), and the predictions */
+  sv.data = { A:[], B:[], C:[], D:[] }; sv.runIndex = { A:0, B:0, C:0, D:0 }; sv.predictions = {}; sv.written = {};
+  const trials = { A:[], B:[], C:[], D:[] };
+  events.forEach(e => { if (e && e.e === 'trial' && trials[e.inv]) trials[e.inv].push(e); });
+  Object.keys(trials).forEach(k => {
+    const runs = invOf(k).runs, n = Math.min(trials[k].length, runs.length);
+    sv.data[k] = runs.slice(0, n).map((r, i) => Object.assign({}, r, { cm: Number(trials[k][i].cm) || 0 }));
+    sv.runIndex[k] = n;
+  });
+  events.forEach(e => {
+    if (!e || e.e !== 'predict' || !invOf(e.inv)) return;
+    const o = (invOf(e.inv).predictOpts || []).find(x => plainText(x) === plainText(e.v));
+    if (o) sv.predictions[e.inv] = o;
+  });
+  const firstOn = p => { const e = events.find(x => x && x.p === p); return e ? Number(e.on) || 0 : null; };
+  sv.labStart = firstOn('predictA'); sv.labEnd = firstOn('exit');
+  /* a question built from the student's own table is answered against THAT table */
+  const kept = { data: app.data, predictions: app.predictions };
+  app.data = sv.data; app.predictions = sv.predictions;
+  try {
+  Object.keys(Q_PHASE).forEach(p => bankFor(p).forEach(q => {
+    const f = settled[q.id]; if (!f) return;
+    const opts = optsOf(q), right = correctIndex(q);
+    let pick = right;
+    if (!(f.ok && Number(f.t) !== 2)) {
+      const said = (missText[q.id] || {}).picked || '';
+      const i = opts.findIndex(o => plainText(o) === said);
+      pick = i >= 0 ? i : (right + 1) % opts.length;
+      sv.missedQuestions.push({ id: q.id, q: plainText(stemOf(q)), yourAnswer: plainText(opts[pick]), correct: plainText(opts[right]),
+        skill: (missText[q.id] || {}).skill || (window.SKILLS || {})[q.id] || 'Unsorted' });
+    }
+    sv[Q_PHASE[p].ans][q.id] = pick;
+  }));
+  } finally { app.data = kept.data; app.predictions = kept.predictions; }
+  /* the place: the furthest screen in the log */
+  let at = -1;
+  events.forEach(e => { const i = e && e.p ? PHASES.indexOf(e.p) : -1; if (i > at) at = i; });
+  sv.phase = at > PHASES.indexOf('start') ? PHASES[at] : FIRST_AFTER_NAME;
+  /* the parts heard: every screen heard to the end, and how far into the last one */
+  events.forEach(e => { if (e && e.e === 'heard_all' && e.s) sv.heard[e.s] = Math.max(sv.heard[e.s] || 0, Number(e.n) || 0); });
+  const on = events.filter(e => e && e.e === 'on' && e.k === 'read' && e.s).pop();
+  if (on) sv.heard[on.s] = Math.max(sv.heard[on.s] || 0, Number(on.heard) || 0);
+  return sv;
+}
+/* This student's furthest work on the sheet: an unfinished attempt (rebuilt), "finished", or null. */
+function askSheetFor(name) {
+  if (window.PREVIEW || window.SHARE_MODE || !name) return Promise.resolve(null);
+  const ctl = typeof AbortController === 'function' ? new AbortController() : null;
+  const timer = setTimeout(() => { if (ctl) ctl.abort(); }, SHEET_WAIT_MS);
+  const since = PICKUP_SINCE ? new Date(PICKUP_SINCE).getTime() : 0;
+  const after = t => !since || new Date(t).getTime() >= since;
+  return fetch(SHEET_URL, { method: 'POST', body: JSON.stringify({ action: 'progress', name, games: [GAME_KEY], open: true }),
+                            signal: ctl ? ctl.signal : undefined })
+    .then(r => r.json())
+    .then(d => {
+      if (!d || d.name !== name) return null;
+      const finished = ((d.games || {})[GAME_KEY] || []).filter(g => g && g.finishedAt && after(g.finishedAt));
+      const lastFinish = finished.reduce((m, g) => Math.max(m, new Date(g.finishedAt).getTime() || 0), 0);
+      const best = (((d.open || {})[GAME_KEY]) || [])
+        .filter(r => r && String(r.sessionId).indexOf(SESSION_PREFIX) === 0 && after(r.timestamp))
+        .map(r => saveFromRow(r, name)).filter(Boolean)
+        .reduce((b, sv) => (!b || progressOf(sv) > progressOf(b) ? sv : b), null);
+      if (best && (!finished.length || new Date(best.sheetAt).getTime() > lastFinish)) return best;
+      return finished.length ? { studentName: name, phase: 'end', fromSheet: true } : null;
+    })
+    .catch(() => null)
+    .finally(() => clearTimeout(timer));
+}
+/* Carry on as the attempt picked up from the sheet: its rows go on under its own Session ID. */
+function adoptSession(id) {
+  if (!id) return;
+  SESSION_ID = id;
+  try { localStorage.setItem(SESSION_ID_KEY, id); } catch (e) {}
+}
+
 function buildStart() {
   const sel = document.getElementById('name-select');
   ROSTER.forEach(r => {
@@ -1093,13 +1221,30 @@ function buildStart() {
      holds when the saved lesson is FINISHED: the end screen asks for the
      PIN before it starts over, and this page did not. Marcos 10/10: "PIN
      it". A student doing a make-up on a classmate's computer needs Mr. O. */
-  sel.addEventListener('change', () => {
-    begin.disabled = !sel.value;
-    const s = app.kept();
-    const mine = !!s && s.studentName === sel.value;
+  /* What the page offers (pick up on any computer, 11/11): this student's furthest work, on this computer or on
+     the sheet. A computer that holds ANOTHER student's work is left to the PIN, as before. */
+  let offered = null, looking = '';
+  const paintName = () => {
+    const dev = app.kept();
+    const devMine = !!dev && dev.studentName === sel.value;
+    const notMine = !!dev && !!sel.value && !devMine;         /* the saved lesson is under another name */
+    const sh = sel.value && !notMine ? sheetSaves[sel.value] : null;
+    const s = notMine ? dev : sh && (!devMine || progressOf(sh) > progressOf(dev)) ? sh : devMine ? dev : null;
+    offered = notMine ? null : s;
+    const mine = !notMine && !!s;
     const resumable = mine && s.phase !== 'end';
     const finished = mine && !resumable;
-    const notMine = !!s && !!sel.value && !mine;         /* the saved lesson is under another name */
+    const wait = !!sel.value && looking === sel.value;          /* still asking the sheet */
+    begin.disabled = !sel.value || wait;
+    resumeBtn.disabled = wait;
+    if (wait) {
+      resumeBox.classList.remove('hidden');
+      resumeBtn.classList.add('hidden');
+      resumeBox.querySelector('.lb').textContent = 'Looking for your saved work.';
+      document.getElementById('resume-text').textContent = 'This takes a few seconds.';
+      attachSpeakers(document.getElementById('start-screen'));
+      return;
+    }
     resumeBox.classList.toggle('hidden', !mine && !notMine);
     resumeBtn.classList.toggle('hidden', !resumable);
     begin.classList.toggle('ghost', mine || notMine);
@@ -1115,7 +1260,7 @@ function buildStart() {
       const fit = fitSaved(s);
       document.getElementById('resume-text').innerHTML =
         'You stopped at <b>' + (s.phase === 'runA' || s.phase === 'runB' ? 'the lab' : app.phaseLabel.call({ phase:s.phase })) +
-        '</b> after ' + howLong + ' of work. ' +
+        '</b> after ' + howLong + ' of work' + (s.fromSheet ? ' on another computer' : '') + '. ' +
         (fit.redo
           ? 'The lesson changed: you now do every push <b>' + (window.TIMES || 'more than once') + '</b>. You will go back to <b>Test ' +
             ({ A:1, B:2, C:3, D:4 })[fit.redo] + '</b> to finish the pushes. Your answers are saved.' +
@@ -1140,6 +1285,18 @@ function buildStart() {
     }
     /* The note was hidden when the page got its speakers, so it had none. */
     attachSpeakers(document.getElementById('start-screen'));
+  };
+  sel.addEventListener('change', () => {
+    const name = sel.value, dev = app.kept();
+    if (name && !window.PREVIEW && !window.SHARE_MODE && !(dev && dev.studentName !== name) && !(name in sheetSaves)) {
+      looking = name;
+      askSheetFor(name).then(found => {
+        sheetSaves[name] = found;
+        if (looking === name) looking = '';
+        if (sel.value === name && app.phase === 'start') paintName();
+      });
+    }
+    paintName();
   });
 
   /* Clears what is saved on this device and starts the lesson at the first
@@ -1168,15 +1325,17 @@ function buildStart() {
      buttons look: however a student gets to this press, a saved lesson is
      cleared only with the PIN. Nothing saved: one tap starts, as before. */
   begin.addEventListener('click', () => {
-    const s = app.kept();
+    const s = app.kept() || (offered && offered.fromSheet ? offered : null);   /* work on the sheet: a new start needs the PIN too */
     if (s) askPin('Enter the teacher PIN to clear the saved work for ' + s.studentName + ' and start the lesson from the beginning.', startFresh);
     else startFresh();
   });
 
   resumeBtn.addEventListener('click', () => {
-    const s = app.loadSaved(); if (!s) return;
+    const s = offered || app.loadSaved(); if (!s || s.phase === 'end') return;
+    if (s.fromSheet) adoptSession(s.sessionId);      /* the same attempt, carried on here */
     app.restore(s);
-    logEvent('resume');
+    logEvent('resume', s.fromSheet ? { from: 'another computer' } : undefined);
+    if (s.fromSheet) app.save();
     if (app.refit) logEvent('refit', { to:app.phase });
     document.getElementById('who-chip').textContent = app.studentName;
     app.startTimer(); app.tickTimer();
