@@ -1343,11 +1343,13 @@ function buildStart() {
     keep.focus();
   };
   begin.addEventListener('click', () => {
-    const s = app.kept() || (offered && offered.fromSheet ? offered : null);   /* work on the sheet: a new start needs the PIN too */
-    const own = !!s && s.studentName === sel.value;                            /* this student's own work */
+    /* the student's own work is what the page shows (this computer's or the sheet's, whichever is further: a lesson
+       finished on another computer is finished here too); anything else saved here is another student's */
+    const own = offered && offered.studentName === sel.value ? offered : null;
+    const s = own || app.kept();
     const pin = () => askPin('Enter the teacher PIN to clear the saved work for ' + s.studentName + ' and start the lesson from the beginning.', startFresh);
     if (!s) startFresh();
-    else if (own) askSure(s.phase === 'end', pin);
+    else if (own) askSure(own.phase === 'end', pin);
     else pin();
   });
 
