@@ -40,6 +40,8 @@
                             teacher: [[icon, title, line], …] }
    Each list it gives is the whole card; a card it leaves out keeps
    the lines above.
+   The two buttons sit on one line each and are the same size on
+   every site and screen (v9, 11/15); see fitButtons below.
 ═══════════════════════════════════════════════════════ */
 (function () {
   var SHARE_CODE = 'mro';       // the student guest code — change it here to shut old links off
@@ -198,7 +200,9 @@
           '.guest-note{list-style:none;margin:0;padding:0 4px;display:grid;gap:12px}' +
           '.guest-note li{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;font-size:15px;line-height:1.4;color:#4b5563}' +
           '.guest-note .gi{font-size:19px;line-height:1.2;text-align:center}' +
-          '.guest-note b{display:block;color:#1f2937}';
+          '.guest-note b{display:block;color:#1f2937}' +
+          /* v9: a phone stacks the cards inside the screen (on 3 sites the two ran off its side) */
+          '.guest-card{min-width:0}@media (max-width:560px){.guest-choice{grid-template-columns:minmax(0,1fr)}}';
         document.head.appendChild(css);
         var row = document.createElement('div');
         row.className = 'guest-choice';
@@ -265,6 +269,27 @@
           ['🛡️', 'Nothing is saved', 'No scores go to Mr. O.']
         ]);
         card(tb, 'guest-teacher-note', 'Teacher Mode · no PIN · what Mr. O sees', tools);
+
+        /* ONE LINE, THE SAME SIZE (v9, Marcos 11/15: "Yes, check and fix"). The site's own big-button padding wrapped
+           "🧑‍🏫 Teacher / admin guest" onto two lines beside a one-line Student guest (13 sites), or wrapped both (7).
+           The card is the frame, so the two buttons drop the site's side padding; if the words still do not fit, both
+           step down together, never below 15px, and only then wrap. Again whenever the cards change width. */
+        var pair = [start, tb];
+        var over = function () { return pair.some(function (b) { return b.scrollWidth > b.clientWidth + 1; }); };
+        var fitButtons = function () {
+          pair.forEach(function (b) { b.style.fontSize = ''; b.style.whiteSpace = 'nowrap'; b.style.paddingLeft = '12px'; b.style.paddingRight = '12px'; });
+          if (!start.clientWidth) return;
+          var size = parseFloat(getComputedStyle(start).fontSize);
+          while (over() && size > 15) { size -= 0.5; pair.forEach(function (b) { b.style.fontSize = size + 'px'; }); }
+          if (over()) pair.forEach(function (b) { b.style.whiteSpace = 'normal'; });
+        };
+        var fitWidth = -1;
+        var refit = function () { var w = row.clientWidth; if (w === fitWidth) return; fitWidth = w; fitButtons(); };
+        refit();
+        window.addEventListener('resize', refit);   // the window: at once
+        // the cards' own width (a cover shown again, a box easing into place): a frame later, off the observer's own turn
+        if (window.ResizeObserver) new ResizeObserver(function () { requestAnimationFrame(refit); }).observe(row);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fitWidth = -1; refit(); });
       }
     }
     // ← Teacher screen from a Try it comes back as <link>#teacher: open it again
