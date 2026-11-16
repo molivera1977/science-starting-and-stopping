@@ -151,8 +151,9 @@
     bar.id = 'tpbar';
     bar.setAttribute('data-noread', '');
     const guest = !!window.SHARE_MODE;   /* a colleague's link (share.js): no PIN, and a way into the student path */
+    const staff = !!window.SHARE_TEACHER;   /* the teacher/admin guest link: the Teacher preview, and ✕ Exit back to its cover */
     bar.innerHTML =
-      '<span class="tp-tag">' + (guest ? 'Lesson preview' : 'Teacher preview') + '</span>' +
+      '<span class="tp-tag">' + (guest && !staff ? 'Lesson preview' : 'Teacher preview') + '</span>' +
       '<span class="tp-note">nothing is saved or sent</span>' +
       '<button type="button" id="tp-prev">&#9664; Back</button>' +
       '<select id="tp-jump" aria-label="Jump to a screen">' +
@@ -161,7 +162,8 @@
       '<span id="tp-pos"></span>' +
       '<button type="button" id="tp-next">Next &#9654;</button>' +
       (guest ? '<button type="button" id="tp-exit">Try it as a student &#9654;</button>'
-             : '<button type="button" id="tp-exit">Exit</button>');
+             : '<button type="button" id="tp-exit">Exit</button>') +
+      (staff ? '<button type="button" id="tp-cover">&#10005; Exit</button>' : '');
     document.body.prepend(bar);
     /* the Guest view strip (share.js) sits at the very top; this bar goes just under it */
     const strip = document.querySelector('.share-banner');
@@ -175,6 +177,10 @@
       location.href = guest                       /* a guest goes on to the student path, still as a guest */
         ? location.pathname + '?share=' + encodeURIComponent(new URLSearchParams(location.search).get('share') || '') + '&student'
         : location.pathname;                      /* reload clean, preview off */
+    };
+    if (staff) document.getElementById('tp-cover').onclick = () => {
+      try { speech.stop(); } catch (e) {}
+      location.href = location.pathname + window.SHARE_LINK;   /* back to the cover and its two buttons, still the teacher/admin guest */
     };
     document.addEventListener('keydown', e => {
       if (!window.PREVIEW) return;
@@ -196,6 +202,7 @@
   /* Exposed for the Teacher button, the cover link and ?teacher. */
   window.startTeacherPreview = function () {
     if (window.PREVIEW) return;
+    if (window.SHARE_TEACHER) { begin(); return; }   /* the teacher/admin guest link: no PIN */
     askPin('Teacher preview: scan every screen of the lesson. Nothing is saved or sent.', begin);
   };
   /* for testing, and for anything that needs the list without the PIN */
@@ -204,7 +211,35 @@
   const link = document.getElementById('cv-teacher');
   if (link) link.onclick = e => { e.preventDefault(); window.startTeacherPreview(); };
 
-  /* A guest (share.js) lands in the preview with no PIN; "Try it as a student" reloads with &student. */
-  if (window.SHARE_MODE && !/[?&]student\b/.test(location.search)) begin();
-  else if (/[?&]teacher\b/.test(location.search)) window.startTeacherPreview();
+  const asked = w => new RegExp('[?&]' + w + '\\b').test(location.search);
+
+  /* THE TEACHER/ADMIN GUEST LINK (share.js, Marcos 11/15: "Yes, add it"). It arrives on the cover, as on every other site,
+     with share.js's two big buttons in place of "Let's begin": 🎒 Student guest is that same button (the lesson as a
+     student meets it, as Guest), and 🧑‍🏫 Teacher / admin guest opens this preview with no PIN (&teacher). The preview's
+     Try it as a student goes on to the student path (&student); ✕ Exit comes back here. The cards' lines are this
+     lesson's own (share.js v8, SHARE_CARDS): there is no answer key and no score page here, so they promise neither.
+     Nothing is saved or sent on any of it (share.js, and window.PREVIEW). */
+  if (window.SHARE_TEACHER) {
+    if (asked('teacher')) begin();
+    else if (!asked('student')) {
+      window.SHARE_OPEN_TEACHER = () => { location.href = location.pathname + window.SHARE_LINK + '&teacher'; };
+      window.SHARE_CARDS = {
+        student: [
+          ['\u{1F513}', 'Every page open', 'No sign-in. The whole lesson, from the cover on.'],
+          ['\u2714\uFE0F', 'The right answer and why', 'After each multiple-choice question.'],
+          ['\u{1F6E1}\uFE0F', 'Nothing is saved', 'No scores go to Mr. O.']
+        ],
+        teacher: [
+          ['\u{1F50E}', 'Every screen', 'The whole lesson in order, every page and question. \u25C0 \u25B6 or jump to any one.'],
+          ['\u{1F440}', 'Try it as a student', 'The lesson from the cover, the way a student meets it.']
+        ]
+      };
+      const go = document.getElementById('cover-go');
+      if (go) go.setAttribute('data-guest-start', '');
+      if (link) link.parentElement.style.display = 'none';   /* the Teacher card is the way in here */
+    }
+  }
+  /* A student guest (share.js) lands in the preview with no PIN; "Try it as a student" reloads with &student. */
+  else if (window.SHARE_MODE && !asked('student')) begin();
+  else if (asked('teacher')) window.startTeacherPreview();
 })();

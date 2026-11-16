@@ -653,6 +653,10 @@ table.data td.pending{color:var(--ink-faint)}
 .cv-you p{ margin:0; font-size:21px; line-height:1.55; color:var(--ink-soft); }
 .card.cover .btnrow{ justify-content:center; margin:22px 18px 0; }
 .btn.big{ font-size:24px; padding:15px 32px; }
+/* The teacher/admin guest link's two cards (share.js, Marcos 11/15 "Yes, add it"): the cover's full width, so a phone stacks
+   them instead of running them off the side, and each button on one line, the two the same height. */
+.card.cover .btnrow .guest-choice{ flex:1 1 100%; width:100%; }
+.card.cover .guest-choice .btn.big{ font-size:20px; padding:15px 12px; }
 
 
 /* ── THE PLAN ───────────────────────────────────────────
